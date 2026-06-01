@@ -30,9 +30,9 @@ Steps to complete before or after the first public announcement.
 
 ## GitHub Release
 
-- [ ] Create GitHub release from tag `v0.1.0`
-- [ ] Use release notes from [`docs/releases/v0.1.0-github-release.md`](./releases/v0.1.0-github-release.md)
-- [ ] Attach no binaries (packages are on npm, not GitHub releases)
+- [x] Create GitHub release from tag `v0.1.0` — https://github.com/gabpaesschulz/filterbridge/releases/tag/v0.1.0
+- [x] Use release notes from [`docs/releases/v0.1.0-github-release.md`](./releases/v0.1.0-github-release.md)
+- [x] Attach no binaries (packages are on npm, not GitHub releases)
 
 ---
 
