@@ -2,7 +2,7 @@
 
 React hook for managing filter state defined with `@filterbridge/core`.
 
-**Status: pre-alpha (Wave 5 complete) — API may change before 1.0.**
+**Status: experimental — API may change before 1.0.**
 
 ---
 
@@ -16,17 +16,8 @@ It does **not** handle URL synchronization or routing — those are intentionall
 
 ## Installation
 
-Not yet published to npm. Coming after Wave 9 (package hardening).
-
-To use locally within this monorepo, add both packages to your `package.json`:
-
-```json
-{
-  "dependencies": {
-    "@filterbridge/core": "workspace:*",
-    "@filterbridge/react": "workspace:*"
-  }
-}
+```bash
+pnpm add @filterbridge/react @filterbridge/core
 ```
 
 React 18+ is required as a peer dependency.
@@ -213,9 +204,7 @@ import type { FilterSchema, InferFilterState } from '@filterbridge/core'
 
 ## Known limitations
 
-- No URL synchronization — `useFilterBridge` manages in-memory state only.
-- No Next.js App Router adapter.
-- No TanStack Table adapter.
+- No URL synchronization in this hook — `useFilterBridge` manages in-memory state only. Use `@filterbridge/browser` for URL sync, or `@filterbridge/next` for Next.js App Router.
 - `reset()` resets to `{}`, not to `initialState`.
 - `multiSelect` serializes via comma-separated values. Repeated query params are not supported.
 - No per-filter default values.
@@ -226,6 +215,8 @@ import type { FilterSchema, InferFilterState } from '@filterbridge/core'
 ## See also
 
 - [`@filterbridge/core`](../core) — filter schema DSL and pure functions
+- [`@filterbridge/browser`](../browser) — browser URL sync helpers
+- [`@filterbridge/next`](../next) — Next.js App Router adapter
 - [`docs/api/react.md`](../../docs/api/react.md) — detailed API reference
 - [Root README](../../README.md) — project overview and React example
 - [Demo app](../../apps/demo) — working example with all filter types

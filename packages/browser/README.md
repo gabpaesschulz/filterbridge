@@ -169,7 +169,7 @@ All helpers return empty state / no-op safely when `window` is not available.
 ## Limitations
 
 - No `popstate` handler — back/forward navigation does not update React state.
-- No Next.js App Router integration (use `@filterbridge/next` when available).
+- No Next.js App Router integration — use `@filterbridge/next` instead.
 - No React Router integration.
 - No debounce built in.
 

@@ -171,7 +171,7 @@ declare module '@tanstack/react-table' {
 - `filterBridgeFilterFns.text` does fuzzy matching by default (substring includes). It does not rank results.
 - Server-side filtering is not implemented here — this package only converts state formats.
 - No React hook is provided in this package. Use `@filterbridge/react` for React state management.
-- No pagination or sorting adapters in this wave.
+- No pagination or sorting adapters.
 
 ---
 
