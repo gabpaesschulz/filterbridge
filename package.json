@@ -1,0 +1,35 @@
+{
+  "name": "filterbridge-monorepo",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "scripts": {
+    "build": "pnpm --filter @filterbridge/core --filter @filterbridge/react --filter @filterbridge/browser --filter @filterbridge/tanstack --filter @filterbridge/next build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "demo": "pnpm --filter @filterbridge/demo dev",
+    "demo:build": "pnpm --filter @filterbridge/demo build",
+    "pack:all": "node scripts/pack-all.mjs",
+    "clean:packs": "node -e \"require('fs').rmSync('.packs', { recursive: true, force: true })\""
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.0",
+    "tsup": "^8.1.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

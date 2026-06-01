@@ -1,0 +1,76 @@
+{
+  "name": "@filterbridge/tanstack",
+  "version": "0.1.0",
+  "description": "TanStack Table adapter for FilterBridge filter state.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "filterbridge",
+    "filters",
+    "typescript",
+    "url-state",
+    "search-params",
+    "query-params",
+    "admin",
+    "dashboard",
+    "frontend",
+    "dx",
+    "tanstack",
+    "tanstack-table",
+    "react-table",
+    "table-filters"
+  ],
+  "license": "MIT",
+  "author": "Gabriel Paes Schulz",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabpaesschulz/filterbridge.git",
+    "directory": "packages/tanstack"
+  },
+  "bugs": {
+    "url": "https://github.com/gabpaesschulz/filterbridge/issues"
+  },
+  "homepage": "https://github.com/gabpaesschulz/filterbridge#readme",
+  "dependencies": {
+    "@filterbridge/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@tanstack/react-table": ">=8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-table": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@filterbridge/core": "workspace:*",
+    "@tanstack/react-table": "^8.20.0",
+    "tsup": "^8.1.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
