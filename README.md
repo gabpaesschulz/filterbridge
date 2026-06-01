@@ -5,6 +5,7 @@ Schema-first filters for React admin screens.
 Declare filters once as a typed schema. Reuse that definition as React state, URL search params, backend query DTOs, TanStack Table column filters, and Next.js App Router search params — without rewriting the same glue code across every project.
 
 [![npm version](https://img.shields.io/npm/v/@filterbridge/core?label=%40filterbridge%2Fcore)](https://www.npmjs.com/package/@filterbridge/core)
+[![npm downloads](https://img.shields.io/npm/dm/@filterbridge/core?label=downloads)](https://www.npmjs.com/package/@filterbridge/core)
 [![license](https://img.shields.io/npm/l/@filterbridge/core)](./LICENSE)
 [![types](https://img.shields.io/badge/types-TypeScript-blue)](https://www.typescriptlang.org/)
 [![status](https://img.shields.io/badge/status-experimental-orange)](https://github.com/gabpaesschulz/filterbridge)
