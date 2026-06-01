@@ -1,8 +1,11 @@
 # @filterbridge/tanstack
 
-> **Experimental** — API may change before a stable release.
+[![npm](https://img.shields.io/npm/v/@filterbridge/tanstack)](https://www.npmjs.com/package/@filterbridge/tanstack)
+[![license](https://img.shields.io/npm/l/@filterbridge/tanstack)](../../LICENSE)
 
-TanStack Table adapter for [FilterBridge](../../README.md).
+> **Status:** experimental — `v0.1.0` published. API may change before `v1.0`.
+
+TanStack Table adapter for [FilterBridge](https://github.com/gabpaesschulz/filterbridge).
 
 Converts FilterBridge filter state into TanStack-compatible `columnFilters`, and optionally back again. Also includes simple client-side filter functions.
 
@@ -13,9 +16,9 @@ FilterBridge does not replace TanStack Table. It only converts FilterBridge filt
 ## Installation
 
 ```bash
-pnpm add @filterbridge/tanstack @filterbridge/core
+npm install @filterbridge/tanstack @filterbridge/core
 # TanStack Table is a peer dependency
-pnpm add @tanstack/react-table
+npm install @tanstack/react-table
 ```
 
 ---
@@ -178,3 +181,13 @@ declare module '@tanstack/react-table' {
 ## Relationship to TanStack Table
 
 This package adapts FilterBridge state for TanStack Table. It does not wrap `useReactTable`, render any table UI, or replace TanStack Table's filtering logic. Your TanStack Table configuration is entirely under your control.
+
+---
+
+## Related packages
+
+- [`@filterbridge/core`](../core/README.md) — schema DSL, parsing, serialization
+- [`@filterbridge/react`](../react/README.md) — `useFilterBridge` hook
+- [`docs/api/tanstack.md`](../../docs/api/tanstack.md) — detailed API reference
+- [Root README](../../README.md) — project overview
+- [GitHub](https://github.com/gabpaesschulz/filterbridge)

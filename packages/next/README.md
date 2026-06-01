@@ -1,6 +1,9 @@
 # @filterbridge/next
 
-> **Status: experimental** — the API is stable enough to use, but may change before 1.0.
+[![npm](https://img.shields.io/npm/v/@filterbridge/next)](https://www.npmjs.com/package/@filterbridge/next)
+[![license](https://img.shields.io/npm/l/@filterbridge/next)](../../LICENSE)
+
+> **Status:** experimental — `v0.1.0` published. API may change before `v1.0`.
 
 Next.js App Router adapter for [FilterBridge](https://github.com/gabpaesschulz/filterbridge).
 
@@ -30,7 +33,7 @@ This package converts those values into typed FilterBridge state and back into n
 ## Installation
 
 ```bash
-pnpm add @filterbridge/core @filterbridge/browser @filterbridge/next
+npm install @filterbridge/core @filterbridge/browser @filterbridge/next
 ```
 
 ---
@@ -229,6 +232,17 @@ It accepts Next-shaped values (plain objects, URLSearchParams) and returns plain
 - No pagination or sorting adapters
 - `createNextFilterHref` uses `set()` for URLSearchParams internally, so repeated non-filter
   params (e.g. `tab=a&tab=b`) will be deduplicated to the last value
+
+---
+
+## Related packages
+
+- [`@filterbridge/core`](../core/README.md) — schema DSL, parsing, serialization
+- [`@filterbridge/react`](../react/README.md) — `useFilterBridge` hook
+- [`@filterbridge/browser`](../browser/README.md) — browser URL sync helpers
+- [`docs/api/next.md`](../../docs/api/next.md) — detailed API reference
+- [Root README](../../README.md) — project overview
+- [GitHub](https://github.com/gabpaesschulz/filterbridge)
 
 ---
 

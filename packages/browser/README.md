@@ -1,8 +1,11 @@
 # @filterbridge/browser
 
-> **Status:** experimental — API may change before the first stable release.
+[![npm](https://img.shields.io/npm/v/@filterbridge/browser)](https://www.npmjs.com/package/@filterbridge/browser)
+[![license](https://img.shields.io/npm/l/@filterbridge/browser)](../../LICENSE)
 
-Browser URL synchronization helpers for [FilterBridge](../../README.md).
+> **Status:** experimental — `v0.1.0` published. API may change before `v1.0`.
+
+Browser URL synchronization helpers for [FilterBridge](https://github.com/gabpaesschulz/filterbridge).
 
 Lets you initialize filter state from the current URL and keep the URL updated as filters change — without a framework adapter.
 
@@ -11,7 +14,7 @@ Lets you initialize filter state from the current URL and keep the URL updated a
 ## Installation
 
 ```bash
-pnpm add @filterbridge/browser @filterbridge/core
+npm install @filterbridge/browser @filterbridge/core
 ```
 
 ---
@@ -179,3 +182,7 @@ All helpers return empty state / no-op safely when `window` is not available.
 
 - [`@filterbridge/core`](../core/README.md) — schema DSL, parsing, serialization
 - [`@filterbridge/react`](../react/README.md) — `useFilterBridge` hook
+- [`@filterbridge/next`](../next/README.md) — Next.js App Router adapter
+- [`docs/api/browser.md`](../../docs/api/browser.md) — detailed API reference
+- [Root README](../../README.md) — project overview
+- [GitHub](https://github.com/gabpaesschulz/filterbridge)

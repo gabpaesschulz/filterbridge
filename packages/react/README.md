@@ -2,7 +2,10 @@
 
 React hook for managing filter state defined with `@filterbridge/core`.
 
-**Status: experimental — API may change before 1.0.**
+[![npm](https://img.shields.io/npm/v/@filterbridge/react)](https://www.npmjs.com/package/@filterbridge/react)
+[![license](https://img.shields.io/npm/l/@filterbridge/react)](../../LICENSE)
+
+**Status: experimental — `v0.1.0` published. API may change before `v1.0`.**
 
 ---
 
@@ -17,7 +20,7 @@ It does **not** handle URL synchronization or routing — those are intentionall
 ## Installation
 
 ```bash
-pnpm add @filterbridge/react @filterbridge/core
+npm install @filterbridge/react @filterbridge/core
 ```
 
 React 18+ is required as a peer dependency.
@@ -220,3 +223,4 @@ import type { FilterSchema, InferFilterState } from '@filterbridge/core'
 - [`docs/api/react.md`](../../docs/api/react.md) — detailed API reference
 - [Root README](../../README.md) — project overview and React example
 - [Demo app](../../apps/demo) — working example with all filter types
+- [GitHub](https://github.com/gabpaesschulz/filterbridge)
