@@ -169,14 +169,15 @@ export function InvoiceFilters() {
 
 ## Packages
 
-| Package | Description | Status |
-|---------|-------------|--------|
-| [`@filterbridge/core`](./packages/core) | Filter schema DSL, parsing, serialization, query DTO | pre-alpha |
-| [`@filterbridge/react`](./packages/react) | `useFilterBridge` React hook | pre-alpha |
+| Package | Description |
+|---------|-------------|
+| [`@filterbridge/core`](./packages/core) | Filter schema DSL, parsing, serialization, query DTO |
+| [`@filterbridge/react`](./packages/react) | `useFilterBridge` React hook |
+| [`@filterbridge/browser`](./packages/browser) | Browser URL helpers (`createFilterUrl`, `pushUrlFilters`, `replaceUrlFilters`) |
+| [`@filterbridge/tanstack`](./packages/tanstack) | TanStack Table adapter (`toTanStackColumnFilters`, `filterBridgeFilterFns`) |
+| [`@filterbridge/next`](./packages/next) | Next.js App Router adapter (`parseNextSearchParams`, `createNextFilterHref`) |
 
-Both packages ship ESM and CJS. TypeScript declarations are bundled.
-
-Not yet published. See [Roadmap](#roadmap).
+All packages ship ESM and CJS. TypeScript declarations are bundled.
 
 ---
 
@@ -316,16 +317,21 @@ See [`docs/concepts/non-goals.md`](./docs/concepts/non-goals.md) for the reasoni
   React adapter. Depends on @filterbridge/core.
   Manages local filter state through useFilterBridge.
 
+@filterbridge/browser
+  Browser URL helpers. Depends on @filterbridge/core.
+  Reads/writes browser history without a framework.
+
+@filterbridge/tanstack
+  TanStack Table adapter. Depends on @filterbridge/core.
+  Converts FilterBridge state to/from TanStack columnFilters.
+
+@filterbridge/next
+  Next.js App Router adapter. Depends on @filterbridge/core and @filterbridge/browser.
+  Parses Next.js searchParams and builds navigable hrefs. No Next.js runtime dependency.
+
 apps/demo
   Vite + React app. Not published.
-  Demonstrates core and react working together.
-```
-
-Planned future packages (not implemented):
-
-```
-@filterbridge/next      — Next.js App Router helpers
-@filterbridge/tanstack  — TanStack Table column filter adapter
+  Demonstrates all filter types and packages working together.
 ```
 
 See [`docs/concepts/architecture.md`](./docs/concepts/architecture.md) for more detail.
@@ -340,13 +346,17 @@ Completed:
 - [x] Wave 3 — `useFilterBridge` React hook
 - [x] Wave 4 — Vite + React demo app
 - [x] Wave 5 — Documentation pass
+- [x] Wave 6 — Browser URL synchronization helpers (`@filterbridge/browser`)
+- [x] Wave 7 — TanStack Table adapter (`@filterbridge/tanstack`)
+- [x] Wave 8 — Next.js App Router adapter (`@filterbridge/next`)
+- [x] Wave 9 — Package hardening and `npm pack` validation
+- [x] Wave 10 — First release candidate (`v0.1.0`)
 
 Planned:
-- [ ] Wave 6 — Browser URL synchronization helpers
-- [ ] Wave 7 — TanStack Table adapter
-- [ ] Wave 8 — Next.js App Router adapter
-- [ ] Wave 9 — Package hardening and `npm pack` validation
-- [ ] Wave 10 — First release candidate (`v0.1.0`) and npm publication
+- [ ] Pagination and sorting helpers
+- [ ] `popstate` handler for browser back/forward
+- [ ] shadcn/ui demo integration
+- [ ] TanStack Query `queryKey` helper
 
 ---
 

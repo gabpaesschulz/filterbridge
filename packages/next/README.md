@@ -2,7 +2,7 @@
 
 > **Status: experimental** — the API is stable enough to use, but may change before 1.0.
 
-Next.js App Router adapter for [FilterBridge](https://github.com/filterbridge/filterbridge).
+Next.js App Router adapter for [FilterBridge](https://github.com/gabpaesschulz/filterbridge).
 
 ---
 

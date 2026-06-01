@@ -91,3 +91,54 @@ pnpm changeset publish
 - [ ] Create GitHub Release with tag `v0.1.0`
 - [ ] Update `README.md` with installation instructions pointing to the published version
 - [ ] Announce release if applicable
+
+---
+
+## v0.1.0 release candidate status (Wave 10)
+
+**Validated on: 2026-06-01**
+
+### Infrastructure
+- [x] GitHub repository exists: `https://github.com/gabpaesschulz/filterbridge`
+- [x] All 5 npm package names verified available (404 on registry)
+  - `@filterbridge/core` — available
+  - `@filterbridge/react` — available
+  - `@filterbridge/browser` — available
+  - `@filterbridge/tanstack` — available
+  - `@filterbridge/next` — available
+- [x] Changeset consumed — `.changeset/initial-release.md` removed
+- [x] `CHANGELOG.md` generated in all 5 packages (v0.1.0)
+- [x] All `package.json` files include `CHANGELOG.md` in `files`
+
+### Build validation
+- [x] `pnpm install` — clean
+- [x] `pnpm build` — 5 packages, all pass
+- [x] `pnpm typecheck` — 0 errors
+- [x] `pnpm test` — 299 tests, 17 test files, all pass
+- [x] `pnpm demo:build` — Vite build success
+
+### Package inspection
+- [x] `pnpm pack:all` — 5 tarballs in `.packs/`
+- [x] All tarballs contain: `dist/`, `README.md`, `CHANGELOG.md`, `package.json`
+- [x] `dist/index.js`, `dist/index.cjs`, `dist/index.d.ts`, `dist/index.d.cts` present in each
+- [x] `workspace:*` resolved to `0.1.0` in packed tarballs
+
+### Smoke test
+- [x] ESM smoke test — 39 passed, 0 failed
+- [x] CJS smoke test — 29 passed, 0 failed
+
+### Content review
+- [x] Root README updated: packages table, architecture, roadmap
+- [x] `packages/core/README.md` — updated status and installation
+- [x] `packages/react/README.md` — updated status, installation, and known limitations
+- [x] `packages/browser/README.md` — updated next adapter reference
+- [x] `packages/tanstack/README.md` — removed internal wave language
+- [x] `packages/next/README.md` — fixed repository link
+
+### Pending before publish
+- [ ] `npm whoami` — confirm npm login as correct user
+- [ ] Confirm 2FA is configured on npm account
+- [ ] Create `@filterbridge` organization scope on npm (or confirm user owns it)
+- [ ] Commit Wave 10 changes to git
+- [ ] `git tag v0.1.0`
+- [ ] Run `pnpm changeset publish` or individual publish commands

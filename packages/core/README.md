@@ -2,7 +2,7 @@
 
 Schema-first filter definitions for admin interfaces.
 
-**Status: pre-alpha (Wave 5 complete) — API may change before 1.0.**
+**Status: experimental — API may change before 1.0.**
 
 ---
 
@@ -38,9 +38,9 @@ const orderFilters = defineFilters({
 
 ## Installation
 
-Not yet published to npm. Coming after Wave 9 (package hardening).
-
-To use locally within this monorepo, add `"@filterbridge/core": "workspace:*"` to your `package.json`.
+```bash
+pnpm add @filterbridge/core
+```
 
 ---
 
