@@ -104,15 +104,9 @@ Create `netlify.toml` at the repo root if you prefer config-as-code:
 
 ## Live demo URL
 
-_No public deployment has been made yet._
+**Live:** https://filterbridge-demo.vercel.app
 
-After deploying, replace this line with the live URL:
-
-```md
-[Open the live demo](https://your-demo-url.vercel.app)
-```
-
-And update the same in `README.md` under the Demo section.
+Deployed on Vercel from the `main` branch. Updates automatically on push.
 
 ---
 
