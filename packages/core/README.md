@@ -2,7 +2,10 @@
 
 Schema-first filter definitions for admin interfaces.
 
-**Status: experimental — API may change before 1.0.**
+[![npm](https://img.shields.io/npm/v/@filterbridge/core)](https://www.npmjs.com/package/@filterbridge/core)
+[![license](https://img.shields.io/npm/l/@filterbridge/core)](../../LICENSE)
+
+**Status: experimental — `v0.1.0` published. API may change before `v1.0`.**
 
 ---
 
@@ -39,7 +42,7 @@ const orderFilters = defineFilters({
 ## Installation
 
 ```bash
-pnpm add @filterbridge/core
+npm install @filterbridge/core
 ```
 
 ---
@@ -327,5 +330,9 @@ NumberRangeFilter
 ## See also
 
 - [`@filterbridge/react`](../react) — React hook for filter state management
+- [`@filterbridge/browser`](../browser) — browser URL sync helpers
+- [`@filterbridge/tanstack`](../tanstack) — TanStack Table adapter
+- [`@filterbridge/next`](../next) — Next.js App Router adapter
 - [`docs/api/core.md`](../../docs/api/core.md) — detailed API reference
 - [Root README](../../README.md) — project overview
+- [GitHub](https://github.com/gabpaesschulz/filterbridge)

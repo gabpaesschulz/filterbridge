@@ -2,46 +2,95 @@
 
 Schema-first filters for React admin screens.
 
-Declare filters once as a typed schema. Reuse that definition as React state, URL search params, and backend query DTOs — without rewriting the same glue code in every project.
+Declare filters once as a typed schema. Reuse that definition as React state, URL search params, backend query DTOs, TanStack Table column filters, and Next.js App Router search params — without rewriting the same glue code across every project.
+
+[![npm version](https://img.shields.io/npm/v/@filterbridge/core?label=%40filterbridge%2Fcore)](https://www.npmjs.com/package/@filterbridge/core)
+[![license](https://img.shields.io/npm/l/@filterbridge/core)](./LICENSE)
+[![types](https://img.shields.io/badge/types-TypeScript-blue)](https://www.typescriptlang.org/)
+[![status](https://img.shields.io/badge/status-experimental-orange)](https://github.com/gabpaesschulz/filterbridge)
 
 ---
 
-## Status
-
-**Experimental — not yet published to npm.**
-
-The packages are prepared for npm publication but have not been published yet.
-
-Implemented:
-- `@filterbridge/core` — schema-first filter definitions, parsing, URL serialization, backend DTO generation
-- `@filterbridge/react` — `useFilterBridge` React state hook
-- `@filterbridge/browser` — browser URL sync helpers (`createFilterUrl`, `pushUrlFilters`, `replaceUrlFilters`)
-- `@filterbridge/tanstack` — TanStack Table adapter (`toTanStackColumnFilters`, `fromTanStackColumnFilters`, `filterBridgeFilterFns`)
-- `@filterbridge/next` — Next.js App Router adapter (`parseNextSearchParams`, `createNextFilterHref`)
-
-Not yet:
-- npm publication
-- shadcn/ui components
-- persisted filter presets
-- pagination and sorting helpers
-
-## Package status
-
-The packages are prepared for npm publication, but not published yet.
-
----
-
-## The problem
+## Why FilterBridge?
 
 Admin dashboards often define the same filter logic in multiple places:
 
 ```
-UI state   →   URL search params   →   API query   →   table state   →   active chips
+UI state → URL search params → API query → table state → active filter chips
 ```
 
 Each layer needs slightly different plumbing. You end up writing ad-hoc string parsing, inconsistent URL encoding, and fragile boolean/date/array coercion that diverges across projects.
 
-FilterBridge provides a small schema layer that makes all these representations consistent from a single definition.
+### Without FilterBridge
+
+You maintain parallel representations by hand:
+
+```ts
+// UI state
+const [search, setSearch] = useState('')
+const [status, setStatus] = useState<string[]>([])
+
+// URL sync — manual, error-prone
+const params = new URLSearchParams()
+if (search) params.set('search', search)
+if (status.length) params.set('status', status.join(','))
+
+// Backend DTO — repeat the logic again
+const dto = {
+  ...(search && { search }),
+  ...(status.length && { status }),
+}
+```
+
+### With FilterBridge
+
+Define your filters once and derive everything else:
+
+```ts
+const invoiceFilters = defineFilters({
+  search: text(),
+  status: multiSelect(['pending', 'paid', 'failed']),
+})
+
+const dto = toQueryDto(invoiceFilters, state)
+const params = toSearchParams(invoiceFilters, state)
+```
+
+FilterBridge gives you one typed schema that drives consistent parsing, serialization, and DTO generation across all layers.
+
+---
+
+## Install
+
+For core usage (schema, parsing, URL serialization, backend DTO):
+
+```bash
+npm install @filterbridge/core
+```
+
+With React state management:
+
+```bash
+npm install @filterbridge/core @filterbridge/react
+```
+
+With browser URL synchronization:
+
+```bash
+npm install @filterbridge/core @filterbridge/react @filterbridge/browser
+```
+
+With TanStack Table:
+
+```bash
+npm install @filterbridge/core @filterbridge/tanstack @tanstack/react-table
+```
+
+With Next.js App Router:
+
+```bash
+npm install @filterbridge/core @filterbridge/next
+```
 
 ---
 
@@ -144,7 +193,7 @@ export function InvoiceFilters() {
       />
 
       <button type="button" onClick={() => bridge.set('status', ['paid'])}>
-        Paid
+        Paid only
       </button>
 
       <button type="button" onClick={() => bridge.clear('status')}>
@@ -167,63 +216,42 @@ export function InvoiceFilters() {
 
 ---
 
-## Packages
-
-| Package | Description |
-|---------|-------------|
-| [`@filterbridge/core`](./packages/core) | Filter schema DSL, parsing, serialization, query DTO |
-| [`@filterbridge/react`](./packages/react) | `useFilterBridge` React hook |
-| [`@filterbridge/browser`](./packages/browser) | Browser URL helpers (`createFilterUrl`, `pushUrlFilters`, `replaceUrlFilters`) |
-| [`@filterbridge/tanstack`](./packages/tanstack) | TanStack Table adapter (`toTanStackColumnFilters`, `filterBridgeFilterFns`) |
-| [`@filterbridge/next`](./packages/next) | Next.js App Router adapter (`parseNextSearchParams`, `createNextFilterHref`) |
-
-All packages ship ESM and CJS. TypeScript declarations are bundled.
-
----
-
 ## Demo
 
-A local Vite + React app demonstrates all filter types in a simulated invoice admin screen.
+![FilterBridge demo](./docs/assets/filterbridge-demo.png)
+
+A local Vite + React app demonstrates all six filter types in a simulated invoice admin screen, with a live output panel showing React state, backend DTO, URL search params, and a filtered TanStack Table.
 
 ```bash
+git clone https://github.com/gabpaesschulz/filterbridge.git
+cd filterbridge
 pnpm install
 pnpm demo
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
 
-Change any filter and watch the React state, backend DTO, and URLSearchParams update live in the output panel on the right.
+A hosted demo is planned. For now, run it locally with `pnpm demo`.
 
-See [`apps/demo/README.md`](./apps/demo/README.md) for details.
+---
+
+## Packages
+
+| Package | Description | npm |
+|---------|-------------|-----|
+| [`@filterbridge/core`](./packages/core) | Schema DSL, parsing, URL serialization, backend DTO | [![npm](https://img.shields.io/npm/v/@filterbridge/core)](https://www.npmjs.com/package/@filterbridge/core) |
+| [`@filterbridge/react`](./packages/react) | `useFilterBridge` React hook | [![npm](https://img.shields.io/npm/v/@filterbridge/react)](https://www.npmjs.com/package/@filterbridge/react) |
+| [`@filterbridge/browser`](./packages/browser) | Browser URL sync helpers | [![npm](https://img.shields.io/npm/v/@filterbridge/browser)](https://www.npmjs.com/package/@filterbridge/browser) |
+| [`@filterbridge/tanstack`](./packages/tanstack) | TanStack Table adapter | [![npm](https://img.shields.io/npm/v/@filterbridge/tanstack)](https://www.npmjs.com/package/@filterbridge/tanstack) |
+| [`@filterbridge/next`](./packages/next) | Next.js App Router adapter | [![npm](https://img.shields.io/npm/v/@filterbridge/next)](https://www.npmjs.com/package/@filterbridge/next) |
+
+All packages ship ESM and CJS with TypeScript declarations bundled.
 
 ---
 
 ## Core API
 
 Full reference: [`docs/api/core.md`](./docs/api/core.md)
-
-### `defineFilters(schema)`
-
-Defines a typed filter schema. The schema is the single source of truth for parsing, serialization, and DTO generation.
-
-```ts
-const schema = defineFilters({
-  search: text(),
-  status: select(['pending', 'paid', 'failed']),
-})
-```
-
-### `parseFilters(schema, input)`
-
-Parses untrusted input into typed filter state. Accepts `Record<string, unknown>` or `URLSearchParams`. Invalid values are discarded silently.
-
-### `toSearchParams(schema, state)`
-
-Serializes filter state into `URLSearchParams`. Empty values are omitted. Output is deterministic.
-
-### `toQueryDto(schema, state)`
-
-Converts filter state into a backend-friendly object. Strips undefined values, empty arrays, and empty range objects.
 
 ### Filter factories
 
@@ -236,6 +264,15 @@ Converts filter state into a backend-friendly object. Strips undefined values, e
 | `dateRange()` | `{ from?: string; to?: string } \| undefined` | `createdAtFrom=…&createdAtTo=…` |
 | `numberRange()` | `{ min?: number; max?: number } \| undefined` | `amountMin=…&amountMax=…` |
 
+### Key functions
+
+| Function | Description |
+|----------|-------------|
+| `defineFilters(schema)` | Creates a typed filter schema |
+| `parseFilters(schema, input)` | Parses untrusted input into typed state |
+| `toSearchParams(schema, state)` | Serializes state into `URLSearchParams` |
+| `toQueryDto(schema, state)` | Converts state into a backend-friendly object |
+
 ---
 
 ## React API
@@ -244,46 +281,45 @@ Full reference: [`docs/api/react.md`](./docs/api/react.md)
 
 ### `useFilterBridge(schema, options?)`
 
-Options:
-
-| Option | Type | Description |
+| Return | Type | Description |
 |--------|------|-------------|
-| `initialState` | `Partial<InferFilterState<TSchema>>` | Initial filter values |
-| `onChange` | `(state) => void` | Called after every state change |
-
-Returns:
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `state` | `InferFilterState<TSchema>` | Current typed filter state |
+| `state` | `InferFilterState<TSchema>` | Current filter state |
 | `set(key, value)` | `void` | Update one filter |
-| `setMany(values)` | `void` | Update multiple filters at once |
+| `setMany(values)` | `void` | Update multiple filters |
 | `clear(key)` | `void` | Remove one filter |
-| `reset()` | `void` | Clear all filters to `{}` |
-| `hasActiveFilters` | `boolean` | `true` when any filter is active |
+| `reset()` | `void` | Clear all filters |
+| `hasActiveFilters` | `boolean` | Whether any filter is active |
 | `activeFilterCount` | `number` | Count of active filters |
-| `toQueryDto()` | `InferFilterState<TSchema>` | Current state as backend DTO |
+| `toQueryDto()` | object | Current state as backend DTO |
 | `toSearchParams()` | `URLSearchParams` | Current state as URL params |
+
+---
+
+## Documentation
+
+- [Core API reference](./docs/api/core.md)
+- [React API reference](./docs/api/react.md)
+- [Browser URL sync](./docs/api/browser.md)
+- [TanStack Table adapter](./docs/api/tanstack.md)
+- [Next.js App Router adapter](./docs/api/next.md)
+- [Guides](./docs/guides/)
+- [Architecture](./docs/concepts/architecture.md)
+- [Why FilterBridge?](./docs/concepts/why-filterbridge.md)
+- [Non-goals](./docs/concepts/non-goals.md)
 
 ---
 
 ## Why not just TanStack Table?
 
-TanStack Table is a headless table engine with its own column filter model. FilterBridge is not a table engine.
+TanStack Table is a headless table engine with its own column filter model. FilterBridge is not a table engine — it focuses on a different problem: the filter *contract* around an admin list, how filters are parsed from a URL, how they become a backend query DTO, and how they stay typed throughout.
 
-FilterBridge focuses on a different problem: the filter *contract* around an admin list — what filters exist, how they are parsed from a URL, how they are serialized back, and how they become a backend query DTO.
-
-You can use both together. TanStack Table handles the table; FilterBridge handles the filter schema, URL round-trip, and backend DTO. A dedicated adapter could bridge the two — but that is out of scope today.
+You can use both together. The `@filterbridge/tanstack` adapter converts between the two filter formats.
 
 ---
 
 ## Why not just nuqs?
 
-nuqs is excellent at syncing React state with URL query strings. If your primary need is type-safe URL state management, nuqs may be enough.
-
-FilterBridge targets a narrower problem: admin list filters defined as a typed schema, with consistent parsing rules, serialization, and backend DTO generation. The explicit filter types (select, multiSelect, dateRange, numberRange) carry semantic meaning that drives the parsing and serialization behavior.
-
-A future adapter could let you feed `useFilterBridge` state into nuqs for URL sync. For now, `useFilterBridge` manages in-memory state only.
+nuqs is excellent at syncing React state with URL query strings. FilterBridge targets a narrower problem: admin list filters with typed schemas that carry semantic meaning — `select`, `multiSelect`, `dateRange`, `numberRange` — that drive consistent parsing, serialization, and DTO behavior.
 
 ---
 
@@ -297,101 +333,39 @@ FilterBridge is not and will not become:
 - a UI component library
 - a form library
 - a backend query builder (no SQL, no ORM integration)
-- a validation library (no Zod, no Valibot)
-- a state management library
-- a data fetching library
 - a full admin framework
 
-See [`docs/concepts/non-goals.md`](./docs/concepts/non-goals.md) for the reasoning behind these boundaries.
+See [`docs/concepts/non-goals.md`](./docs/concepts/non-goals.md) for the full reasoning.
 
 ---
 
-## Architecture
+## Status
 
-```
-@filterbridge/core
-  Pure TypeScript. No React dependency.
-  Defines filter schemas, parses inputs, serializes URLSearchParams, builds DTOs.
+FilterBridge is **experimental** and at `v0.1.0`.
 
-@filterbridge/react
-  React adapter. Depends on @filterbridge/core.
-  Manages local filter state through useFilterBridge.
+The core APIs are usable, but the project is still early. Expect refinements before `v1.0`. Feedback and contributions welcome.
 
-@filterbridge/browser
-  Browser URL helpers. Depends on @filterbridge/core.
-  Reads/writes browser history without a framework.
-
-@filterbridge/tanstack
-  TanStack Table adapter. Depends on @filterbridge/core.
-  Converts FilterBridge state to/from TanStack columnFilters.
-
-@filterbridge/next
-  Next.js App Router adapter. Depends on @filterbridge/core and @filterbridge/browser.
-  Parses Next.js searchParams and builds navigable hrefs. No Next.js runtime dependency.
-
-apps/demo
-  Vite + React app. Not published.
-  Demonstrates all filter types and packages working together.
-```
-
-See [`docs/concepts/architecture.md`](./docs/concepts/architecture.md) for more detail.
+See [`docs/roadmap.md`](./docs/roadmap.md) for planned work.
 
 ---
 
-## Roadmap
+## Contributing
 
-Completed:
-- [x] Wave 1 — Monorepo foundation, TypeScript, build pipeline, test runner
-- [x] Wave 2 — Core DSL, `parseFilters`, `toSearchParams`, `toQueryDto`
-- [x] Wave 3 — `useFilterBridge` React hook
-- [x] Wave 4 — Vite + React demo app
-- [x] Wave 5 — Documentation pass
-- [x] Wave 6 — Browser URL synchronization helpers (`@filterbridge/browser`)
-- [x] Wave 7 — TanStack Table adapter (`@filterbridge/tanstack`)
-- [x] Wave 8 — Next.js App Router adapter (`@filterbridge/next`)
-- [x] Wave 9 — Package hardening and `npm pack` validation
-- [x] Wave 10 — First release candidate (`v0.1.0`)
-
-Planned:
-- [ ] Pagination and sorting helpers
-- [ ] `popstate` handler for browser back/forward
-- [ ] shadcn/ui demo integration
-- [ ] TanStack Query `queryKey` helper
-
----
-
-## Development
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 Requirements: Node.js 18+, pnpm 8+
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Build library packages
-pnpm build
-
-# Run all tests
-pnpm test
-
-# Type check all packages
-pnpm typecheck
-
-# Run the demo app
-pnpm demo
-
-# Build the demo for static hosting
-pnpm demo:build
-
-# Lint
-pnpm lint
-
-# Format
-pnpm format
+pnpm install      # install all workspace dependencies
+pnpm build        # build all packages
+pnpm test         # run all tests
+pnpm typecheck    # TypeScript check
+pnpm demo         # run the demo app
+pnpm demo:build   # build demo for static hosting
 ```
 
 ---
 
 ## License
 
-MIT
+MIT — see [LICENSE](./LICENSE).
