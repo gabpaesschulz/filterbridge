@@ -231,7 +231,7 @@ pnpm demo
 
 Open [http://localhost:5173](http://localhost:5173).
 
-A hosted demo is planned. For now, run it locally with `pnpm demo`.
+[Open the live demo](https://filterbridge-demo.vercel.app) — or run it locally with `pnpm demo`.
 
 ---
 

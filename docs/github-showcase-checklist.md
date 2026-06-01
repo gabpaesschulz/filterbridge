@@ -8,8 +8,8 @@ Steps to complete before or after the first public announcement.
 
 - [ ] Add repository description:
   `Schema-first filters for React admin screens.`
-- [ ] Add website URL (once demo is deployed):
-  `https://your-demo-url.vercel.app`
+- [ ] Add website URL to repository About:
+  `https://filterbridge-demo.vercel.app`
 - [ ] Add npm package URL to the About section or README badge
 - [ ] Add topics from [`docs/github-topics.md`](./github-topics.md):
   `typescript`, `react`, `nextjs`, `tanstack-table`, `filters`, `url-state`, `search-params`, `admin-dashboard`, `frontend`, `developer-tools`, `npm-package`, `open-source`, `monorepo`
@@ -21,7 +21,7 @@ Steps to complete before or after the first public announcement.
 
 - [x] Screenshot added at `docs/assets/filterbridge-demo.png` (run `pnpm demo && pnpm screenshot` to generate)
 - [ ] Replace screenshot with real image after running `pnpm screenshot`
-- [ ] Add live demo URL once deployed (update the "A hosted demo is planned" line)
+- [x] Add live demo URL — https://filterbridge-demo.vercel.app
 - [x] npm badges reference published packages
 - [x] Install instructions are accurate
 - [x] Examples are accurate and runnable
@@ -38,9 +38,9 @@ Steps to complete before or after the first public announcement.
 
 ## Demo deployment
 
-- [ ] Deploy demo to Vercel or Netlify (see [`docs/guides/deploy-demo.md`](./guides/deploy-demo.md))
-- [ ] Update `README.md` Demo section with live URL
-- [ ] Update `docs/guides/deploy-demo.md` Live demo URL section
+- [x] Deploy demo to Vercel — https://filterbridge-demo.vercel.app
+- [x] Update `README.md` Demo section with live URL
+- [x] Update `docs/guides/deploy-demo.md` Live demo URL section
 
 ---
 
