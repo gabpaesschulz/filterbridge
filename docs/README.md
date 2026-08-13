@@ -47,6 +47,14 @@ Documentation index for the FilterBridge project.
 
 ---
 
+## Sprints
+
+| Sprint | Description |
+|--------|-------------|
+| [Sprint 0](./sprints/sprint-0/README.md) | Post-release hardening — correctness fixes, API gaps, CI |
+
+---
+
 ## Repository links
 
 | Resource | Link |

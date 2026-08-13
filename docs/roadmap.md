@@ -11,10 +11,10 @@ FilterBridge stays narrow by design. Items here are candidates, not commitments.
 Ongoing improvements to the existing packages. No new packages planned.
 
 - [ ] Improve demo deploy story (Vercel/Netlify instructions)
-- [ ] `popstate` handler option for `@filterbridge/browser` — update React state on back/forward
+- [x] `popstate` handler for `@filterbridge/browser` — `usePopstateSync` + `useFilterBridge().syncState` update React state on back/forward
 - [ ] Better examples for Next.js App Router pattern (client + server components)
-- [ ] Repeated query params support in `multiSelect` (`tags=a&tags=b` in addition to `tags=a,b`)
-- [ ] Optional default values per filter in schema
+- [x] Repeated query params support in `multiSelect` (`tags=a&tags=b` in addition to `tags=a,b`)
+- [x] Optional default values per filter in schema — `text({ default })` and friends, plus `getDefaultFilterState(schema)`
 - [ ] Optional custom key suffixes for `dateRange` and `numberRange`
 - [ ] Bug fixes as they are reported
 
