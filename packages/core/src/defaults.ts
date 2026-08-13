@@ -33,6 +33,14 @@ export function filterDefault(filter: AnyFilter): unknown {
 export function isAtDefault(filter: AnyFilter, value: unknown): boolean {
   switch (filter._kind) {
     case 'text':
+      // Trimmed for the same reason the serializers trim: `' invoice '` and
+      // `'invoice'` are the same filter. The serializers already hand this a
+      // trimmed string, so the extra trim only matters for callers that do not.
+      return (
+        filter.default !== undefined &&
+        filter.default === (typeof value === 'string' ? value.trim() : value)
+      )
+
     case 'select':
     case 'boolean':
       return filter.default !== undefined && filter.default === value

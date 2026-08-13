@@ -5,6 +5,7 @@ import {
   boolean,
   dateRange,
   defineFilters,
+  getDefaultFilterState,
   multiSelect,
   numberRange,
   parseFilters,
@@ -672,6 +673,95 @@ describe('derived state', () => {
       result.current.reset()
     })
     expect(result.current.activeFilterCount).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Derived state against a schema with defaults
+// ---------------------------------------------------------------------------
+
+const defaulted = defineFilters({
+  search: text({ default: 'invoice' }),
+  status: select(['pending', 'paid', 'failed'] as const, { default: 'paid' }),
+  tags: multiSelect(['urgent', 'review', 'archived'] as const, { default: ['urgent'] }),
+  active: boolean({ default: false }),
+  createdAt: dateRange({ default: { from: '2026-01-01' } }),
+  amount: numberRange({ default: { min: 0 } }),
+})
+
+describe('activeFilterCount with schema defaults', () => {
+  it('does not count a filter sitting at its default', () => {
+    // The state a page opens with when nobody has touched anything: no query
+    // string, nothing to reset. It must not read "6 active filters".
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: parseFilters(defaulted, {}) })
+    )
+
+    expect(result.current.state).toEqual(getDefaultFilterState(defaulted))
+    expect(result.current.activeFilterCount).toBe(0)
+    expect(result.current.hasActiveFilters).toBe(false)
+  })
+
+  it('counts a filter the user moved off its default', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: parseFilters(defaulted, {}) })
+    )
+
+    act(() => result.current.set('status', 'failed'))
+
+    expect(result.current.activeFilterCount).toBe(1)
+    expect(result.current.hasActiveFilters).toBe(true)
+  })
+
+  it('agrees with the query string — count is the number of filters the URL carries', () => {
+    // This is the invariant worth pinning: "active" and "appears in the URL"
+    // are the same question, so the count cannot drift from what is serialized.
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: parseFilters(defaulted, {}) })
+    )
+    expect(result.current.toSearchParams().toString()).toBe('')
+
+    act(() => result.current.setMany({ status: 'failed', search: 'acme' }))
+
+    expect(result.current.activeFilterCount).toBe(2)
+    expect(result.current.toSearchParams().toString()).toBe('search=acme&status=failed')
+  })
+
+  it('stops counting a filter that is set back to its default', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: parseFilters(defaulted, {}) })
+    )
+
+    act(() => result.current.set('active', true))
+    expect(result.current.activeFilterCount).toBe(1)
+
+    act(() => result.current.set('active', false))
+    expect(result.current.activeFilterCount).toBe(0)
+  })
+
+  it('ignores surrounding whitespace, as the serializers do', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+
+    act(() => result.current.set('search', '  invoice  '))
+
+    expect(result.current.activeFilterCount).toBe(0)
+    expect(result.current.toSearchParams().toString()).toBe('')
+  })
+
+  it('counts a reordered multiSelect, which is a different state', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+
+    act(() => result.current.set('tags', ['review', 'urgent']))
+
+    expect(result.current.activeFilterCount).toBe(1)
+  })
+
+  it('leaves a schema without defaults counting exactly as before', () => {
+    const { result } = renderHook(() => useFilterBridge(schema))
+
+    act(() => result.current.setMany({ search: 'invoice', active: false }))
+
+    expect(result.current.activeFilterCount).toBe(2)
   })
 })
 

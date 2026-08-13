@@ -88,8 +88,8 @@ export function useFilterBridge<TSchema extends FilterSchema>(
   }, [])
 
   const activeFilterCount = useMemo(
-    () => countActiveFilters(state as Record<string, unknown>),
-    [state]
+    () => countActiveFilters(schema, state as Record<string, unknown>),
+    [schema, state]
   )
 
   const toQueryDto = useCallback(

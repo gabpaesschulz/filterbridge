@@ -167,6 +167,8 @@ to `undefined`. Bind booleans to a three-option control, or pair the checkbox wi
 ```
 
 `activeFilterCount` counts `false` as active and `undefined` as inactive, for the same reason.
+A filter sitting at its [schema default](./core.md#default-values) is not counted — see
+[`activeFilterCount`](#activefiltercount).
 
 ##### `clear()` does not survive a URL round trip for a filter with a schema default
 
@@ -320,6 +322,25 @@ activeFilterCount: number
 ```
 
 The number of active filters. Each key in state counts as one, regardless of how many values it contains. A `dateRange` with both `from` and `to` set counts as 1.
+
+A filter sitting at its [schema default](./core.md#default-values) is **not** counted. The counter answers "has the user changed anything?", and with defaults the baseline is the default rather than the empty state — otherwise an untouched page would open reading "3 active filters" with Reset enabled, for filters nobody had touched and that emit no query param.
+
+```ts
+const schema = defineFilters({
+  status: select(['pending', 'paid', 'failed'], { default: 'paid' }),
+  archived: boolean({ default: false }),
+})
+
+const bridge = useFilterBridge(schema, { initialState: parseFiltersFromUrl(schema) })
+
+bridge.activeFilterCount // 0
+bridge.toSearchParams()  // '' — the same fact stated two ways
+
+bridge.set('status', 'failed')
+bridge.activeFilterCount // 1
+```
+
+The count is the number of filters the query string carries. Values are compared with `isAtDefault` from `@filterbridge/core` — the same comparison the serializers use, so the two cannot drift apart. Schemas without defaults count exactly as they always have.
 
 ---
 
