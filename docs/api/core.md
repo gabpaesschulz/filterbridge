@@ -505,6 +505,25 @@ A value is considered "at its default" after the same normalization the serializ
 | `dateRange` | Both sides match; a range that matches on one side only is still written in full |
 | `numberRange` | Both sides match, after dropping non-finite sides |
 
+### `isAtDefault(filter, value)`
+
+```ts
+function isAtDefault(filter: AnyFilter, value: unknown): boolean
+```
+
+Whether a value equals the filter's default, using the comparison table above. This is the exact rule the serializers apply when deciding to omit a value, exported so that adapters and UI code do not have to re-implement it — `@filterbridge/react` uses it for `activeFilterCount`, and an active-filter-chips UI needs it to show only what the user actually set.
+
+```ts
+const status = select(['pending', 'paid', 'failed'], { default: 'paid' })
+
+isAtDefault(status, 'paid')   // true  — emits no param
+isAtDefault(status, 'failed') // false
+```
+
+Returns `false` for a filter with no default, so a schema that declares none behaves as if this did not exist.
+
+---
+
 ### Defaults are validated
 
 `select` and `multiSelect` check their default against `options` when the schema is defined, and throw if it does not belong:
