@@ -5,7 +5,7 @@ Schema-first filter definitions for admin interfaces.
 [![npm](https://img.shields.io/npm/v/@filterbridge/core)](https://www.npmjs.com/package/@filterbridge/core)
 [![license](https://img.shields.io/npm/l/@filterbridge/core)](../../LICENSE)
 
-**Status: experimental — `v0.1.0` published. API may change before `v1.0`.**
+**Status: experimental — `v0.2.0`. API may change before `v1.0`.**
 
 ---
 
@@ -165,17 +165,23 @@ const params = toSearchParams(schema, state)
 Converts typed filter state into a clean object for backend requests.
 
 Rules:
-- `text`: omitted if empty string
-- `select`: included as-is
-- `multiSelect`: omitted if empty array
-- `boolean`: included as-is
-- `dateRange`: included only if at least one side (`from` or `to`) is present
-- `numberRange`: included only if at least one side (`min` or `max`) is present
+- `text`: trimmed, omitted if nothing survives
+- `select`: included when it is one of `options`, otherwise dropped with a dev warning
+- `multiSelect`: invalid entries dropped; omitted if nothing survives
+- `boolean`: included when it is an actual boolean
+- `dateRange`: rebuilt from its non-empty sides; omitted if neither survives
+- `numberRange`: rebuilt from its finite sides; omitted if neither survives
+- **any filter with a `default`: always included** — see below
 
 ```ts
 const dto = toQueryDto(schema, state)
-// → same shape as InferFilterState, but with empty values removed
+// → same shape as InferFilterState, with empty and invalid values removed
 ```
+
+Unlike `toSearchParams`, a value equal to its filter's default is **not** omitted. Omitting it from
+the URL is safe because `parseFilters` restores it on the way back in; the DTO leaves for a backend
+that cannot know the schema, where an omitted default is loss rather than compression. `toQueryDto`
+applies the same fallback rule as `parseFilters`: absent, empty or invalid becomes the default.
 
 ### `getDefaultFilterState(schema)`
 
@@ -195,7 +201,7 @@ getDefaultFilterState(schema)
 
 ## Default values
 
-Every filter factory takes an optional `{ default }` as its last argument. The default is used when the key is absent or invalid, and omitted by both serializers — so a page at its default state has no query string:
+`select`, `multiSelect` and `boolean` take an optional `{ default }` as their last argument. The default is used when the key is absent or invalid, and omitted by `toSearchParams` — so a page at its default state has no query string:
 
 ```ts
 const schema = defineFilters({
@@ -205,11 +211,23 @@ const schema = defineFilters({
 parseFilters(schema, {})                                // { status: 'paid' }
 toSearchParams(schema, { status: 'paid' }).toString()   // ''
 toSearchParams(schema, { status: 'failed' }).toString() // status=failed
+toQueryDto(schema, { status: 'paid' })                  // { status: 'paid' } — kept
 ```
 
-The trade-off: a URL no longer fully describes the state, so changing a default in code changes what old bookmarks mean, and "no value" becomes unreachable through the URL for a filter that has one. See [Default values](../../docs/api/core.md#default-values) for the full rules and when not to use them.
+**Only filters whose value space is a fixed, enumerable set accept a default.** `text()`, `dateRange()` and `numberRange()` take no configuration at all, and passing one is a type error. Clearing a filter returns it to its default, which is coherent for a discrete choice and hostile for continuous editing — a text or number input would repopulate itself mid-backspace. A literal date default is stale by construction. Express those as discrete choices: `select(['7d', '30d', '90d'], { default: '30d' })`.
+
+The trade-off: a URL no longer fully describes the state, so changing a default in code changes what old bookmarks mean, and "no value" becomes unreachable through the URL for a filter that has one. See [Default values](../../docs/api/core.md#default-values) for the full rules, and [ADR-002](../../docs/decisions/002-default-values.md) for the reasoning.
 
 A `select` or `multiSelect` default outside its `options` throws at schema definition.
+
+### `isAtDefault(filter, value)`
+
+The comparison the serializers use, exported so adapters and active-filter-chip UIs do not re-implement it. Returns `false` for a filter that has no default.
+
+```ts
+isAtDefault(schema.status, 'paid')   // true — emits no param
+isAtDefault(schema.status, 'failed') // false
+```
 
 ---
 
@@ -225,6 +243,7 @@ Free-text field.
 | Parse | Trims whitespace; empty string becomes `undefined` |
 | URL | `search=invoice` |
 | DTO | `{ search: 'invoice' }` |
+| Default | Not accepted — `text()` takes no configuration |
 
 ```ts
 defineFilters({ search: text() })

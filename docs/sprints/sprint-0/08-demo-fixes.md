@@ -5,6 +5,8 @@
 **Status:** done — 8b implemented as a three-option `<select>`; 8c implemented with `useId` +
 `role="group"`, verified by an axe-core suite that now runs as part of `pnpm test`
 
+> ⚠️ **Historical record.** See [the sprint README](./README.md#-historical-record).Accurate as written.
+
 ---
 
 The demo is the project's showcase — it is linked from the README and deployed publicly. These are

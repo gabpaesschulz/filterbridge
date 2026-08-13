@@ -4,6 +4,8 @@
 **Area:** `@filterbridge/core`
 **Status:** done
 
+> ⚠️ **Historical record.** See [the sprint README](./README.md#-historical-record).Accurate as written.
+
 ---
 
 ## Problem

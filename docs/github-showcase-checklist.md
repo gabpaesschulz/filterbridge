@@ -11,8 +11,11 @@ Steps to complete before or after the first public announcement.
 - [ ] Add website URL to repository About:
   `https://filterbridge-demo.vercel.app`
 - [ ] Add npm package URL to the About section or README badge
-- [ ] Add topics from [`docs/github-topics.md`](./github-topics.md):
+- [ ] Add topics (gear icon next to **About** on the repository sidebar):
   `typescript`, `react`, `nextjs`, `tanstack-table`, `filters`, `url-state`, `search-params`, `admin-dashboard`, `frontend`, `developer-tools`, `npm-package`, `open-source`, `monorepo`
+
+  Topics improve discoverability in GitHub search and on the npm registry. They are platform
+  configuration rather than documentation, so this list is the only copy — there is no separate file.
 - [ ] Pin repository on GitHub profile (if applicable)
 
 ---
@@ -31,7 +34,6 @@ Steps to complete before or after the first public announcement.
 ## GitHub Release
 
 - [x] Create GitHub release from tag `v0.1.0` — https://github.com/gabpaesschulz/filterbridge/releases/tag/v0.1.0
-- [x] Use release notes from [`docs/releases/v0.1.0-github-release.md`](./releases/v0.1.0-github-release.md)
 - [x] Attach no binaries (packages are on npm, not GitHub releases)
 
 ---
@@ -59,6 +61,9 @@ Steps to complete before or after the first public announcement.
 
 ## Optional marketing
 
-- [ ] Post to dev.to (see [`docs/marketing/devto-post-outline.md`](./marketing/devto-post-outline.md))
-- [ ] Post to LinkedIn (see [`docs/marketing/linkedin-post.md`](./marketing/linkedin-post.md))
+- [ ] Post to dev.to
+- [ ] Post to LinkedIn
+
+Drafts for these used to live in `docs/marketing/`, which was deliberately removed from version
+control — announcement copy is not project documentation and went stale between releases.
 - [ ] Submit to relevant newsletters or communities

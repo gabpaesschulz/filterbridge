@@ -30,17 +30,52 @@ A `vercel.json` file is included in `apps/demo/` with the correct build settings
 ### Option A — Vercel dashboard (recommended)
 
 1. Import the GitHub repository at https://vercel.com/new
-2. Set **Root Directory** to `apps/demo`
-3. Vercel will detect the `vercel.json` and use these settings automatically:
+2. Set **Root Directory** to `apps/demo` — this is required, not cosmetic. See below.
+3. Vercel reads `apps/demo/vercel.json` and uses these settings automatically:
 
 | Setting | Value |
 |---------|-------|
-| **Build Command** | `cd ../.. && pnpm install --frozen-lockfile && pnpm demo:build` |
+| **Build Command** | `cd ../.. && pnpm install --frozen-lockfile && pnpm build && pnpm demo:build` |
 | **Output Directory** | `dist` |
 | **Framework** | Vite |
 
 4. Deploy.
 5. After deploying, update the live demo URL in `README.md` and this file.
+
+### Root Directory must be `apps/demo`
+
+**Vercel only reads `vercel.json` from the configured Root Directory.** Leave it at the repository
+root and `apps/demo/vercel.json` is ignored completely — every setting in the table above included.
+
+What that looks like when it happens, because the failure does not name its cause:
+
+```
+Running "pnpm run build"
+> filterbridge-monorepo@ build
+> pnpm --filter @filterbridge/core --filter @filterbridge/react ... build
+packages/core build: Done
+...
+Error: No Output Directory named "public" found after the Build completed.
+```
+
+Vercel fell back to the repository root's `build` script, which builds the five **library** packages
+and produces no web output at all, then looked for Vercel's default output directory for the "Other"
+framework preset. The demo was never built. This is what broke the first preview deployment on this
+repository, and nothing in the log points at the root directory.
+
+If you see that error, the fix is the project setting, not a new config file.
+
+### Why `vercel.json` lives in `apps/demo` and not at the root
+
+Because the deployable artifact is the demo, not the monorepo. Root Directory tells Vercel which
+workspace it is deploying; the config next to that workspace describes how to build it. Putting a
+second `vercel.json` at the repository root to satisfy a root-directory misconfiguration would leave
+two config files where only one is ever read — and the dead one drifts silently, which is worse than
+the original bug.
+
+The build command starts with `cd ../..` for the same reason it exists at all: the demo resolves
+`@filterbridge/*` through each package's `dist/` output, so the packages have to be built from the
+monorepo root before Vite runs. That is also why `pnpm build` precedes `pnpm demo:build`.
 
 ### Option B — Vercel CLI
 
@@ -56,13 +91,18 @@ This uses `apps/demo/vercel.json` automatically.
 
 ```json
 {
-  "buildCommand": "cd ../.. && pnpm install --frozen-lockfile && pnpm demo:build",
+  "buildCommand": "cd ../.. && pnpm install --frozen-lockfile && pnpm build && pnpm demo:build",
   "outputDirectory": "dist",
   "framework": "vite"
 }
 ```
 
-The build command navigates to the monorepo root so that workspace packages are resolved correctly before building the demo.
+`pnpm build` compiles the five library packages; `pnpm demo:build` then builds the demo against
+their `dist/` output. `outputDirectory` is relative to the Root Directory, so `dist` here means
+`apps/demo/dist`.
+
+The same sequence runs in CI as the `demo build` job, so a break is caught on the pull request
+rather than by the deployment.
 
 ---
 
@@ -98,7 +138,7 @@ Create `netlify.toml` at the repo root if you prefer config-as-code:
 - The demo depends on workspace packages (`@filterbridge/core`, `@filterbridge/react`, etc.) via `workspace:*`. These are resolved at build time from the monorepo — the full repository must be available during the build.
 - The demo app does not require a server. It is a fully static single-page app.
 - There are no environment variables required.
-- pnpm 8+ must be available in the build environment. Both Vercel and Netlify support pnpm via `packageManager` field or explicit configuration.
+- The pnpm version is pinned by `packageManager` in the root `package.json`, and Vercel and Netlify both honour it. That keeps the deploy on the same pnpm as CI and local development instead of whatever the platform picks by heuristic.
 
 ---
 
@@ -125,7 +165,12 @@ A live output panel on the right shows the React state, backend DTO, and URL sea
 
 The "Fill example" button populates all filters with sample values. The "Reset" button clears all filters.
 
-URL synchronization is active: changing filters updates `window.location.search`, and reloading the page restores the current filter state.
+URL synchronization is active: changing filters pushes a history entry, reloading restores the
+current filter state, and the browser's Back and Forward buttons move through the filter history
+without a page load.
+
+The Archived control is a three-option select rather than a checkbox, because a `boolean()` filter
+has three states — `true`, `false`, and not filtering at all — and a checkbox can only express two.
 
 ---
 

@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@filterbridge/browser)](https://www.npmjs.com/package/@filterbridge/browser)
 [![license](https://img.shields.io/npm/l/@filterbridge/browser)](../../LICENSE)
 
-> **Status:** experimental — `v0.1.0` published. API may change before `v1.0`.
+> **Status:** experimental — `v0.2.0`. API may change before `v1.0`.
 
 Browser URL synchronization helpers for [FilterBridge](https://github.com/gabpaesschulz/filterbridge).
 

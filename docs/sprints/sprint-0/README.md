@@ -1,10 +1,28 @@
 # Sprint 0 — Post-release hardening
 
+> ## 📁 Historical record
+>
+> These files were written **during** Sprint 0, by the sessions doing the work, and they are kept
+> because the reasoning behind a decision is worth more than the decision alone. They are **not**
+> specifications and they are **not** current documentation.
+>
+> Several of them state things that stopped being true before the sprint closed — a code review at
+> the end found two infrastructure P0s, a P0 in how defaults reached the backend DTO, and narrowed
+> which filters may declare a default at all. Only headers that were **factually wrong** have been
+> corrected, with a note. The bodies are deliberately untouched: their value is in showing what was
+> believed at the time, including where that turned out to be incomplete.
+>
+> **For what the code actually does now:**
+> [API reference](../../api/) · [ADR-002 — default values](../../decisions/002-default-values.md) ·
+> [v0.2.0 release notes](../../releases/v0.2.0.md)
+
+
 First maintenance sprint after the `v0.1.0` publish. Focus is correctness in already-published
 code, closing the gap between documented and actual behavior, and the infrastructure a published
 package is expected to have.
 
 **Created:** 2026-08-13
+**Closed:** 2026-08-13
 **Baseline commit:** `773adef`
 **Target release:** `0.2.0` — retargeted from `0.1.1` once tasks 5, 6 and 7 added public API. See
 [task 10](./10-regression-tests-and-release.md) and [`docs/releases/v0.2.0.md`](../../releases/v0.2.0.md).
@@ -42,6 +60,20 @@ caught by the existing suite — that gap is itself a task ([task 10](./10-regre
 | 8 | [Three defects in the demo app](./08-demo-fixes.md) ✅ | P2 | `demo` |
 | 9 | [No CI workflow](./09-ci-workflow.md) ✅ | P2 | infra |
 | 10 | [Regression tests and `0.2.0` release](./10-regression-tests-and-release.md) ✅ | P2 | all |
+
+### Found by the closing code review, after tasks 1–10
+
+Not planned tasks; they came out of reviewing the ten above against the code rather than against
+their own task files. Two of them changed public API.
+
+| Finding | Severity | Outcome |
+|---|---|---|
+| `pnpm typecheck` and `pnpm test` failed on a clean clone, so CI could never have gone green | P0 | `build` moved ahead of the other checks |
+| `test.projects` is a Vitest 3 option, silently ignored on Vitest 2 — every per-package config was inert, and the `syncState` no-loop test was passing against a stale `dist` | P0 | real `vitest.workspace.ts`; all `@filterbridge/*` resolve to source |
+| `toQueryDto` omitted values equal to their default, so a page filtering by `status: 'paid'` told the backend "no filter" | P0 | the DTO carries defaults; the URL still omits them |
+| `text`, `dateRange` and `numberRange` accepted a default, which is incoherent once `clear()` means "back to the default" | design | narrowed to `select` / `multiSelect` / `boolean` |
+
+The last two are recorded in [ADR-002](../../decisions/002-default-values.md).
 
 ---
 

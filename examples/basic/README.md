@@ -31,20 +31,27 @@ export const orderFilters = defineFilters({
 })
 ```
 
-Any filter can declare a default. A filter sitting at its default emits no query param, and
-`parseFilters` puts the default back when the param is absent:
+`select`, `multiSelect` and `boolean` can declare a default — the filters whose value space is a
+fixed set. A filter sitting at its default emits no query param, and `parseFilters` puts the default
+back when the param is absent:
 
 ```ts
 import { getDefaultFilterState } from '@filterbridge/core'
 
 export const orderFilters = defineFilters({
   status: select(['pending', 'paid', 'failed'] as const, { default: 'pending' }),
-  amount: numberRange({ default: { min: 0 } }),
+  archived: boolean({ default: false }),
 })
 
 getDefaultFilterState(orderFilters)
-// { status: 'pending', amount: { min: 0 } }
+// { status: 'pending', archived: false }
 ```
+
+`text()`, `dateRange()` and `numberRange()` take no configuration — passing a default is a type
+error. See [which filters accept a default](../../docs/api/core.md#which-filters-accept-a-default).
+
+Note that `clear()` on a filter with a default returns it to that default rather than removing it:
+there is no "absent" state for it to return to, because an omitted param *is* the default.
 
 ---
 
@@ -98,7 +105,7 @@ export function OrdersFilters() {
         $100 – $500
       </button>
 
-      {/* Reset: clear everything, or go back to the initial state */}
+      {/* Reset: back to the baseline, or back to the initial state */}
       <button onClick={() => bridge.reset()}>Reset all</button>
       <button onClick={() => bridge.resetToInitial()}>Back to start</button>
 

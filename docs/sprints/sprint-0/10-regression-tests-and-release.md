@@ -4,6 +4,11 @@
 **Area:** all packages, docs
 **Status:** done — retargeted to `0.2.0`; everything but the publish itself is complete
 
+> ⚠️ **Historical record.** See [the sprint README](./README.md#-historical-record). The counts below are stale: the suite finished at **538
+> tests / 28 files**, not 507. The claim that each fix was reverted and the suite confirmed red
+> was also true only per-package at the time — under `pnpm test` the end-to-end `syncState`
+> test was passing against a stale `dist`. It is true now.
+
 ---
 
 ## Problem
