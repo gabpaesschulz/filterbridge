@@ -1,6 +1,6 @@
 {
   "name": "@filterbridge/next",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Next.js App Router search params adapter for FilterBridge filters.",
   "type": "module",
   "main": "./dist/index.cjs",
