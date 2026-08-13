@@ -2,7 +2,13 @@
 
 **Priority:** P1 — documented-but-missing feature
 **Area:** `@filterbridge/core`
-**Status:** done — implemented as `{ default }` + **option B** (omit when equal to the default)
+**Status:** superseded in part — see [ADR-002](../../decisions/002-default-values.md)
+
+> ⚠️ **Historical record.** See [the sprint README](./README.md#-historical-record). Two things in this file stopped being true:
+> **all six builders accept a default** — only `select`, `multiSelect` and `boolean` do; and
+> **option B applies to both serializers** — `toSearchParams` omits a value equal to its
+> default, but `toQueryDto` carries it, because the backend on the other side has no
+> decompressor. The body below records the reasoning as it stood when the task was done.
 
 ---
 

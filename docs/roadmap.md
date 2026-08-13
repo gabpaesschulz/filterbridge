@@ -4,23 +4,41 @@ This roadmap describes planned and possible future work. No dates are promised.
 
 FilterBridge stays narrow by design. Items here are candidates, not commitments.
 
+**Current version:** `0.2.0`. See [the release notes](./releases/v0.2.0.md) for what shipped.
+
 ---
 
-## v0.1.x — Stability and ergonomics
+## Shipped in `0.2.0`
+
+Moved here from the sections below rather than deleted, so the roadmap shows what it delivered.
+
+- [x] Repeated query params in `multiSelect` — `tags=a&tags=b` as well as `tags=a,b`
+- [x] `popstate` handling — `usePopstateSync` in `@filterbridge/browser/react`, paired with
+      `useFilterBridge().syncState`
+- [x] Default values per filter — `select`, `multiSelect` and `boolean` accept `{ default }`, plus
+      `getDefaultFilterState` and `isAtDefault`
+- [x] Serialization validates against the schema, instead of only parsing doing so
+- [x] Continuous integration — Linux and Windows, Node 18/20/22, plus a demo build and a changeset
+      check on every pull request
+- [x] Demo deploy story — [deploy guide](./guides/deploy-demo.md) now covers the Vercel Root
+      Directory requirement that silently breaks the build
+
+---
+
+## `0.2.x` — Stability and ergonomics
 
 Ongoing improvements to the existing packages. No new packages planned.
 
-- [ ] Improve demo deploy story (Vercel/Netlify instructions)
-- [x] `popstate` handler for `@filterbridge/browser` — `usePopstateSync` + `useFilterBridge().syncState` update React state on back/forward
-- [ ] Better examples for Next.js App Router pattern (client + server components)
-- [x] Repeated query params support in `multiSelect` (`tags=a&tags=b` in addition to `tags=a,b`)
-- [x] Optional default values per filter in schema — `select`, `multiSelect` and `boolean` accept `{ default }`, plus `getDefaultFilterState(schema)`
 - [ ] Optional custom key suffixes for `dateRange` and `numberRange`
+- [ ] Better examples for the Next.js App Router pattern (client + server components)
+- [ ] `pnpm format:check` in CI — currently fails on 69 files, so the repository needs one
+      formatting pass first. Tracked as [housekeeping](#housekeeping)
+- [ ] Fix the demo's colour-contrast violations. Tracked as [housekeeping](#housekeeping)
 - [ ] Bug fixes as they are reported
 
 ---
 
-## v0.2.x — Adapter improvements
+## `0.3.x` — Adapter improvements
 
 Improvements to existing adapters based on real-world usage feedback.
 
@@ -29,17 +47,54 @@ Improvements to existing adapters based on real-world usage feedback.
 - [ ] Improved `@filterbridge/next` examples for common patterns
 - [ ] React Router integration investigation
 - [ ] Optional query key helper for TanStack Query (`createFilterQueryKey`)
+- [ ] Active filter chips as a headless helper — `isAtDefault` is exported partly for this
 
 ---
 
-## v1.0 candidates
+## `v1.0` candidates
 
 Prerequisites before marking the API stable:
 
+- [ ] **Narrow `InferFilterState` optionality.** A filter with a default is never absent from a
+      parsed state, and since `0.2.0` never absent from hook state either, so it could be typed as
+      required rather than optional. This is a breaking type change and deserves its own release —
+      see [ADR-002 §5](./decisions/002-default-values.md) for why it was deferred and why the case
+      for doing it got stronger, not weaker.
 - [ ] API compatibility matrix across supported React and Next.js versions
 - [ ] No breaking changes pending
 - [ ] Public API finalized based on real-world usage
 - [ ] Migration guide from `v0.x` if breaking changes were necessary
+
+---
+
+## Housekeeping
+
+Known, deliberately deferred, and easy to lose track of once a sprint closes.
+
+### `pnpm format:check` is not a CI step
+
+Prettier currently reports 69 files that do not match its configuration. Wiring `format:check` into
+CI before reformatting would make every run red for formatting rather than for correctness, so it
+was left out.
+
+The fix is a single mechanical commit — `pnpm format` across the repository — landed on its own so
+that it does not bury a behavior change in a whitespace diff. Add the CI step in the same change.
+
+### The demo has 25 colour-contrast violations
+
+Found by an axe-core audit in real Chromium during Sprint 0. All pre-existing, none related to the
+label fixes that sprint made:
+
+- `--color-muted` (`#6b7280`) on `--color-bg` (`#f4f5f7`) is **4.43:1**, just under the 4.5:1 AA
+  threshold. This accounts for most of them: column titles, hints, table headers, the active filter
+  count.
+- Status pills use white text on `#16a34a` / `#d97706` / `#9ca3af` — **3.29:1**, **3.18:1**,
+  **2.53:1**.
+- The green URL-sync badge and `.url-path` are around **3:1**.
+
+Fixing them means changing the palette, which is a visual decision rather than a correctness one.
+The committed jsdom suite disables the `color-contrast` rule because jsdom has no layout engine and
+cannot measure it, so re-running the audit in a real browser is the only way to verify a fix.
 
 ---
 

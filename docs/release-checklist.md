@@ -30,6 +30,9 @@ Use this checklist before publishing packages to npm.
   - `package/package.json` — metadata correct
   - No `src/`, no `node_modules/`, no test files, no `.tsbuildinfo`
 - [ ] Verify `dist/index.js` (ESM), `dist/index.cjs` (CJS), `dist/index.d.ts`, `dist/index.d.cts` are present in each tarball
+- [ ] **`@filterbridge/browser` ships a second entry point.** Verify `dist/react.js`,
+      `dist/react.cjs`, `dist/react.d.ts` and `dist/react.d.cts` are in its tarball as well —
+      `tsup` builds both entries, and only the root one is covered by the check above
 
 ## Smoke test
 
@@ -45,7 +48,10 @@ Use this checklist before publishing packages to npm.
   node src/cjs.cjs
   ```
 - [ ] Update the tarball versions in `.smoke/package.json` after `changeset version` — they are
-      pinned filenames (`file:../.packs/filterbridge-core-0.1.0.tgz`)
+      pinned filenames. For this release: `0.1.0` → `0.2.0` in all five entries
+      (`file:../.packs/filterbridge-core-0.2.0.tgz`, and the same for react, browser, tanstack, next)
+- [ ] Confirm both entry points of `@filterbridge/browser` resolve — the smoke suite imports
+      `@filterbridge/browser` and `@filterbridge/browser/react` in ESM and in CJS
 - [ ] Confirm no runtime errors or import resolution failures
 
 ## Content review
@@ -95,8 +101,11 @@ pnpm changeset publish
 ## Post-publish
 
 - [ ] Verify packages appear on npm: `https://www.npmjs.com/package/@filterbridge/core`
-- [ ] Tag the release in git: `git tag v0.1.0 && git push --tags`
-- [ ] Create GitHub Release with tag `v0.1.0`
+- [ ] Tag the release in git: `git tag v<version> && git push --tags`
+- [ ] Create GitHub Release with the same tag. **Paste the body from the release note in
+      `docs/releases/<version>.md`** — do not write a separate `<version>-github-release.md`. A
+      second file describing the same release drifts from the first and duplicates the maintenance;
+      the `v0.1.0` one was deleted for exactly that reason.
 - [ ] Update `README.md` with installation instructions pointing to the published version
 - [ ] Announce release if applicable
 
@@ -159,19 +168,26 @@ pnpm changeset publish
 draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
 
 ### Build validation
-- [x] `pnpm test` — 507 tests, 28 test files, all pass
+- [x] `pnpm test` — 538 tests, 28 test files, all pass, with every `dist/` deleted
 - [x] `pnpm typecheck` — 0 errors
 - [x] `pnpm lint` — clean
 - [x] `pnpm build` — 5 packages, dual ESM/CJS + `.d.ts` / `.d.cts`
-- [x] Each Sprint 0 fix reverted one at a time — suite red every time, verified rather than assumed
+- [x] `pnpm demo:build` — Vite build success
+- [x] Each fix reverted one at a time — suite red every time, verified rather than assumed
+- [x] CI green on the pull request: Node 18/20/22 on Linux, Node 20 on Windows, plus demo build and
+      changeset check
 
 ### Package inspection
 - [x] `pnpm pack:all` — 5 tarballs in `.packs/`
 
 ### Smoke test
-- [x] ESM smoke test — 51 passed, 0 failed (12 new assertions for the 0.2.0 surface)
-- [x] CJS smoke test — 35 passed, 0 failed (6 new)
+- [x] ESM smoke test — 54 passed, 0 failed
+- [x] CJS smoke test — 38 passed, 0 failed
 - [x] `@filterbridge/browser/react` subpath resolves in both module systems
+- [x] Root entry of `@filterbridge/browser` imports in a project with **no React installed**, in
+      ESM and CJS — the optional peer dependency claim, verified rather than assumed
+- [x] The DTO-carries-defaults contract is asserted against the packed tarballs, not only in the
+      unit suite
 
 ### Changesets
 - [x] 8 changesets present: `repeated-query-params`, `non-finite-numbers`,
@@ -179,6 +195,10 @@ draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
       `filter-defaults`, `external-state-sync`, `reset-semantics`
 - [x] Three are `minor` (defaults, `syncState`, `resetToInitial`) — the release is `0.2.0`
 - [x] Every behavior change is stated in the changeset that causes it
+- [x] `filter-defaults.md` was edited rather than supplemented as the design narrowed. A changeset
+      is the source of a release note, not an audit log: nobody reading the `0.2.0` CHANGELOG saw
+      the intermediate shape where all six builders accepted a default. While a change is
+      unpublished, its changeset is editable.
 
 ### Pending before publish
 - [ ] `pnpm changeset version` — bumps all five to `0.2.0` and writes the `CHANGELOG.md` files
@@ -187,7 +207,9 @@ draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
 - [x] Demo header version badge — no longer a manual step. `apps/demo/vite.config.ts` injects it
       from `packages/core/package.json` via `define`, so `changeset version` updates the deployed
       demo on its own. Nothing to do here unless the build stops inlining it.
-- [ ] CI green on the release commit
+- [ ] Re-read the documentation pass — API reference, READMEs, roadmap and release notes all
+      describe `0.2.0` rather than the path taken to it
+- [ ] CI green on the release commit on `main`
 - [ ] `npm whoami` and 2FA confirmed
 - [ ] `git tag v0.2.0`
 - [ ] `pnpm changeset publish`

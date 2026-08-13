@@ -257,14 +257,19 @@ Full reference: [`docs/api/core.md`](./docs/api/core.md)
 
 ### Filter factories
 
-| Factory | State type | URL format |
-|---------|------------|------------|
-| `text()` | `string \| undefined` | `search=invoice` |
-| `select(options)` | `"opt1" \| "opt2" \| undefined` | `status=paid` |
-| `multiSelect(options)` | `Array<"opt1" \| "opt2"> \| undefined` | `tags=urgent,review` |
-| `boolean()` | `boolean \| undefined` | `active=true` |
-| `dateRange()` | `{ from?: string; to?: string } \| undefined` | `createdAtFrom=…&createdAtTo=…` |
-| `numberRange()` | `{ min?: number; max?: number } \| undefined` | `amountMin=…&amountMax=…` |
+| Factory | State type | URL format | `{ default }` |
+|---------|------------|------------|---------------|
+| `text()` | `string \| undefined` | `search=invoice` | — |
+| `select(options)` | `"opt1" \| "opt2" \| undefined` | `status=paid` | ✅ |
+| `multiSelect(options)` | `Array<"opt1" \| "opt2"> \| undefined` | `tags=urgent,review` | ✅ |
+| `boolean()` | `boolean \| undefined` | `active=true` | ✅ |
+| `dateRange()` | `{ from?: string; to?: string } \| undefined` | `createdAtFrom=…&createdAtTo=…` | — |
+| `numberRange()` | `{ min?: number; max?: number } \| undefined` | `amountMin=…&amountMax=…` | — |
+
+A default is accepted only where the value space is a fixed, enumerable set. A filter at its default
+emits no query param, so the landing page has no query string — but the backend DTO still carries it,
+because the URL is read back by `parseFilters` and the backend is not.
+[ADR-002](./docs/decisions/002-default-values.md) has the reasoning.
 
 ### Key functions
 
@@ -272,8 +277,10 @@ Full reference: [`docs/api/core.md`](./docs/api/core.md)
 |----------|-------------|
 | `defineFilters(schema)` | Creates a typed filter schema |
 | `parseFilters(schema, input)` | Parses untrusted input into typed state |
-| `toSearchParams(schema, state)` | Serializes state into `URLSearchParams` |
-| `toQueryDto(schema, state)` | Converts state into a backend-friendly object |
+| `toSearchParams(schema, state)` | Serializes state into `URLSearchParams`, omitting defaults |
+| `toQueryDto(schema, state)` | Converts state into a backend-friendly object, defaults included |
+| `getDefaultFilterState(schema)` | The state a schema starts from |
+| `isAtDefault(filter, value)` | Whether a value equals its filter's default |
 
 ---
 
@@ -288,13 +295,32 @@ Full reference: [`docs/api/react.md`](./docs/api/react.md)
 | `state` | `InferFilterState<TSchema>` | Current filter state |
 | `set(key, value)` | `void` | Update one filter |
 | `setMany(values)` | `void` | Update multiple filters |
-| `clear(key)` | `void` | Remove one filter |
-| `reset()` | `void` | Clear all filters |
+| `clear(key)` | `void` | Remove one filter, or return it to its default if it has one |
+| `reset()` | `void` | Back to the baseline — `{}`, or the schema defaults |
 | `resetToInitial()` | `void` | Restore the `initialState` passed at mount |
+| `syncState(state)` | `void` | Adopt externally-owned state without firing `onChange` |
 | `hasActiveFilters` | `boolean` | Whether any filter is active |
-| `activeFilterCount` | `number` | Count of active filters |
+| `activeFilterCount` | `number` | Count of filters moved off their default |
 | `toQueryDto()` | object | Current state as backend DTO |
 | `toSearchParams()` | `URLSearchParams` | Current state as URL params |
+
+### Keeping the URL in sync
+
+```tsx
+import { parseFiltersFromUrl, pushUrlFilters } from '@filterbridge/browser'
+import { usePopstateSync } from '@filterbridge/browser/react'
+
+const bridge = useFilterBridge(orderFilters, {
+  initialState: parseFiltersFromUrl(orderFilters),
+  onChange: (state) => pushUrlFilters(orderFilters, state),
+})
+
+// Back and Forward restore the filter UI, with no page reload.
+usePopstateSync(orderFilters, bridge.syncState)
+```
+
+React is an **optional** peer dependency of `@filterbridge/browser` — only the `/react` subpath
+imports it, so the root entry works in plain Node or any non-React app.
 
 ---
 
@@ -344,7 +370,7 @@ See [`docs/concepts/non-goals.md`](./docs/concepts/non-goals.md) for the full re
 
 ## Status
 
-FilterBridge is **experimental** and at `v0.1.0`.
+FilterBridge is **experimental** and at `v0.2.0`.
 
 The core APIs are usable, but the project is still early. Expect refinements before `v1.0`. Feedback and contributions welcome.
 
