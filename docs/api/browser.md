@@ -14,6 +14,17 @@ pnpm add @filterbridge/browser @filterbridge/core
 
 ---
 
+## Entry points
+
+| Import path | Contents | Requires React |
+|-------------|----------|----------------|
+| `@filterbridge/browser` | `getFilterParamKeys`, `parseFiltersFromUrl`, `createFilterUrl`, `replaceUrlFilters`, `pushUrlFilters` | No |
+| `@filterbridge/browser/react` | `usePopstateSync` | Yes |
+
+React is an **optional** peer dependency. The root entry never imports it, so the package stays usable in plain Node, a Vue app, or a vanilla script. Only `@filterbridge/browser/react` pulls React in.
+
+---
+
 ## `getFilterParamKeys(schema)`
 
 Returns the list of URL search-param keys that the schema produces.
@@ -182,10 +193,56 @@ pushUrlFilters(filters, { search: 'acme' })
 
 ---
 
+## `usePopstateSync(schema, onState, options?)`
+
+> Imported from `@filterbridge/browser/react`.
+
+Subscribes to the browser's `popstate` event and, on every back/forward navigation, re-parses `window.location.search` with the schema and hands the result to `onState`.
+
+```tsx
+import { parseFiltersFromUrl, pushUrlFilters } from '@filterbridge/browser'
+import { usePopstateSync } from '@filterbridge/browser/react'
+import { useFilterBridge } from '@filterbridge/react'
+
+function OrdersPage() {
+  const bridge = useFilterBridge(orderFilters, {
+    initialState: parseFiltersFromUrl(orderFilters),
+    onChange: (state) => pushUrlFilters(orderFilters, state),
+  })
+
+  usePopstateSync(orderFilters, bridge.syncState)
+
+  return null
+}
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `schema` | `FilterSchema` | Used to parse the URL. Read at event time, so an inline schema will not re-subscribe. |
+| `onState` | `(state: InferFilterState<S>) => void` | Called on each `popstate` with the state parsed from the current URL. |
+| `options.enabled` | `boolean` | Defaults to `true`. Set to `false` to keep the listener detached. |
+
+### Behaviour
+
+- Does **not** call `onState` on mount. Use `parseFiltersFromUrl` for the initial state.
+- Reads the URL when the event fires, not when the hook subscribes.
+- The listener is removed on unmount and when `enabled` becomes `false`.
+- `onState` and `schema` are kept in refs, so changing either does not re-subscribe.
+- No-op when `window` is undefined. Nothing is touched during render, so the hook is safe inside a server-rendered component.
+
+### Pairing with `syncState`
+
+Pass [`bridge.syncState`](./react.md#syncstatestate), not `setMany`. `syncState` replaces the whole state — so filters removed from the URL are removed from the UI — and it does not fire `onChange`. Using a mutator that fires `onChange` here would write the adopted URL straight back to history.
+
+---
+
 ## Types
 
 ```ts
 import type { CreateFilterUrlOptions, SyncUrlOptions, UrlLike } from '@filterbridge/browser'
+import type { UsePopstateSyncOptions } from '@filterbridge/browser/react'
 
 type UrlLike = string | URL | URLSearchParams | { search: string }
 
@@ -201,13 +258,17 @@ type SyncUrlOptions = CreateFilterUrlOptions & {
   state?: unknown
   title?: string
 }
+
+type UsePopstateSyncOptions = {
+  enabled?: boolean
+}
 ```
 
 ---
 
 ## Limitations
 
-- No `popstate` listener — back/forward navigation does not automatically restore filter state (Wave 7+).
-- No Next.js App Router integration — use `@filterbridge/next` when available (Wave 8).
-- No React Router integration.
-- In React Strict Mode, `onChange` may fire twice per state update. The second `replaceState` call is harmless (same URL).
+- Back/forward only navigates between filter states if you write them with `pushUrlFilters`. With `replaceUrlFilters` there is a single history entry, so there is nothing to go back to — see the [URL sync guide](../guides/url-sync.md#backforward-navigation).
+- `usePopstateSync` listens for `popstate` only. Programmatic `pushState` / `replaceState` calls do not emit that event, so state changes made by another library's router are not picked up.
+- No React Router integration. For Next.js App Router use `@filterbridge/next`, where back/forward re-runs the server component instead.
+- In React Strict Mode, `onChange` may fire twice per state update. The second `replaceState` call is harmless (same URL); with `pushUrlFilters` it produces a duplicate history entry in development only.

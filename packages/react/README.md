@@ -90,7 +90,7 @@ const bridge = useFilterBridge(schema, {
 | Option | Type | Description |
 |--------|------|-------------|
 | `initialState` | `Partial<InferFilterState<TSchema>>` | Initial filter values. Empty values are cleaned on initialization. |
-| `onChange` | `(state: InferFilterState<TSchema>) => void` | Called after every state change. Not called on first render. |
+| `onChange` | `(state: InferFilterState<TSchema>) => void` | Called after every state change except `syncState`. Not called on first render. |
 
 #### Return value
 
@@ -101,6 +101,8 @@ const bridge = useFilterBridge(schema, {
 | `setMany(values)` | `void` | Update multiple filters at once. `onChange` is called once. |
 | `clear(key)` | `void` | Remove a single filter. |
 | `reset()` | `void` | Clear all filters to `{}`. |
+| `resetToInitial()` | `void` | Restore the `initialState` passed at mount. |
+| `syncState(state)` | `void` | Replace the whole state with externally-provided state. Does **not** call `onChange`. |
 | `hasActiveFilters` | `boolean` | `true` when at least one filter is active. |
 | `activeFilterCount` | `number` | Count of active filters. Ranges count as 1. |
 | `toQueryDto()` | `InferFilterState<TSchema>` | Current state as a backend-ready DTO. |
@@ -156,11 +158,51 @@ bridge.clear('status')
 
 Clears all filters to `{}`.
 
-Note: `reset()` resets to empty state, **not** to `initialState`. This is intentional — `initialState` is used only on first render.
+`reset()` means "clear everything", **not** "back to `initialState`". Use `resetToInitial()` for that.
 
 ```ts
 bridge.reset()
 // bridge.state === {}
+```
+
+### `resetToInitial()`
+
+Restores the `initialState` passed at mount. Filters added since are removed.
+
+```ts
+const bridge = useFilterBridge(schema, { initialState: { status: 'paid' } })
+
+bridge.set('search', 'invoice')
+bridge.resetToInitial()
+// bridge.state === { status: 'paid' }
+```
+
+`initialState` is captured once on the first render, so passing a different one later does not change what this restores — the hook stays uncontrolled. Fires `onChange` with the restored state.
+
+### `syncState(state)`
+
+Replaces the whole state with state that came from outside the component — browser history, a router, a server push.
+
+It differs from the other mutators in two ways: it **replaces** instead of merging, and it does **not** fire `onChange`.
+
+```ts
+bridge.syncState({ search: 'invoice' })
+// bridge.state === { search: 'invoice' } — any other filter is gone
+// onChange was NOT called
+```
+
+Skipping `onChange` is what makes two-way URL sync safe. `onChange` normally writes state to the URL; `syncState` is called because the URL already changed. Firing it would write the value straight back and loop.
+
+```tsx
+import { parseFiltersFromUrl, pushUrlFilters } from '@filterbridge/browser'
+import { usePopstateSync } from '@filterbridge/browser/react'
+
+const bridge = useFilterBridge(schema, {
+  initialState: parseFiltersFromUrl(schema),
+  onChange: (state) => pushUrlFilters(schema, state),
+})
+
+usePopstateSync(schema, bridge.syncState)
 ```
 
 ### `hasActiveFilters` and `activeFilterCount`
@@ -207,9 +249,8 @@ import type { FilterSchema, InferFilterState } from '@filterbridge/core'
 
 ## Known limitations
 
-- No URL synchronization in this hook — `useFilterBridge` manages in-memory state only. Use `@filterbridge/browser` for URL sync, or `@filterbridge/next` for Next.js App Router.
-- `reset()` resets to `{}`, not to `initialState`.
-- `multiSelect` serializes via comma-separated values. Repeated query params are not supported.
+- No URL synchronization in this hook — `useFilterBridge` manages in-memory state only. Use `@filterbridge/browser` for URL sync (including back/forward via `usePopstateSync` + `syncState`), or `@filterbridge/next` for Next.js App Router.
+- `multiSelect` serializes via comma-separated values. Parsing also accepts repeated query params.
 - No per-filter default values.
 - No custom key suffixes for range fields.
 

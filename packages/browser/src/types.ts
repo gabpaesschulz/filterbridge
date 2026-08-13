@@ -12,3 +12,8 @@ export type SyncUrlOptions = CreateFilterUrlOptions & {
   state?: unknown
   title?: string
 }
+
+export type UsePopstateSyncOptions = {
+  /** Set to `false` to keep the listener detached. Defaults to `true`. */
+  enabled?: boolean
+}

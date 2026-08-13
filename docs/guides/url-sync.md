@@ -66,22 +66,72 @@ Example: if the URL is `/orders?page=2&tab=open&search=acme` and you clear the `
 
 ---
 
-## Using pushState instead of replaceState
+## Back/forward navigation
 
-If you want filter changes to create new browser history entries (so Back/Forward navigate between filter states), use `pushUrlFilters`:
+The basic pattern above is one-way: state flows to the URL, never back. Pressing Back changes the address bar while the UI keeps the old filters, and the two disagree until a reload.
 
-```ts
-import { pushUrlFilters } from '@filterbridge/browser'
+Making it two-way takes two changes.
 
-const bridge = useFilterBridge(orderFilters, {
-  initialState: parseFiltersFromUrl(orderFilters),
-  onChange(state) {
-    pushUrlFilters(orderFilters, state)
-  },
-})
+**1. Write with `pushUrlFilters`, not `replaceUrlFilters`.** `replaceState` overwrites the current history entry, so there is never anything to go back to. `pushState` gives each filter state its own entry.
+
+**2. Adopt the URL on `popstate`** with `usePopstateSync`, from the `@filterbridge/browser/react` entry point:
+
+```tsx
+import { parseFiltersFromUrl, pushUrlFilters } from '@filterbridge/browser'
+import { usePopstateSync } from '@filterbridge/browser/react'
+import { useFilterBridge } from '@filterbridge/react'
+
+function OrdersPage() {
+  const bridge = useFilterBridge(orderFilters, {
+    initialState: parseFiltersFromUrl(orderFilters),
+    onChange(state) {
+      pushUrlFilters(orderFilters, state)
+    },
+  })
+
+  usePopstateSync(orderFilters, bridge.syncState)
+
+  return (
+    <input
+      value={bridge.state.search ?? ''}
+      onChange={(e) => bridge.set('search', e.target.value)}
+    />
+  )
+}
 ```
 
-Note: this does not yet handle `popstate` events to sync state back from history navigation. Full back/forward support is planned for a later wave.
+Back and Forward now restore the filter UI without a page reload.
+
+### Why `syncState` and not `setMany`
+
+Two reasons, and both matter:
+
+- **`syncState` replaces; `setMany` merges.** Going back to a URL without `status` must *remove* `status` from the UI. A merge would leave it there.
+- **`syncState` does not fire `onChange`.** This is what stops the loop. `onChange` writes the state to the URL; `usePopstateSync` writes the URL to the state. If the sync path fired `onChange`, every Back press would immediately push the state you just navigated away from, and the Back button would appear frozen.
+
+### Choosing push vs. replace
+
+`pushUrlFilters` on every keystroke gives a text input one history entry per character, so Back walks the search term backwards letter by letter. That is fine for a demo and noisy for a real app.
+
+If you want it quieter, either debounce the write, or push for discrete controls (selects, checkboxes) and replace for free text:
+
+```ts
+onChange(state) {
+  const isTyping = state.search !== bridge.state.search
+  if (isTyping) replaceUrlFilters(orderFilters, state)
+  else pushUrlFilters(orderFilters, state)
+}
+```
+
+`usePopstateSync` works the same either way — it only reacts to navigation, not to how the entry got there.
+
+### Disabling the listener
+
+```ts
+usePopstateSync(orderFilters, bridge.syncState, { enabled: false })
+```
+
+The listener is detached while `enabled` is `false`, and reattached when it flips back to `true`.
 
 ---
 
@@ -111,13 +161,18 @@ const state = parseFiltersFromUrl(orderFilters)
 
 // No-op on the server
 replaceUrlFilters(orderFilters, state)
+
+// Subscribes in an effect, so it does nothing during a server render
+usePopstateSync(orderFilters, bridge.syncState)
 ```
+
+`@filterbridge/browser` itself never imports React — the hook lives behind the `/react` subpath, and React is an optional peer dependency. Importing the root entry in a non-React environment works unchanged.
 
 ---
 
 ## Known limitations
 
-- **Back/forward navigation:** `popstate` events are not handled. Pressing Back after a filter change navigates the URL but does not update React state. Full navigation support is planned.
-- **Next.js App Router:** Use the dedicated `@filterbridge/next` package once available. The browser package works in client components but does not integrate with server-side `searchParams`.
-- **React Strict Mode:** `onChange` may fire twice per state change. This results in two identical `replaceState` calls — harmless in practice.
-- **Debounce:** No built-in debounce. For text inputs, wrap `set` in your own debounce if needed.
+- **Other routers:** `usePopstateSync` listens for `popstate` only. Programmatic `pushState` / `replaceState` calls emit no event, so filter changes driven by another router are not picked up.
+- **Next.js App Router:** Use the dedicated `@filterbridge/next` package. Back/forward there re-runs the server component, which re-parses `searchParams` — no listener needed.
+- **React Strict Mode:** `onChange` may fire twice per state change. With `replaceUrlFilters` that means two identical `replaceState` calls, which is harmless; with `pushUrlFilters` it adds a duplicate history entry in development builds.
+- **Debounce:** No built-in debounce. For text inputs, wrap `set` in your own debounce if needed — see [Choosing push vs. replace](#choosing-push-vs-replace).

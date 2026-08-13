@@ -55,6 +55,37 @@ Result: `/invoices` → `/invoices?search=acme` as the user types. Reloading the
 
 ---
 
+## Back/forward navigation
+
+The example above is one-way — state flows to the URL, not back. To make Back and Forward restore the filter UI, write with `pushUrlFilters` (so each state gets its own history entry) and adopt the URL on `popstate`:
+
+```tsx
+import { parseFiltersFromUrl, pushUrlFilters } from '@filterbridge/browser'
+import { usePopstateSync } from '@filterbridge/browser/react'
+
+const bridge = useFilterBridge(invoiceFilters, {
+  initialState: parseFiltersFromUrl(invoiceFilters),
+  onChange: (state) => pushUrlFilters(invoiceFilters, state),
+})
+
+usePopstateSync(invoiceFilters, bridge.syncState)
+```
+
+`bridge.syncState` replaces the whole state and does not fire `onChange` — which is what keeps the write-back from looping.
+
+---
+
+## Entry points
+
+| Import path | Contents | Requires React |
+|-------------|----------|----------------|
+| `@filterbridge/browser` | URL parsing and history helpers | No |
+| `@filterbridge/browser/react` | `usePopstateSync` | Yes |
+
+React is an **optional** peer dependency. The root entry never imports it, so this package still works in a non-React app.
+
+---
+
 ## API
 
 ### `parseFiltersFromUrl(schema, input?)`
@@ -155,6 +186,19 @@ getFilterParamKeys(defineFilters({
 
 ---
 
+### `usePopstateSync(schema, onState, options?)`
+
+From `@filterbridge/browser/react`. Calls `onState` with the filter state parsed from the URL on every back/forward navigation.
+
+```ts
+usePopstateSync(filters, bridge.syncState)
+usePopstateSync(filters, bridge.syncState, { enabled: false }) // detached
+```
+
+Does not fire on mount — use `parseFiltersFromUrl` for the initial state. The listener is removed on unmount, and the hook is a no-op when `window` is undefined.
+
+---
+
 ## Preserving non-filter params
 
 When you call `replaceUrlFilters`, params that are not part of your schema are preserved by default.
@@ -171,7 +215,8 @@ All helpers return empty state / no-op safely when `window` is not available.
 
 ## Limitations
 
-- No `popstate` handler — back/forward navigation does not update React state.
+- Back/forward only navigates between filter states if you write them with `pushUrlFilters`. `replaceUrlFilters` keeps a single history entry.
+- `usePopstateSync` reacts to `popstate` only. Programmatic `pushState` / `replaceState` calls from another router emit no event and are not picked up.
 - No Next.js App Router integration — use `@filterbridge/next` instead.
 - No React Router integration.
 - No debounce built in.

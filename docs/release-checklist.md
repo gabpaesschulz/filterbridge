@@ -36,10 +36,16 @@ Use this checklist before publishing packages to npm.
 - [ ] Run the smoke test from packed tarballs (see `.smoke/`)
   ```bash
   cd .smoke
-  pnpm install
+  # Wipe first. npm resolves `file:` deps from its cache by name+version, so
+  # re-running `npm install` over a rebuilt tarball of the *same* version
+  # silently reinstalls the old code and the smoke test passes against it.
+  rm -rf node_modules package-lock.json
+  npm install
+  node src/esm.mjs
   node src/cjs.cjs
-  node --input-type=module < src/esm.mjs
   ```
+- [ ] Update the tarball versions in `.smoke/package.json` after `changeset version` — they are
+      pinned filenames (`file:../.packs/filterbridge-core-0.1.0.tgz`)
 - [ ] Confirm no runtime errors or import resolution failures
 
 ## Content review
@@ -53,8 +59,10 @@ Use this checklist before publishing packages to npm.
 
 ## Versioning
 
-- [ ] All packages are at the same version (`0.1.0` for initial release)
-- [ ] Changeset exists for the release: `.changeset/initial-release.md`
+- [ ] All packages are at the same version — they are a `fixed` group, so one `minor` changeset
+      moves all five
+- [ ] A changeset exists for every published change, and behavior changes are spelled out in it
+      rather than filed as generic bug fixes
 - [ ] Run `pnpm changeset version` to apply the changeset and update `CHANGELOG.md` files
 - [ ] Review generated `CHANGELOG.md` in each package
 
@@ -142,3 +150,45 @@ pnpm changeset publish
 - [ ] Commit Wave 10 changes to git
 - [ ] `git tag v0.1.0`
 - [ ] Run `pnpm changeset publish` or individual publish commands
+
+---
+
+## v0.2.0 release candidate status (Sprint 0)
+
+**Validated on: 2026-08-13** — see [`docs/releases/v0.2.0.md`](./releases/v0.2.0.md) for the notes
+draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
+
+### Build validation
+- [x] `pnpm test` — 507 tests, 28 test files, all pass
+- [x] `pnpm typecheck` — 0 errors
+- [x] `pnpm lint` — clean
+- [x] `pnpm build` — 5 packages, dual ESM/CJS + `.d.ts` / `.d.cts`
+- [x] Each Sprint 0 fix reverted one at a time — suite red every time, verified rather than assumed
+
+### Package inspection
+- [x] `pnpm pack:all` — 5 tarballs in `.packs/`
+
+### Smoke test
+- [x] ESM smoke test — 51 passed, 0 failed (12 new assertions for the 0.2.0 surface)
+- [x] CJS smoke test — 35 passed, 0 failed (6 new)
+- [x] `@filterbridge/browser/react` subpath resolves in both module systems
+
+### Changesets
+- [x] 8 changesets present: `repeated-query-params`, `non-finite-numbers`,
+      `serialization-validation`, `empty-value-normalization`, `dto-boolean-parity`,
+      `filter-defaults`, `external-state-sync`, `reset-semantics`
+- [x] Three are `minor` (defaults, `syncState`, `resetToInitial`) — the release is `0.2.0`
+- [x] Every behavior change is stated in the changeset that causes it
+
+### Pending before publish
+- [ ] `pnpm changeset version` — bumps all five to `0.2.0` and writes the `CHANGELOG.md` files
+- [ ] Update the pinned tarball versions in `.smoke/package.json`, then re-pack and re-run the
+      smoke test against `0.2.0` tarballs (wiping `node_modules` first — see above)
+- [x] Demo header version badge — no longer a manual step. `apps/demo/vite.config.ts` injects it
+      from `packages/core/package.json` via `define`, so `changeset version` updates the deployed
+      demo on its own. Nothing to do here unless the build stops inlining it.
+- [ ] CI green on the release commit
+- [ ] `npm whoami` and 2FA confirmed
+- [ ] `git tag v0.2.0`
+- [ ] `pnpm changeset publish`
+- [ ] Publish the GitHub Release from `docs/releases/v0.2.0.md`

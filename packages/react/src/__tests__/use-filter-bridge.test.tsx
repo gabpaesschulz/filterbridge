@@ -5,12 +5,15 @@ import {
   boolean,
   dateRange,
   defineFilters,
+  getDefaultFilterState,
   multiSelect,
   numberRange,
   parseFilters,
   select,
   text,
+  toSearchParams,
 } from '@filterbridge/core'
+import type { InferFilterState } from '@filterbridge/core'
 import { useFilterBridge } from '../index'
 
 const schema = defineFilters({
@@ -172,6 +175,26 @@ describe('set()', () => {
     })
     expect(result.current.state.createdAt).toBeUndefined()
   })
+
+  it('removes a range object where every side is non-finite', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { amount: { min: 100 } } })
+    )
+    act(() => {
+      result.current.set('amount', { min: NaN, max: Infinity })
+    })
+    expect(result.current.state.amount).toBeUndefined()
+  })
+
+  it('keeps a range object with one finite side and one NaN side', () => {
+    const { result } = renderHook(() => useFilterBridge(schema))
+    act(() => {
+      result.current.set('amount', { min: NaN, max: 500 })
+    })
+    expect(result.current.state.amount).toEqual({ min: NaN, max: 500 })
+    expect(result.current.toQueryDto().amount).toEqual({ max: 500 })
+    expect(result.current.toSearchParams().has('amountMin')).toBe(false)
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -310,6 +333,259 @@ describe('reset()', () => {
     expect(onChange).toHaveBeenCalledOnce()
     expect(onChange).toHaveBeenCalledWith({})
   })
+
+  it('keeps a stable identity across renders', () => {
+    const { result, rerender } = renderHook(() => useFilterBridge(schema))
+    const first = result.current.reset
+    rerender()
+    expect(result.current.reset).toBe(first)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// resetToInitial()
+// ---------------------------------------------------------------------------
+
+describe('resetToInitial()', () => {
+  it('restores the initialState passed at mount', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, {
+        initialState: { search: 'invoice', status: 'paid', tags: ['urgent'] },
+      })
+    )
+    act(() => {
+      result.current.setMany({ search: 'acme', status: 'failed' })
+    })
+    act(() => {
+      result.current.resetToInitial()
+    })
+    expect(result.current.state).toEqual({
+      search: 'invoice',
+      status: 'paid',
+      tags: ['urgent'],
+    })
+  })
+
+  it('removes filters that were not part of initialState', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { search: 'invoice' } })
+    )
+    act(() => {
+      result.current.set('active', true)
+    })
+    act(() => {
+      result.current.resetToInitial()
+    })
+    expect(result.current.state).toEqual({ search: 'invoice' })
+  })
+
+  it('clears everything when no initialState was provided', () => {
+    const { result } = renderHook(() => useFilterBridge(schema))
+    act(() => {
+      result.current.set('search', 'invoice')
+    })
+    act(() => {
+      result.current.resetToInitial()
+    })
+    expect(result.current.state).toEqual({})
+  })
+
+  it('restores the cleaned initialState, not the raw one', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, {
+        initialState: { search: '  ', status: 'paid', tags: [], amount: {} },
+      })
+    )
+    act(() => {
+      result.current.set('active', true)
+    })
+    act(() => {
+      result.current.resetToInitial()
+    })
+    expect(result.current.state).toEqual({ status: 'paid' })
+  })
+
+  it('calls onChange with the restored state', () => {
+    const onChange = vi.fn()
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { search: 'invoice' }, onChange })
+    )
+    act(() => {
+      result.current.set('status', 'paid')
+    })
+    onChange.mockClear()
+    act(() => {
+      result.current.resetToInitial()
+    })
+    expect(onChange).toHaveBeenCalledOnce()
+    expect(onChange).toHaveBeenCalledWith({ search: 'invoice' })
+  })
+
+  // The hook is uncontrolled: initialState is read once at mount, so a parent
+  // passing a new one later must not silently change what "initial" means.
+  it('ignores later changes to options.initialState', () => {
+    const { result, rerender } = renderHook(
+      ({ initialState }) => useFilterBridge(schema, { initialState }),
+      { initialProps: { initialState: { search: 'invoice' } } }
+    )
+    rerender({ initialState: { search: 'acme' } })
+    act(() => {
+      result.current.resetToInitial()
+    })
+    expect(result.current.state).toEqual({ search: 'invoice' })
+  })
+
+  it('can be called repeatedly with the same result', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { search: 'invoice' } })
+    )
+    act(() => {
+      result.current.resetToInitial()
+    })
+    act(() => {
+      result.current.set('status', 'paid')
+    })
+    act(() => {
+      result.current.resetToInitial()
+    })
+    expect(result.current.state).toEqual({ search: 'invoice' })
+  })
+
+  it('restores initialState even after syncState replaced the whole state', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { search: 'invoice' } })
+    )
+    act(() => {
+      result.current.syncState({ status: 'failed' })
+    })
+    act(() => {
+      result.current.resetToInitial()
+    })
+    expect(result.current.state).toEqual({ search: 'invoice' })
+  })
+
+  it('updates derived state', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { search: 'invoice' } })
+    )
+    act(() => {
+      result.current.reset()
+    })
+    expect(result.current.hasActiveFilters).toBe(false)
+    act(() => {
+      result.current.resetToInitial()
+    })
+    expect(result.current.activeFilterCount).toBe(1)
+    expect(result.current.hasActiveFilters).toBe(true)
+  })
+
+  it('keeps a stable identity across renders', () => {
+    const { result, rerender } = renderHook(() => useFilterBridge(schema))
+    const first = result.current.resetToInitial
+    rerender()
+    expect(result.current.resetToInitial).toBe(first)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// syncState()
+// ---------------------------------------------------------------------------
+
+describe('syncState()', () => {
+  it('replaces the whole state with the provided one', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { search: 'invoice', status: 'paid' } })
+    )
+    act(() => {
+      result.current.syncState({ tags: ['urgent'] })
+    })
+    expect(result.current.state).toEqual({ tags: ['urgent'] })
+  })
+
+  it('does not merge with the current state', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { search: 'invoice' } })
+    )
+    act(() => {
+      result.current.syncState({ status: 'failed' })
+    })
+    expect(result.current.state.search).toBeUndefined()
+  })
+
+  it('clears everything when given an empty object', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { search: 'invoice', active: true } })
+    )
+    act(() => {
+      result.current.syncState({})
+    })
+    expect(result.current.state).toEqual({})
+  })
+
+  // This is the invariant that keeps a popstate handler from looping: the
+  // usual onChange writes state back to the URL, and syncState is called
+  // *because* the URL already changed.
+  it('does not call onChange', () => {
+    const onChange = vi.fn()
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { search: 'invoice' }, onChange })
+    )
+    act(() => {
+      result.current.syncState({ status: 'paid' })
+    })
+    expect(onChange).not.toHaveBeenCalled()
+    expect(result.current.state).toEqual({ status: 'paid' })
+  })
+
+  it('does not call onChange even when the synced state is empty', () => {
+    const onChange = vi.fn()
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { search: 'invoice' }, onChange })
+    )
+    act(() => {
+      result.current.syncState({})
+    })
+    expect(onChange).not.toHaveBeenCalled()
+  })
+
+  it('still fires onChange for subsequent set() calls', () => {
+    const onChange = vi.fn()
+    const { result } = renderHook(() => useFilterBridge(schema, { onChange }))
+    act(() => {
+      result.current.syncState({ status: 'paid' })
+    })
+    act(() => {
+      result.current.set('search', 'acme')
+    })
+    expect(onChange).toHaveBeenCalledOnce()
+    expect(onChange).toHaveBeenCalledWith({ status: 'paid', search: 'acme' })
+  })
+
+  it('cleans empty values from the synced state', () => {
+    const { result } = renderHook(() => useFilterBridge(schema))
+    act(() => {
+      result.current.syncState({ search: '   ', tags: [], status: 'paid', amount: {} })
+    })
+    expect(result.current.state).toEqual({ status: 'paid' })
+  })
+
+  it('updates derived state', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(schema, { initialState: { search: 'invoice' } })
+    )
+    act(() => {
+      result.current.syncState({ status: 'paid', tags: ['urgent'] })
+    })
+    expect(result.current.activeFilterCount).toBe(2)
+    expect(result.current.hasActiveFilters).toBe(true)
+  })
+
+  it('keeps a stable identity across renders', () => {
+    const { result, rerender } = renderHook(() => useFilterBridge(schema))
+    const first = result.current.syncState
+    rerender()
+    expect(result.current.syncState).toBe(first)
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -399,6 +675,86 @@ describe('derived state', () => {
       result.current.reset()
     })
     expect(result.current.activeFilterCount).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Derived state against a schema with defaults
+// ---------------------------------------------------------------------------
+
+const defaulted = defineFilters({
+  search: text(),
+  status: select(['pending', 'paid', 'failed'] as const, { default: 'paid' }),
+  tags: multiSelect(['urgent', 'review', 'archived'] as const, { default: ['urgent'] }),
+  active: boolean({ default: false }),
+  createdAt: dateRange(),
+  amount: numberRange(),
+})
+
+describe('activeFilterCount with schema defaults', () => {
+  it('does not count a filter sitting at its default', () => {
+    // The state a page opens with when nobody has touched anything: no query
+    // string, nothing to reset. It must not read "6 active filters".
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: parseFilters(defaulted, {}) })
+    )
+
+    expect(result.current.state).toEqual(getDefaultFilterState(defaulted))
+    expect(result.current.activeFilterCount).toBe(0)
+    expect(result.current.hasActiveFilters).toBe(false)
+  })
+
+  it('counts a filter the user moved off its default', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: parseFilters(defaulted, {}) })
+    )
+
+    act(() => result.current.set('status', 'failed'))
+
+    expect(result.current.activeFilterCount).toBe(1)
+    expect(result.current.hasActiveFilters).toBe(true)
+  })
+
+  it('agrees with the query string — count is the number of filters the URL carries', () => {
+    // This is the invariant worth pinning: "active" and "appears in the URL"
+    // are the same question, so the count cannot drift from what is serialized.
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: parseFilters(defaulted, {}) })
+    )
+    expect(result.current.toSearchParams().toString()).toBe('')
+
+    act(() => result.current.setMany({ status: 'failed', search: 'acme' }))
+
+    expect(result.current.activeFilterCount).toBe(2)
+    expect(result.current.toSearchParams().toString()).toBe('search=acme&status=failed')
+  })
+
+  it('stops counting a filter that is set back to its default', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: parseFilters(defaulted, {}) })
+    )
+
+    act(() => result.current.set('active', true))
+    expect(result.current.activeFilterCount).toBe(1)
+
+    act(() => result.current.set('active', false))
+    expect(result.current.activeFilterCount).toBe(0)
+  })
+
+  it('counts a reordered multiSelect, which is a different state', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+
+    act(() => result.current.set('tags', ['review', 'urgent']))
+
+    expect(result.current.activeFilterCount).toBe(1)
+  })
+
+  it('leaves a schema without defaults counting exactly as before', () => {
+    const { result } = renderHook(() => useFilterBridge(schema))
+
+    act(() => result.current.setMany({ search: 'invoice', active: false }))
+
+    expect(result.current.activeFilterCount).toBe(2)
   })
 })
 
@@ -500,5 +856,163 @@ describe('type inference', () => {
     expectTypeOf(state.active).toEqualTypeOf<boolean | undefined>()
     expectTypeOf(state.createdAt).toEqualTypeOf<{ from?: string; to?: string } | undefined>()
     expectTypeOf(state.amount).toEqualTypeOf<{ min?: number; max?: number } | undefined>()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Hook state stays inside the range of parseFilters
+// ---------------------------------------------------------------------------
+
+/**
+ * The invariant the defaults merge exists to hold: whatever the caller does,
+ * there is always some URL that parses to `bridge.state`. Without it, `{}` is
+ * reachable through reset/clear/syncState but is not a state any query string
+ * can express — the UI would render a filter as cleared while the URL and the
+ * DTO both read it as its default.
+ */
+function expectRepresentable(state: Record<string, unknown>, message: string) {
+  expect(parseFilters(defaulted, toSearchParams(defaulted, state as never)), message).toEqual(state)
+}
+
+describe('state is always a state some URL parses to', () => {
+  it('starts at the defaults even with no initialState', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    expect(result.current.state).toEqual(getDefaultFilterState(defaulted))
+    expectRepresentable(result.current.state as Record<string, unknown>, 'mount')
+  })
+
+  it('reset() lands on the defaults, not on {}', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    act(() => result.current.setMany({ status: 'failed', search: 'acme' }))
+    act(() => result.current.reset())
+
+    expect(result.current.state).toEqual(getDefaultFilterState(defaulted))
+    expectRepresentable(result.current.state as Record<string, unknown>, 'after reset')
+  })
+
+  it('clear() on a defaulted filter returns it to its default', () => {
+    // "Absent" is not expressible for a filter with a default, so clear means
+    // the only thing it can mean. It is durable now: a reload shows the same.
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    act(() => result.current.set('status', 'failed'))
+    act(() => result.current.clear('status'))
+
+    expect(result.current.state.status).toBe('paid')
+    expectRepresentable(result.current.state as Record<string, unknown>, 'after clear')
+  })
+
+  it('clear() on a filter without a default still removes it', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    act(() => result.current.set('search', 'acme'))
+    act(() => result.current.clear('search'))
+
+    expect(result.current.state.search).toBeUndefined()
+    expectRepresentable(result.current.state as Record<string, unknown>, 'after clear no-default')
+  })
+
+  it('syncState({}) adopts the defaults rather than an unreachable state', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    act(() => result.current.syncState({}))
+
+    expect(result.current.state).toEqual(getDefaultFilterState(defaulted))
+  })
+
+  it('what the UI renders and what the backend is told never disagree', () => {
+    // The mirror of the virgin-page defect, from the other side: after reset
+    // the control must not read "no status" while the DTO says paid.
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    act(() => result.current.reset())
+
+    expect(result.current.state.status).toBe('paid')
+    expect(result.current.toQueryDto().status).toBe('paid')
+  })
+
+  it('leaves a schema without defaults resetting to {} exactly as before', () => {
+    const { result } = renderHook(() => useFilterBridge(schema))
+    act(() => result.current.setMany({ search: 'invoice', status: 'paid' }))
+    act(() => result.current.reset())
+
+    expect(result.current.state).toEqual({})
+  })
+
+  it('holds for 200 generated operation sequences', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+
+    let seed = 0x51de >>> 0
+    const random = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0
+      return seed / 0x100000000
+    }
+
+    const operations: Array<[string, () => void]> = [
+      ['set status', () => result.current.set('status', 'failed')],
+      ['set search', () => result.current.set('search', 'acme')],
+      ['set tags', () => result.current.set('tags', ['review', 'urgent'])],
+      ['set active', () => result.current.set('active', true)],
+      ['set amount', () => result.current.set('amount', { min: 10 })],
+      ['set empty search', () => result.current.set('search', '')],
+      ['clear status', () => result.current.clear('status')],
+      ['clear tags', () => result.current.clear('tags')],
+      ['clear amount', () => result.current.clear('amount')],
+      ['setMany', () => result.current.setMany({ status: 'pending', active: false })],
+      ['reset', () => result.current.reset()],
+      ['resetToInitial', () => result.current.resetToInitial()],
+      ['syncState empty', () => result.current.syncState({})],
+      ['syncState partial', () => result.current.syncState({ status: 'failed' })],
+    ]
+
+    const applied: string[] = []
+    for (let i = 0; i < 200; i++) {
+      const [label, run] = operations[Math.floor(random() * operations.length)]
+      applied.push(label)
+      act(run)
+      expectRepresentable(
+        result.current.state as Record<string, unknown>,
+        `after: ${applied.slice(-6).join(' -> ')}`
+      )
+    }
+  })
+})
+
+describe('resetToInitial() under the defaults rule', () => {
+  it('captures the defaults-merged initialState at mount', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: { search: 'acme' } })
+    )
+
+    // initialState is layered over the defaults, so the captured value is
+    // representable too — not the bare { search: 'acme' } that was passed in.
+    expect(result.current.state).toEqual({ ...getDefaultFilterState(defaulted), search: 'acme' })
+
+    act(() => result.current.setMany({ status: 'failed', search: 'other' }))
+    act(() => result.current.resetToInitial())
+
+    expect(result.current.state).toEqual({ ...getDefaultFilterState(defaulted), search: 'acme' })
+    expectRepresentable(result.current.state as Record<string, unknown>, 'after resetToInitial')
+  })
+
+  it('restores the defaults for a key the initialState did not carry', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: { search: 'acme' } })
+    )
+
+    act(() => result.current.set('status', 'failed'))
+    act(() => result.current.resetToInitial())
+
+    expect(result.current.state.status).toBe('paid')
+  })
+
+  it('still ignores later changes to options.initialState', () => {
+    type Initial = Partial<InferFilterState<typeof defaulted>>
+    const { result, rerender } = renderHook(
+      ({ initial }: { initial: Initial }) =>
+        useFilterBridge(defaulted, { initialState: initial }),
+      { initialProps: { initial: { search: 'acme' } as Initial } }
+    )
+
+    rerender({ initial: { search: 'changed' } as Initial })
+    act(() => result.current.resetToInitial())
+
+    expect(result.current.state.search).toBe('acme')
   })
 })

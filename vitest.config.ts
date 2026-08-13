@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config'
 
-export default defineConfig({
-  test: {
-    projects: ['./packages/core', './packages/react', './packages/browser', './packages/tanstack', './packages/next'],
-  },
-})
+/**
+ * Project list lives in `vitest.workspace.ts` — see the note there on why it
+ * cannot live here.
+ */
+export default defineConfig({})
