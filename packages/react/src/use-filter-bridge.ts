@@ -24,6 +24,12 @@ export function useFilterBridge<TSchema extends FilterSchema>(
     return cleanFilterState(initial) as State
   })
 
+  // The cleaned initialState, captured once. useRef only uses its argument on
+  // the first render, so this holds the mount value and deliberately ignores
+  // later changes to options.initialState — the hook stays uncontrolled, and
+  // resetToInitial() always means "back to how this component was mounted".
+  const initialStateRef = useRef(state)
+
   // Central updater: applies a pure transformation, cleans empty values,
   // and notifies the caller. Calling onChange inside the setState callback
   // means it fires synchronously during each action (not via useEffect),
@@ -65,6 +71,22 @@ export function useFilterBridge<TSchema extends FilterSchema>(
     updateState(() => ({} as State))
   }, [updateState])
 
+  // Goes through updateState like every other mutator, so the restored state is
+  // cleaned and onChange fires. cleanFilterState copies, so the captured
+  // initialState object is never handed out or mutated.
+  const resetToInitial = useCallback(() => {
+    updateState(() => initialStateRef.current)
+  }, [updateState])
+
+  // Escape hatch for state that originates outside the component — a popstate
+  // handler, a websocket push, a parent that owns the URL. It deliberately
+  // bypasses updateState so onChange does NOT fire: the usual caller writes
+  // onChange back to the URL, and firing it here would turn "the URL changed,
+  // adopt it" into "adopt it, then write it back", which loops.
+  const syncState = useCallback((next: Partial<State>) => {
+    setState(cleanFilterState((next ?? {}) as Record<string, unknown>) as State)
+  }, [])
+
   const activeFilterCount = useMemo(
     () => countActiveFilters(state as Record<string, unknown>),
     [state]
@@ -86,6 +108,8 @@ export function useFilterBridge<TSchema extends FilterSchema>(
     setMany,
     clear,
     reset,
+    resetToInitial,
+    syncState,
     hasActiveFilters: activeFilterCount > 0,
     activeFilterCount,
     toQueryDto,
