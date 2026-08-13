@@ -1,4 +1,6 @@
-import type { AnyFilter } from './filter-types'
+import { isAtDefault } from './defaults'
+import type { AnyFilter, DateRangeValue, NumberRangeValue } from './filter-types'
+import { isValidOption, validOptions, warnDroppedValue } from './filter-validation'
 import type { InferFilterState } from './infer'
 
 export function toSearchParams<S extends Record<string, AnyFilter>>(
@@ -13,41 +15,69 @@ export function toSearchParams<S extends Record<string, AnyFilter>>(
     if (value === undefined || value === null) continue
 
     switch (filter._kind) {
-      case 'text':
-        if (typeof value === 'string' && value) {
-          params.set(key, value)
+      case 'text': {
+        // Trimmed on the way out, exactly as parseFilters trims on the way in,
+        // so `' foo '` and `'foo'` produce the same URL.
+        const trimmed = typeof value === 'string' ? value.trim() : ''
+        if (trimmed && !isAtDefault(filter, trimmed)) {
+          params.set(key, trimmed)
         }
         break
+      }
 
       case 'select':
-        if (typeof value === 'string') {
-          params.set(key, value)
+        if (isValidOption(filter, value)) {
+          if (!isAtDefault(filter, value)) {
+            params.set(key, value)
+          }
+        } else {
+          warnDroppedValue('toSearchParams', key, filter, value)
         }
         break
 
-      case 'multiSelect':
-        if (Array.isArray(value) && value.length > 0) {
-          params.set(key, (value as string[]).join(','))
+      case 'multiSelect': {
+        if (!Array.isArray(value)) break
+        const valid = validOptions(filter, value)
+        for (const entry of value) {
+          if (!isValidOption(filter, entry)) {
+            warnDroppedValue('toSearchParams', key, filter, entry)
+          }
+        }
+        if (valid.length > 0 && !isAtDefault(filter, valid)) {
+          params.set(key, valid.join(','))
         }
         break
+      }
 
       case 'boolean':
-        if (typeof value === 'boolean') {
+        if (typeof value === 'boolean' && !isAtDefault(filter, value)) {
           params.set(key, String(value))
         }
         break
 
       case 'dateRange': {
-        const range = value as { from?: string; to?: string }
-        if (range.from) params.set(`${key}From`, range.from)
-        if (range.to) params.set(`${key}To`, range.to)
+        const range = value as DateRangeValue
+        const next: DateRangeValue = {}
+        if (typeof range.from === 'string' && range.from.trim()) next.from = range.from.trim()
+        if (typeof range.to === 'string' && range.to.trim()) next.to = range.to.trim()
+        // Compared as a whole: a range that matches the default on one side
+        // only is still a different range and must reach the URL.
+        if (!isAtDefault(filter, next)) {
+          if (next.from !== undefined) params.set(`${key}From`, next.from)
+          if (next.to !== undefined) params.set(`${key}To`, next.to)
+        }
         break
       }
 
       case 'numberRange': {
-        const range = value as { min?: number; max?: number }
-        if (range.min !== undefined) params.set(`${key}Min`, String(range.min))
-        if (range.max !== undefined) params.set(`${key}Max`, String(range.max))
+        const range = value as NumberRangeValue
+        const next: NumberRangeValue = {}
+        if (Number.isFinite(range.min)) next.min = range.min
+        if (Number.isFinite(range.max)) next.max = range.max
+        if (!isAtDefault(filter, next)) {
+          if (next.min !== undefined) params.set(`${key}Min`, String(next.min))
+          if (next.max !== undefined) params.set(`${key}Max`, String(next.max))
+        }
         break
       }
     }

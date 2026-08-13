@@ -177,6 +177,40 @@ const dto = toQueryDto(schema, state)
 // → same shape as InferFilterState, but with empty values removed
 ```
 
+### `getDefaultFilterState(schema)`
+
+Returns the state a schema starts from: every filter that declares a `default`, at that default.
+
+```ts
+const schema = defineFilters({
+  search: text(),
+  status: select(['pending', 'paid', 'failed'], { default: 'paid' }),
+})
+
+getDefaultFilterState(schema)
+// { status: 'paid' } — same as parseFilters(schema, {})
+```
+
+---
+
+## Default values
+
+Every filter factory takes an optional `{ default }` as its last argument. The default is used when the key is absent or invalid, and omitted by both serializers — so a page at its default state has no query string:
+
+```ts
+const schema = defineFilters({
+  status: select(['pending', 'paid', 'failed'], { default: 'paid' }),
+})
+
+parseFilters(schema, {})                                // { status: 'paid' }
+toSearchParams(schema, { status: 'paid' }).toString()   // ''
+toSearchParams(schema, { status: 'failed' }).toString() // status=failed
+```
+
+The trade-off: a URL no longer fully describes the state, so changing a default in code changes what old bookmarks mean, and "no value" becomes unreachable through the URL for a filter that has one. See [Default values](../../docs/api/core.md#default-values) for the full rules and when not to use them.
+
+A `select` or `multiSelect` default outside its `options` throws at schema definition.
+
 ---
 
 ## Filter factories
@@ -236,7 +270,9 @@ defineFilters({
 // tags?: Array<'urgent' | 'review' | 'archived'>
 ```
 
-Note: repeated query params (`tags=urgent&tags=review`) are not yet supported. Use comma-separated format.
+Parsing accepts comma-separated values (`tags=urgent,review`), repeated query params
+(`tags=urgent&tags=review`), or a mix of both (`tags=urgent,review&tags=archived`). Values outside
+the option list are discarded. Serialization always writes the comma-separated form.
 
 ---
 
@@ -319,7 +355,6 @@ NumberRangeFilter
 
 ## Known limitations
 
-- `multiSelect` only parses comma-separated strings; repeated query params (`tags=a&tags=b`) are not supported yet
 - No custom key suffixes for `dateRange` / `numberRange` (always uses `From`/`To` and `Min`/`Max`)
 - No default values per filter
 - No date string validation beyond accepting non-empty strings

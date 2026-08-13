@@ -2,8 +2,10 @@ import type {
   AnyFilter,
   BooleanFilter,
   DateRangeFilter,
+  DateRangeValue,
   MultiSelectFilter,
   NumberRangeFilter,
+  NumberRangeValue,
   SelectFilter,
   TextFilter,
 } from './filter-types'
@@ -17,9 +19,9 @@ export type FilterStateValue<F extends AnyFilter> = F extends TextFilter
       : F extends BooleanFilter
         ? boolean
         : F extends DateRangeFilter
-          ? { from?: string; to?: string }
+          ? DateRangeValue
           : F extends NumberRangeFilter
-            ? { min?: number; max?: number }
+            ? NumberRangeValue
             : never
 
 export type InferFilterState<S extends Record<string, AnyFilter>> = {
