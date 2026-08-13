@@ -203,13 +203,20 @@ body {
   gap: 0.4rem;
 }
 
+.field-label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .field-label {
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-text);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+}
+
+label.field-label {
+  cursor: pointer;
 }
 
 .field-hint {
@@ -360,6 +367,21 @@ body {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+/* Carries the field name into each range input's accessible name
+   ("Issued at from") without repeating it on screen. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ── Filter actions ───────────────────────────────────────── */
@@ -500,12 +522,10 @@ body {
   color: var(--color-muted);
 }
 
+/* Underlined, not colour-only: the link sits inside a text block, so colour
+   alone would not distinguish it. */
 .footer-content a {
   color: var(--color-primary);
-  text-decoration: none;
-}
-
-.footer-content a:hover {
   text-decoration: underline;
 }
 

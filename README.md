@@ -4,6 +4,7 @@ Schema-first filters for React admin screens.
 
 Declare filters once as a typed schema. Reuse that definition as React state, URL search params, backend query DTOs, TanStack Table column filters, and Next.js App Router search params — without rewriting the same glue code across every project.
 
+[![CI](https://github.com/gabpaesschulz/filterbridge/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gabpaesschulz/filterbridge/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@filterbridge/core?label=%40filterbridge%2Fcore)](https://www.npmjs.com/package/@filterbridge/core)
 [![npm downloads](https://img.shields.io/npm/dm/@filterbridge/core?label=downloads)](https://www.npmjs.com/package/@filterbridge/core)
 [![license](https://img.shields.io/npm/l/@filterbridge/core)](./LICENSE)
@@ -289,6 +290,7 @@ Full reference: [`docs/api/react.md`](./docs/api/react.md)
 | `setMany(values)` | `void` | Update multiple filters |
 | `clear(key)` | `void` | Remove one filter |
 | `reset()` | `void` | Clear all filters |
+| `resetToInitial()` | `void` | Restore the `initialState` passed at mount |
 | `hasActiveFilters` | `boolean` | Whether any filter is active |
 | `activeFilterCount` | `number` | Count of active filters |
 | `toQueryDto()` | object | Current state as backend DTO |

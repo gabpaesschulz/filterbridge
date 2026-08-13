@@ -87,7 +87,7 @@ filterbridge/
     releases/          — Release notes
     marketing/         — Portfolio and announcement materials
   scripts/             — Workspace scripts (pack-all, etc.)
-  .github/             — Issue templates and PR template
+  .github/             — Issue templates, PR template, CI workflow
   package.json         — Workspace root
   pnpm-workspace.yaml
   tsconfig.base.json
@@ -179,14 +179,43 @@ If you change or add a public API:
 
 ---
 
+## Continuous integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push to `main` and on every
+pull request:
+
+| Job | What it runs |
+|-----|--------------|
+| `check` | `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test` |
+| `demo build` | `pnpm build` then `pnpm demo:build` |
+| `changeset` | `pnpm changeset status` — pull requests only |
+
+The `check` job runs on Node 18, 20, and 22 on Linux, plus Node 20 on Windows.
+
+Three things worth knowing before you push:
+
+- **`pnpm build` runs before `pnpm typecheck`, and has to.** `tsc` resolves `@filterbridge/*`
+  through each sibling's emitted `.d.ts`, and `dist/` is gitignored — so on a fresh clone
+  `pnpm typecheck` fails with `TS2307` until the packages have been built once. `pnpm test` does
+  not have this constraint: vitest aliases `@filterbridge/*` to source
+  ([`vitest.aliases.ts`](vitest.aliases.ts)), so the suite runs on a clean clone with no build and
+  never reports on stale `dist` output.
+- **The install uses `--frozen-lockfile`.** If you add or change a dependency, commit the updated
+  `pnpm-lock.yaml` or CI will fail on the install step.
+- **Changes under `packages/**` need a changeset.** Run `pnpm changeset` and commit the generated
+  file. For a change that should not trigger a release, use `pnpm changeset add --empty`.
+
+---
+
 ## Opening a pull request
 
 1. Fork the repository and create a branch from `main`.
 2. Make your changes.
 3. Run `pnpm build`, `pnpm typecheck`, `pnpm test`, and `pnpm demo:build`.
-4. All checks must pass before submitting.
-5. Fill in the PR template.
-6. Keep PRs focused — one logical change per PR.
+4. All checks must pass before submitting — CI runs the same ones.
+5. Add a changeset if you touched `packages/**`.
+6. Fill in the PR template.
+7. Keep PRs focused — one logical change per PR.
 
 PRs that break existing tests, skip type checking, or add undocumented API changes will not be merged.
 

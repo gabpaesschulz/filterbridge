@@ -20,5 +20,6 @@
 - [ ] `pnpm test` passes
 - [ ] `pnpm demo:build` passes (if demo was affected)
 - [ ] Tests added or updated to cover this change
+- [ ] Changeset added if `packages/**` changed (`pnpm changeset`)
 - [ ] Docs updated if the public API changed
 - [ ] No new runtime dependencies added without discussion
