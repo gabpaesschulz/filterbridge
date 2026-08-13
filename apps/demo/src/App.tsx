@@ -1,4 +1,5 @@
-import { parseFiltersFromUrl, replaceUrlFilters } from '@filterbridge/browser'
+import { parseFiltersFromUrl, pushUrlFilters } from '@filterbridge/browser'
+import { usePopstateSync } from '@filterbridge/browser/react'
 import { useFilterBridge } from '@filterbridge/react'
 import { toTanStackColumnFilters } from '@filterbridge/tanstack'
 import { invoiceFilters, exampleState } from './filters'
@@ -12,9 +13,15 @@ export function App() {
   const bridge = useFilterBridge(invoiceFilters, {
     initialState: parseFiltersFromUrl(invoiceFilters),
     onChange(state) {
-      replaceUrlFilters(invoiceFilters, state)
+      // pushState, not replaceState, so each filter change is its own history
+      // entry and Back/Forward actually have somewhere to go.
+      pushUrlFilters(invoiceFilters, state)
     },
   })
+
+  // Adopt the URL when the user navigates through history. syncState does not
+  // fire onChange, so this cannot push the entry we just navigated away from.
+  usePopstateSync(invoiceFilters, bridge.syncState)
 
   const dto = bridge.toQueryDto()
   const searchParams = bridge.toSearchParams()
@@ -35,12 +42,13 @@ export function App() {
           </div>
           <p className="header-subtitle">Schema-first filters for React admin screens.</p>
           <p className="header-description">
-            Declare filters once and reuse them as React state, backend DTOs, URLSearchParams and TanStack Table column filters.
+            Declare filters once and reuse them as React state, backend DTOs, URLSearchParams and
+            TanStack Table column filters.
           </p>
           <div className="url-sync-badge">
             <span className="url-sync-indicator" />
-            URL sync enabled — change filters and watch the browser URL update. Reload the page to
-            restore filters from the URL.
+            URL sync enabled — change filters and watch the browser URL update. Reload the page, or
+            use the browser's Back and Forward buttons, to restore filters from the URL.
           </div>
         </div>
       </header>
@@ -59,10 +67,7 @@ export function App() {
             <FilterCard bridge={bridge} />
 
             <div className="filter-actions">
-              <button
-                className="btn btn-primary"
-                onClick={() => bridge.setMany(exampleState)}
-              >
+              <button className="btn btn-primary" onClick={() => bridge.setMany(exampleState)}>
                 Fill example
               </button>
               <button
@@ -87,7 +92,8 @@ export function App() {
 
             <OutputPanel title="Backend DTO" badge="bridge.toQueryDto()">
               <p className="output-description">
-                Empty values, empty arrays, and empty ranges are stripped — ready to send as request params.
+                Empty values, empty arrays, and empty ranges are stripped — ready to send as request
+                params.
               </p>
               <pre className="code-block">{JSON.stringify(dto, null, 2)}</pre>
             </OutputPanel>
@@ -106,13 +112,11 @@ export function App() {
 
             <OutputPanel title="TanStack columnFilters" badge="toTanStackColumnFilters()">
               <p className="output-description">
-                Ready to pass as <code>state.columnFilters</code> to <code>useReactTable</code>.
-                The <code>search</code> filter is mapped to the <code>customerName</code> column.
+                Ready to pass as <code>state.columnFilters</code> to <code>useReactTable</code>. The{' '}
+                <code>search</code> filter is mapped to the <code>customerName</code> column.
               </p>
               <pre className="code-block">
-                {columnFilters.length > 0
-                  ? JSON.stringify(columnFilters, null, 2)
-                  : '[]'}
+                {columnFilters.length > 0 ? JSON.stringify(columnFilters, null, 2) : '[]'}
               </pre>
             </OutputPanel>
           </section>
@@ -133,7 +137,7 @@ export function App() {
         <div className="footer-content">
           <p>
             <a
-              href="https://github.com/gabrigomez/filterbridge"
+              href="https://github.com/gabpaesschulz/filterbridge"
               target="_blank"
               rel="noopener noreferrer"
             >
