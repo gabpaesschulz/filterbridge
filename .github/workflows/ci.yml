@@ -40,13 +40,15 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      # Build comes first because it is a prerequisite, not a final gate: each
-      # package resolves its @filterbridge/* siblings through their dist/
-      # output, which a fresh checkout does not have (dist/ is gitignored).
-      # Without it, `pnpm typecheck` fails with TS2307 and `pnpm test` cannot
-      # resolve the cross-package imports. Typechecking after the build has the
-      # side benefit of validating the emitted .d.ts/.d.cts, which is part of
-      # the published contract and no test covers.
+      # Build comes first because typecheck needs it, not as a final gate: tsc
+      # resolves @filterbridge/* through each sibling's emitted .d.ts, and dist/
+      # is gitignored, so on a fresh checkout `pnpm typecheck` fails with TS2307
+      # before any real error can surface. Running it here also means typecheck
+      # validates the emitted .d.ts/.d.cts, which is part of the published
+      # contract and no test covers.
+      #
+      # `pnpm test` does not need this step — vitest aliases @filterbridge/* to
+      # source (see vitest.aliases.ts) so the suite never reads dist.
       - name: Build
         run: pnpm build
 
