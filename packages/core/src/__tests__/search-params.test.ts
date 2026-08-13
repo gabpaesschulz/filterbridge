@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { boolean, dateRange, defineFilters, multiSelect, numberRange, select, text } from '../index'
 import { toSearchParams } from '../search-params'
 
@@ -87,6 +87,29 @@ describe('toSearchParams', () => {
     expect(params.has('amountMax')).toBe(false)
   })
 
+  it('omits a NaN min', () => {
+    const params = toSearchParams(schema, { amount: { min: NaN, max: 10 } })
+    expect(params.has('amountMin')).toBe(false)
+    expect(params.get('amountMax')).toBe('10')
+  })
+
+  it('omits a NaN max', () => {
+    const params = toSearchParams(schema, { amount: { min: 10, max: NaN } })
+    expect(params.get('amountMin')).toBe('10')
+    expect(params.has('amountMax')).toBe(false)
+  })
+
+  it('omits Infinity and -Infinity', () => {
+    const params = toSearchParams(schema, { amount: { min: -Infinity, max: Infinity } })
+    expect(params.has('amountMin')).toBe(false)
+    expect(params.has('amountMax')).toBe(false)
+  })
+
+  it('never emits a non-finite value in the query string', () => {
+    const params = toSearchParams(schema, { amount: { min: NaN, max: Infinity } })
+    expect(params.toString()).toBe('')
+  })
+
   it('produces keys in schema-definition order', () => {
     const params = toSearchParams(schema, {
       amount: { min: 1 },
@@ -113,5 +136,54 @@ describe('toSearchParams', () => {
     expect(params.toString()).toBe(
       'search=invoice&status=paid&tags=urgent%2Creview&active=true&createdAtFrom=2026-01-01&createdAtTo=2026-01-31&amountMin=100&amountMax=500'
     )
+  })
+})
+
+type LooseState = Parameters<typeof toSearchParams<typeof schema>>[1]
+
+function loose(state: Record<string, unknown>): LooseState {
+  return state as LooseState
+}
+
+describe('toSearchParams schema validation', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('omits a select value outside options', () => {
+    const params = toSearchParams(schema, loose({ status: 'bogus' }))
+    expect(params.has('status')).toBe(false)
+  })
+
+  it('omits a select value that is not a string', () => {
+    expect(toSearchParams(schema, loose({ status: 7 })).has('status')).toBe(false)
+    expect(toSearchParams(schema, loose({ status: { code: 'paid' } })).has('status')).toBe(false)
+    expect(toSearchParams(schema, loose({ status: ['paid'] })).has('status')).toBe(false)
+  })
+
+  it('keeps a valid select value', () => {
+    expect(toSearchParams(schema, { status: 'failed' }).get('status')).toBe('failed')
+  })
+
+  it('filters invalid entries out of a multiSelect', () => {
+    const params = toSearchParams(schema, loose({ tags: ['urgent', 'zzz', 'review'] }))
+    expect(params.get('tags')).toBe('urgent,review')
+  })
+
+  it('omits the multiSelect key when no entry is valid', () => {
+    expect(toSearchParams(schema, loose({ tags: ['zzz', 3, null] })).has('tags')).toBe(false)
+  })
+
+  it('ignores a multiSelect value that is not an array', () => {
+    expect(toSearchParams(schema, loose({ tags: 'urgent' })).has('tags')).toBe(false)
+  })
+
+  it('emits nothing at all for a fully invalid state', () => {
+    const params = toSearchParams(schema, loose({ status: 'bogus', tags: ['zzz'] }))
+    expect(params.toString()).toBe('')
   })
 })
