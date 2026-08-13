@@ -38,7 +38,7 @@ export function App() {
         <div className="header-content">
           <div className="header-brand">
             <h1 className="header-title">FilterBridge</h1>
-            <span className="header-version">v0.1.0</span>
+            <span className="header-version">v{__FILTERBRIDGE_VERSION__}</span>
           </div>
           <p className="header-subtitle">Schema-first filters for React admin screens.</p>
           <p className="header-description">

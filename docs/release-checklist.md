@@ -184,9 +184,9 @@ draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
 - [ ] `pnpm changeset version` — bumps all five to `0.2.0` and writes the `CHANGELOG.md` files
 - [ ] Update the pinned tarball versions in `.smoke/package.json`, then re-pack and re-run the
       smoke test against `0.2.0` tarballs (wiping `node_modules` first — see above)
-- [ ] Update the hardcoded version badge in the demo header
-      (`apps/demo/src/App.tsx` — `<span className="header-version">v0.1.0</span>`); it is not derived
-      from any `package.json`, so `changeset version` leaves the deployed demo claiming `v0.1.0`
+- [x] Demo header version badge — no longer a manual step. `apps/demo/vite.config.ts` injects it
+      from `packages/core/package.json` via `define`, so `changeset version` updates the deployed
+      demo on its own. Nothing to do here unless the build stops inlining it.
 - [ ] CI green on the release commit
 - [ ] `npm whoami` and 2FA confirmed
 - [ ] `git tag v0.2.0`
