@@ -194,9 +194,12 @@ The `check` job runs on Node 18, 20, and 22 on Linux, plus Node 20 on Windows.
 
 Three things worth knowing before you push:
 
-- **`pnpm build` runs before the other checks, and has to.** Each package resolves its
-  `@filterbridge/*` siblings through their `dist/` output, and `dist/` is gitignored — so on a fresh
-  clone `pnpm typecheck` and `pnpm test` both fail until the packages have been built once.
+- **`pnpm build` runs before `pnpm typecheck`, and has to.** `tsc` resolves `@filterbridge/*`
+  through each sibling's emitted `.d.ts`, and `dist/` is gitignored — so on a fresh clone
+  `pnpm typecheck` fails with `TS2307` until the packages have been built once. `pnpm test` does
+  not have this constraint: vitest aliases `@filterbridge/*` to source
+  ([`vitest.aliases.ts`](vitest.aliases.ts)), so the suite runs on a clean clone with no build and
+  never reports on stale `dist` output.
 - **The install uses `--frozen-lockfile`.** If you add or change a dependency, commit the updated
   `pnpm-lock.yaml` or CI will fail on the install step.
 - **Changes under `packages/**` need a changeset.** Run `pnpm changeset` and commit the generated

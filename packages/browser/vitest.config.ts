@@ -1,18 +1,14 @@
-import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
+import { filterbridgeAliases } from '../../vitest.aliases'
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      // The round-trip test pairs usePopstateSync with useFilterBridge. Without
-      // this alias it would resolve to packages/react/dist, so the result would
-      // depend on whether `pnpm build` ran first — and a stale dist would fail
-      // as "syncState is not a function" rather than something readable.
-      '@filterbridge/react': fileURLToPath(new URL('../react/src/index.ts', import.meta.url)),
-    },
-  },
   test: {
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     environment: 'jsdom',
+    // Cross-package imports resolve to source, not dist — see vitest.aliases.ts.
+    // This project is the reason that file exists: the round-trip test pairs
+    // usePopstateSync with useFilterBridge, and resolving the latter through
+    // packages/react/dist made a broken invariant look green.
+    alias: filterbridgeAliases,
   },
 })
