@@ -1,8 +1,10 @@
 # FilterBridge — Basic Example
 
-This example shows how to use `@filterbridge/core` and `@filterbridge/react` together.
+Copy-paste snippets for `@filterbridge/core` and `@filterbridge/react`.
 
-No demo app is included yet — that comes in a future wave. The snippets below are copy-paste ready.
+For a running application instead of snippets, see the demo: [live](https://filterbridge-demo.vercel.app),
+source in [`apps/demo`](../../apps/demo), or `pnpm demo` from the repository root. It wires all six
+filter types to a TanStack table with URL sync and a live DTO preview.
 
 ---
 
@@ -27,6 +29,21 @@ export const orderFilters = defineFilters({
   createdAt: dateRange(),
   amount: numberRange(),
 })
+```
+
+Any filter can declare a default. A filter sitting at its default emits no query param, and
+`parseFilters` puts the default back when the param is absent:
+
+```ts
+import { getDefaultFilterState } from '@filterbridge/core'
+
+export const orderFilters = defineFilters({
+  status: select(['pending', 'paid', 'failed'] as const, { default: 'pending' }),
+  amount: numberRange({ default: { min: 0 } }),
+})
+
+getDefaultFilterState(orderFilters)
+// { status: 'pending', amount: { min: 0 } }
 ```
 
 ---
@@ -81,8 +98,9 @@ export function OrdersFilters() {
         $100 – $500
       </button>
 
-      {/* Reset */}
+      {/* Reset: clear everything, or go back to the initial state */}
       <button onClick={() => bridge.reset()}>Reset all</button>
+      <button onClick={() => bridge.resetToInitial()}>Back to start</button>
 
       {/* Active filter count */}
       {bridge.hasActiveFilters && (
@@ -121,6 +139,8 @@ const dto = toQueryDto(orderFilters, state)
 // { search: 'invoice', status: 'paid', amount: { min: 100 } }
 ```
 
+Repeated params work too — `tags=urgent&tags=review` and `tags=urgent,review` parse the same way.
+
 ---
 
 ## 4. setMany — bulk update
@@ -136,7 +156,27 @@ bridge.setMany({
 
 ---
 
-## 5. Type inference
+## 5. Keep the URL in sync
+
+```tsx
+import { parseFiltersFromUrl, pushUrlFilters } from '@filterbridge/browser'
+import { usePopstateSync } from '@filterbridge/browser/react'
+
+const bridge = useFilterBridge(orderFilters, {
+  initialState: parseFiltersFromUrl(orderFilters),
+  onChange: (state) => pushUrlFilters(orderFilters, state),
+})
+
+// Back/forward restores the filter UI from the URL.
+usePopstateSync(orderFilters, bridge.syncState)
+```
+
+See [`docs/guides/url-sync.md`](../../docs/guides/url-sync.md) for the full picture, and
+[`docs/guides/next-app-router.md`](../../docs/guides/next-app-router.md) for the Next.js equivalent.
+
+---
+
+## 6. Type inference
 
 ```ts
 import type { InferFilterState } from '@filterbridge/core'
@@ -151,9 +191,3 @@ type OrderState = InferFilterState<typeof orderFilters>
 //   amount?: { min?: number; max?: number }
 // }
 ```
-
----
-
-## Coming next
-
-A visual demo app (Wave 4) will show filters wired to a mock data table with active filter chips, URL sync, and a live DTO preview.
