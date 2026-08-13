@@ -153,12 +153,12 @@ function generateState(random: () => number): Record<string, unknown> {
  * both schemas or the two halves of that feature do not line up.
  */
 const defaulted = defineFilters({
-  search: text({ default: 'invoice' }),
+  search: text(),
   status: select(['pending', 'paid', 'failed'], { default: 'pending' }),
   tags: multiSelect(['urgent', 'review', 'archived'], { default: ['urgent'] }),
   active: boolean({ default: false }),
-  createdAt: dateRange({ default: { from: '2026-01-01' } }),
-  amount: numberRange({ default: { min: 0 } }),
+  createdAt: dateRange(),
+  amount: numberRange(),
 })
 
 const schemas: Array<[string, typeof schema]> = [
@@ -232,6 +232,9 @@ describe('roundtrip property: state → URL → state', () => {
 
       // The two serializers are the same function seen from two sides: a value
       // the URL round-trip discards must not survive in the DTO, and vice versa.
+      // toQueryDto fills an absent or invalid value with the filter's default,
+      // exactly as parseFilters does, so what the backend is told cannot depend
+      // on whether the state went through a URL first.
       const dto = toQueryDto(target, loose(state))
       expect(dto, message).toEqual(toQueryDto(target, cleaned))
       expectJsonSafe(dto, message)

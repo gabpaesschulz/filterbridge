@@ -130,12 +130,12 @@ describe('core and next agree on generated query strings', () => {
  * and comes back as the default instead of as the value the URL carried.
  */
 const defaulted = defineFilters({
-  search: text({ default: 'invoice' }),
+  search: text(),
   status: select(['pending', 'paid', 'failed'] as const, { default: 'pending' }),
   tags: multiSelect(['urgent', 'recurring', 'overdue'] as const, { default: ['urgent'] }),
   archived: boolean({ default: false }),
-  createdAt: dateRange({ default: { from: '2026-01-01' } }),
-  amount: numberRange({ default: { min: 0 } }),
+  createdAt: dateRange(),
+  amount: numberRange(),
 })
 
 describe('core and next agree on a schema with defaults', () => {
@@ -150,12 +150,9 @@ describe('core and next agree on a schema with defaults', () => {
   it('agrees on an empty query — both fill in every default', () => {
     const fromCore = parseFilters(defaulted, new URLSearchParams(''))
     expect(fromCore).toEqual({
-      search: 'invoice',
       status: 'pending',
       tags: ['urgent'],
       archived: false,
-      createdAt: { from: '2026-01-01' },
-      amount: { min: 0 },
     })
     expect(parseNextSearchParams(defaulted, new URLSearchParams(''))).toEqual(fromCore)
     expect(parseNextSearchParams(defaulted, {})).toEqual(fromCore)

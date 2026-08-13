@@ -170,39 +170,39 @@ to `undefined`. Bind booleans to a three-option control, or pair the checkbox wi
 A filter sitting at its [schema default](./core.md#default-values) is not counted — see
 [`activeFilterCount`](#activefiltercount).
 
-##### `clear()` does not survive a URL round trip for a filter with a schema default
+##### For a filter with a schema default, `clear()` means "back to the default"
 
-A filter declared with a [`default`](./core.md#default-values) is absent from the URL precisely when
-it is at its default — that is the whole point of the feature. Clearing it produces the same empty
-query string, so the two are indistinguishable once state has been through the URL:
+A filter declared with a [`default`](./core.md#default-values) has no "absent" state to return to — the URL cannot express one, because an omitted param *is* the default. So clearing it restores the default rather than removing the key:
 
 ```ts
 const schema = defineFilters({
   status: select(['pending', 'paid', 'failed'], { default: 'paid' }),
+  search: text(),
 })
 
+bridge.set('status', 'failed')
 bridge.clear('status')
-bridge.state // { }            — the control shows "no status"
-bridge.toSearchParams().toString() // ''
-parseFilters(schema, bridge.toSearchParams()) // { status: 'paid' } — back on reload
+bridge.state.status // 'paid' — the default, not undefined
+
+bridge.clear('search')
+bridge.state.search // undefined — no default, so it really is removed
 ```
 
-The hook is uncontrolled and does not consult schema defaults, so within the session `bridge.state`
-and the URL genuinely disagree: the UI shows the filter cleared, a reload shows it at its default.
-The same applies to [`reset()`](#reset), which clears to `{}` and therefore reloads as every
-default.
+This is durable: the control shows `paid`, the URL is empty, a reload shows `paid`, and the DTO says `paid`. All four agree.
 
-This is the documented cost of omitting defaults from the URL, not a bug — but it means **a filter
-whose "not filtering" state has to be reachable and shareable should not declare a default.** Model
-the extra state as an explicit option instead:
+The hook guarantees this by layering every state write over the schema defaults, which keeps `bridge.state` inside the range of `parseFilters` — there is always some URL that parses to it. Without that guarantee `{}` would be reachable through `clear()`, `reset()` and `syncState()`, and `{}` is not a state any query string can express: the UI would render the filter as cleared while the URL and the DTO both read it as its default.
+
+If a filter genuinely needs a reachable, linkable "not filtering" state, do not give it a default. Model the extra state as an explicit option instead:
 
 ```ts
-// clear() is not durable here
+// 'no archived filter' is unreachable
 archived: boolean({ default: false })
 
 // 'all' is a real, linkable value
 archived: select(['all', 'active', 'archived'], { default: 'active' })
 ```
+
+Schemas without defaults are unaffected — `clear()` removes the key, exactly as it always has.
 
 ---
 
@@ -212,16 +212,21 @@ archived: select(['all', 'active', 'archived'], { default: 'active' })
 reset: () => void
 ```
 
-Clears all filters. State becomes `{}`.
+Clears all filters — state returns to the page's baseline.
 
 `reset()` means "clear everything", not "back to `initialState`". To restore `initialState`, use [`resetToInitial()`](#resettoinitial).
 
+For a schema with no defaults the baseline is `{}`. For a schema with defaults it is the defaults, for the same reason [`clear()`](#clearkey) returns a defaulted filter to its default: `{}` is not a state any URL can express, so landing there would leave the UI disagreeing with both the URL and the DTO.
+
 ```ts
 bridge.reset()
-// bridge.state === {}
+// no defaults:   bridge.state === {}
+// with defaults: bridge.state === getDefaultFilterState(schema)
 ```
 
-Calls `onChange` with `{}`.
+There is no separate `resetToDefaults()`. "Back to the baseline" is one operation whose meaning follows from the schema.
+
+Calls `onChange` with the resulting state.
 
 ---
 

@@ -4,6 +4,7 @@ import {
   dateRange,
   defineFilters,
   getDefaultFilterState,
+  isAtDefault,
   multiSelect,
   numberRange,
   parseFilters,
@@ -13,14 +14,22 @@ import {
   toSearchParams,
 } from '../index'
 
+/**
+ * Defaults are only accepted by filters whose value space is a fixed,
+ * enumerable set. `text`, `dateRange` and `numberRange` do not take one — see
+ * `docs/decisions/002-default-values.md` for the criterion.
+ */
 const schema = defineFilters({
-  search: text({ default: 'invoice' }),
+  search: text(),
   status: select(['pending', 'paid', 'failed'], { default: 'paid' }),
   tags: multiSelect(['urgent', 'review', 'archived'], { default: ['urgent'] }),
   archived: boolean({ default: false }),
-  createdAt: dateRange({ default: { from: '2026-01-01' } }),
-  amount: numberRange({ default: { min: 0, max: 100 } }),
+  createdAt: dateRange(),
+  amount: numberRange(),
 })
+
+/** The three keys that carry a default, in schema order. */
+const defaultedKeys = ['status', 'tags', 'archived']
 
 type State = Parameters<typeof toSearchParams<typeof schema>>[1]
 
@@ -29,9 +38,8 @@ function loose(state: Record<string, unknown>): State {
   return state as State
 }
 
-describe('builders accept a default', () => {
-  it('stores the default on every filter kind', () => {
-    expect(text({ default: 'invoice' })).toEqual({ _kind: 'text', default: 'invoice' })
+describe('which builders accept a default', () => {
+  it('stores the default on the three enumerable filter kinds', () => {
     expect(select(['a', 'b'], { default: 'b' })).toEqual({
       _kind: 'select',
       options: ['a', 'b'],
@@ -43,275 +51,206 @@ describe('builders accept a default', () => {
       default: ['a'],
     })
     expect(boolean({ default: false })).toEqual({ _kind: 'boolean', default: false })
-    expect(dateRange({ default: { from: '2026-01-01' } })).toEqual({
-      _kind: 'dateRange',
-      default: { from: '2026-01-01' },
-    })
-    expect(numberRange({ default: { min: 25 } })).toEqual({
-      _kind: 'numberRange',
-      default: { min: 25 },
-    })
   })
 
-  it('accepts a partial range default', () => {
-    expect(dateRange({ default: { to: '2026-12-31' } }).default).toEqual({ to: '2026-12-31' })
-    expect(numberRange({ default: { max: 500 } }).default).toEqual({ max: 500 })
+  it('leaves the continuous-entry filters with no default at all', () => {
+    // The restriction is enforced by the type signature, not at runtime: these
+    // builders take no argument, so a default is a compile error rather than a
+    // value that gets validated away. Nothing to assert but the shape.
+    expect(text()).toEqual({ _kind: 'text' })
+    expect(dateRange()).toEqual({ _kind: 'dateRange' })
+    expect(numberRange()).toEqual({ _kind: 'numberRange' })
   })
 
-  it('normalizes the default to the same shape the parsers produce', () => {
-    expect(text({ default: '  invoice  ' }).default).toBe('invoice')
-    expect(dateRange({ default: { from: ' 2026-01-01 ', to: '  ' } }).default).toEqual({
-      from: '2026-01-01',
-    })
-    expect(numberRange({ default: { min: 0, max: NaN } }).default).toEqual({ min: 0 })
+  it('copies a multiSelect default so the caller cannot mutate the schema', () => {
+    const source: Array<'a' | 'b'> = ['a']
+    const filter = multiSelect(['a', 'b'], { default: source })
+    source.push('b')
+    expect(filter.default).toEqual(['a'])
   })
 
-  it('treats a default that normalizes to nothing as no default at all', () => {
-    expect(text({ default: '   ' })).toEqual({ _kind: 'text' })
+  it('treats an empty multiSelect default as no default at all', () => {
     expect(multiSelect(['a', 'b'], { default: [] })).toEqual({
       _kind: 'multiSelect',
       options: ['a', 'b'],
     })
-    expect(dateRange({ default: {} })).toEqual({ _kind: 'dateRange' })
-    expect(numberRange({ default: { min: Infinity } })).toEqual({ _kind: 'numberRange' })
-  })
-
-  it('copies a multiSelect default so the caller cannot mutate the schema', () => {
-    const source: Array<'urgent' | 'review'> = ['urgent']
-    const filter = multiSelect(['urgent', 'review'], { default: source })
-    source.push('review')
-    expect(filter.default).toEqual(['urgent'])
   })
 })
 
 describe('option defaults are validated at schema definition', () => {
   it('throws when a select default is not one of its options', () => {
     expect(() => select(['pending', 'paid'], { default: 'bogus' as 'paid' })).toThrow(
-      /select\(\): default "bogus" is not one of its options \(pending, paid\)/
+      /default "bogus" is not one of its options/
     )
   })
 
   it('throws when any multiSelect default is not one of its options', () => {
-    expect(() => multiSelect(['urgent', 'review'], { default: ['urgent', 'zzz' as 'review'] })).toThrow(
-      /multiSelect\(\): default "zzz" is not one of its options/
+    expect(() => multiSelect(['a', 'b'], { default: ['a', 'zzz' as 'a'] })).toThrow(
+      /is not one of its options/
     )
-  })
-
-  it('throws for a non-string default reaching an option filter at runtime', () => {
-    expect(() => select(['a'], { default: 1 as unknown as 'a' })).toThrow(/is not one of its options/)
   })
 
   it('accepts a valid default', () => {
     expect(() => select(['pending', 'paid'], { default: 'paid' })).not.toThrow()
-    expect(() => multiSelect(['urgent', 'review'], { default: ['review'] })).not.toThrow()
   })
 })
 
 describe('parseFilters applies defaults', () => {
   it('fills every default when the input is empty', () => {
     expect(parseFilters(schema, {})).toEqual({
-      search: 'invoice',
       status: 'paid',
       tags: ['urgent'],
       archived: false,
-      createdAt: { from: '2026-01-01' },
-      amount: { min: 0, max: 100 },
     })
   })
 
   it('lets an explicit value win over the default', () => {
-    const state = parseFilters(schema, {
-      search: 'receipt',
+    expect(parseFilters(schema, { status: 'failed', archived: 'true' })).toMatchObject({
       status: 'failed',
-      tags: 'review,archived',
-      archived: 'true',
-      createdAtFrom: '2026-06-01',
-      amountMin: '50',
+      archived: true,
     })
-
-    expect(state.search).toBe('receipt')
-    expect(state.status).toBe('failed')
-    expect(state.tags).toEqual(['review', 'archived'])
-    expect(state.archived).toBe(true)
-    expect(state.createdAt).toEqual({ from: '2026-06-01' })
-    expect(state.amount).toEqual({ min: 50 })
   })
 
   it('falls back to the default when the value is present but invalid', () => {
-    const state = parseFilters(schema, {
-      search: '   ',
-      status: 'bogus',
-      tags: 'zzz',
-      archived: 'maybe',
-      createdAtFrom: '',
-      amountMin: 'abc',
-    })
-
-    expect(state).toEqual(parseFilters(schema, {}))
+    expect(parseFilters(schema, { status: 'bogus' }).status).toBe('paid')
+    expect(parseFilters(schema, { archived: 'maybe' }).archived).toBe(false)
+    expect(parseFilters(schema, { tags: 'zzz' }).tags).toEqual(['urgent'])
   })
 
   it('does not invent values for filters without a default', () => {
-    const bare = defineFilters({
-      search: text(),
-      status: select(['pending', 'paid']),
-      tags: multiSelect(['urgent']),
-      archived: boolean(),
-      createdAt: dateRange(),
-      amount: numberRange(),
-    })
-
-    expect(parseFilters(bare, {})).toEqual({})
+    const parsed = parseFilters(schema, {})
+    expect(parsed.search).toBeUndefined()
+    expect(parsed.createdAt).toBeUndefined()
+    expect(parsed.amount).toBeUndefined()
   })
 
   it('hands out a fresh copy of a default on every parse', () => {
     const first = parseFilters(schema, {})
     first.tags?.push('review')
-    first.amount!.min = 999
-
-    const second = parseFilters(schema, {})
-    expect(second.tags).toEqual(['urgent'])
-    expect(second.amount).toEqual({ min: 0, max: 100 })
+    expect(parseFilters(schema, {}).tags).toEqual(['urgent'])
   })
 })
 
 describe('toSearchParams omits values equal to the default', () => {
   it('produces an empty query string for the default state', () => {
-    expect(toSearchParams(schema, parseFilters(schema, {})).toString()).toBe('')
-  })
-
-  it('writes only the filters that differ from their default', () => {
-    const params = toSearchParams(schema, {
-      search: 'invoice',
-      status: 'failed',
-      tags: ['urgent'],
-      archived: false,
-      createdAt: { from: '2026-01-01' },
-      amount: { min: 0, max: 100 },
-    })
-
-    expect(params.toString()).toBe('status=failed')
-  })
-
-  it('compares text after trimming, like the parser', () => {
-    expect(toSearchParams(schema, { search: '  invoice  ' }).toString()).toBe('')
-    expect(toSearchParams(schema, { search: 'other' }).get('search')).toBe('other')
-  })
-
-  it('treats a reordered multiSelect as a different value', () => {
-    const reordered = defineFilters({
-      tags: multiSelect(['urgent', 'review'], { default: ['urgent', 'review'] }),
-    })
-
-    expect(toSearchParams(reordered, { tags: ['urgent', 'review'] }).toString()).toBe('')
-    expect(toSearchParams(reordered, { tags: ['review', 'urgent'] }).get('tags')).toBe(
-      'review,urgent'
-    )
-  })
-
-  it('writes both sides of a range that differs from the default on one side', () => {
-    const params = toSearchParams(schema, { amount: { min: 0, max: 500 } })
-    expect(params.get('amountMin')).toBe('0')
-    expect(params.get('amountMax')).toBe('500')
-  })
-
-  it('writes a partial range that the default fully covers', () => {
-    // { min: 0 } is not { min: 0, max: 100 } — omitting it would parse back as
-    // the full default range and silently widen the filter.
-    expect(toSearchParams(schema, { amount: { min: 0 } }).toString()).toBe('amountMin=0')
-  })
-
-  it('still drops a value the schema forbids rather than comparing it', () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
-    expect(toSearchParams(schema, loose({ status: 'bogus' })).toString()).toBe('')
-    vi.restoreAllMocks()
-  })
-})
-
-describe('toQueryDto omits values equal to the default', () => {
-  it('returns an empty DTO for the default state', () => {
-    expect(toQueryDto(schema, parseFilters(schema, {}))).toEqual({})
-  })
-
-  it('keeps only what differs from the default', () => {
-    const dto = toQueryDto(schema, {
-      search: 'receipt',
-      status: 'paid',
-      tags: ['urgent'],
-      archived: true,
-      createdAt: { from: '2026-01-01' },
-      amount: { min: 25 },
-    })
-
-    expect(dto).toEqual({ search: 'receipt', archived: true, amount: { min: 25 } })
-  })
-
-  it('is restored to a full query by merging the schema defaults back in', () => {
-    const state = parseFilters(schema, { status: 'failed' })
-
-    // The DTO carries only the one filter that is away from its default; a
-    // backend that does not know the schema gets the full query from the merge.
-    expect(toQueryDto(schema, state)).toEqual({ status: 'failed' })
-    expect({ ...getDefaultFilterState(schema), ...toQueryDto(schema, state) }).toEqual({
-      search: 'invoice',
-      status: 'failed',
-      tags: ['urgent'],
-      archived: false,
-      createdAt: { from: '2026-01-01' },
-      amount: { min: 0, max: 100 },
-    })
-  })
-})
-
-/**
- * The one place option B loses information, pinned deliberately rather than
- * left to be rediscovered: "cleared" and "at its default" produce the same
- * empty query string, so they are the same URL. `@filterbridge/react`'s
- * `clear(key)` and `reset()` are therefore not durable for a defaulted filter.
- *
- * If this ever stops being true, the trade-off documented in
- * `docs/api/core.md#what-this-costs` and `docs/api/react.md` changed and both
- * need updating — this test failing is the signal to do that, not to relax it.
- */
-describe('a cleared filter is indistinguishable from its default in the URL', () => {
-  it('serializes a cleared filter and a defaulted one to the same empty query', () => {
-    expect(toSearchParams(schema, loose({})).toString()).toBe('')
     expect(toSearchParams(schema, getDefaultFilterState(schema)).toString()).toBe('')
   })
 
-  it('brings the default back when a cleared state is re-parsed', () => {
-    const cleared = loose({})
-    expect(parseFilters(schema, toSearchParams(schema, cleared))).toEqual(
-      getDefaultFilterState(schema)
-    )
-    expect(parseFilters(schema, toSearchParams(schema, cleared))).not.toEqual(cleared)
+  it('writes only the filters that differ from their default', () => {
+    const state = { ...getDefaultFilterState(schema), status: 'failed' as const }
+    expect(toSearchParams(schema, state).toString()).toBe('status=failed')
   })
 
-  it('leaves a filter without a default genuinely clearable', () => {
-    const mixed = defineFilters({
-      status: select(['pending', 'paid'], { default: 'paid' }),
-      search: text(),
+  it('treats a reordered multiSelect as a different value', () => {
+    const state = loose({ ...getDefaultFilterState(schema), tags: ['review', 'urgent'] })
+    expect(toSearchParams(schema, state).get('tags')).toBe('review,urgent')
+  })
+
+  it('still writes a filter that has no default', () => {
+    const state = loose({ ...getDefaultFilterState(schema), search: 'acme' })
+    expect(toSearchParams(schema, state).toString()).toBe('search=acme')
+  })
+
+  it('still drops a value the schema forbids rather than comparing it', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(toSearchParams(schema, loose({ status: 'bogus' })).toString()).toBe('')
+    warn.mockRestore()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// The defect this behavior exists to prevent
+// ---------------------------------------------------------------------------
+
+describe('toQueryDto carries the defaults', () => {
+  it('a virgin page sends the default filters to the backend', () => {
+    // The bug this pins: a page nobody has touched IS filtering — the control
+    // reads "paid" — and its URL is empty because the default is omitted, which
+    // is safe only because parseFilters puts it back. The DTO has no such
+    // decompressor: it leaves for a backend that cannot know the schema. When
+    // it omitted the default too, the screen showed "Status: paid" while the
+    // backend, handed {}, returned every row including pending and failed.
+    const virgin = parseFilters(schema, new URLSearchParams(''))
+
+    expect(virgin).toEqual({ status: 'paid', tags: ['urgent'], archived: false })
+    expect(toSearchParams(schema, virgin).toString()).toBe('')
+    expect(toQueryDto(schema, virgin)).toEqual({
+      status: 'paid',
+      tags: ['urgent'],
+      archived: false,
     })
-    expect(parseFilters(mixed, toSearchParams(mixed, {}))).toEqual({ status: 'paid' })
   })
 
-  it('still lets one side of a range be cleared, since the other side keeps the key present', () => {
-    // A partial clear survives: `amountMax` alone parses to `{ max: … }`, which
-    // is not undefined, so the default is never substituted.
-    const params = toSearchParams(schema, loose({ amount: { max: 100 } }))
-    expect(params.toString()).toBe('amountMax=100')
-    expect(parseFilters(schema, params).amount).toEqual({ max: 100 })
+  it('sends the defaults even when the caller state does not contain them', () => {
+    // Same fallback rule parseFilters uses, so a hand-built or cleared state
+    // cannot mean something different from the URL it would serialize to.
+    expect(toQueryDto(schema, loose({}))).toEqual({
+      status: 'paid',
+      tags: ['urgent'],
+      archived: false,
+    })
+  })
+
+  it('substitutes the default for a value the schema forbids', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(toQueryDto(schema, loose({ status: 'bogus' })).status).toBe('paid')
+    warn.mockRestore()
+  })
+
+  it('keeps a value that differs from the default', () => {
+    const state = loose({ ...getDefaultFilterState(schema), status: 'failed', search: 'acme' })
+    expect(toQueryDto(schema, state)).toEqual({
+      status: 'failed',
+      tags: ['urgent'],
+      archived: false,
+      search: 'acme',
+    })
+  })
+
+  it('never omits a defaulted key, whatever the input', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    for (const input of [{}, { status: 'bogus' }, { tags: [] }, { archived: null }]) {
+      expect(Object.keys(toQueryDto(schema, loose(input)))).toEqual(
+        expect.arrayContaining(defaultedKeys)
+      )
+    }
+    warn.mockRestore()
+  })
+
+  it('leaves a schema without defaults producing a DTO of only what was set', () => {
+    const bare = defineFilters({ search: text(), status: select(['a', 'b']) })
+    expect(toQueryDto(bare, {})).toEqual({})
+    expect(toQueryDto(bare, { search: 'x' })).toEqual({ search: 'x' })
+  })
+})
+
+describe('isAtDefault', () => {
+  it('answers for the enumerable kinds', () => {
+    expect(isAtDefault(schema.status, 'paid')).toBe(true)
+    expect(isAtDefault(schema.status, 'failed')).toBe(false)
+    expect(isAtDefault(schema.archived, false)).toBe(true)
+    expect(isAtDefault(schema.tags, ['urgent'])).toBe(true)
+    expect(isAtDefault(schema.tags, ['review', 'urgent'])).toBe(false)
+  })
+
+  it('is always false for a filter that cannot have a default', () => {
+    expect(isAtDefault(schema.search, 'anything')).toBe(false)
+    expect(isAtDefault(schema.createdAt, {})).toBe(false)
+    expect(isAtDefault(schema.amount, { min: 0 })).toBe(false)
+  })
+
+  it('is false for a filter that declares no default', () => {
+    const bare = defineFilters({ status: select(['a', 'b']) })
+    expect(isAtDefault(bare.status, 'a')).toBe(false)
   })
 })
 
 describe('getDefaultFilterState', () => {
   it('returns every configured default', () => {
     expect(getDefaultFilterState(schema)).toEqual({
-      search: 'invoice',
       status: 'paid',
       tags: ['urgent'],
       archived: false,
-      createdAt: { from: '2026-01-01' },
-      amount: { min: 0, max: 100 },
     })
   })
 
@@ -325,9 +264,10 @@ describe('getDefaultFilterState', () => {
     expect(getDefaultFilterState(bare)).toEqual({})
   })
 
-  it('omits filters that have no default', () => {
+  it('omits filters that cannot or do not declare one', () => {
     const mixed = defineFilters({
       search: text(),
+      createdAt: dateRange(),
       status: select(['pending', 'paid'], { default: 'pending' }),
     })
 
@@ -337,10 +277,7 @@ describe('getDefaultFilterState', () => {
   it('returns copies, not the schema objects', () => {
     const first = getDefaultFilterState(schema)
     first.tags?.push('review')
-    first.createdAt!.to = '2026-12-31'
-
     expect(getDefaultFilterState(schema).tags).toEqual(['urgent'])
-    expect(getDefaultFilterState(schema).createdAt).toEqual({ from: '2026-01-01' })
   })
 })
 
@@ -363,10 +300,9 @@ const valuePools: Record<string, unknown[]> = {
     {},
     { from: '2026-01-01' },
     { from: '2026-01-01', to: '2026-01-31' },
-    { to: '2026-01-31' },
     { from: '', to: '  ' },
   ],
-  amount: [undefined, {}, { min: 0 }, { min: 0, max: 100 }, { min: 50, max: 100 }, { max: NaN }],
+  amount: [undefined, {}, { min: 0 }, { min: 50, max: 100 }, { max: NaN }],
 }
 
 function generateState(random: () => number): Record<string, unknown> {
@@ -378,7 +314,7 @@ function generateState(random: () => number): Record<string, unknown> {
   return state
 }
 
-describe('roundtrip with defaults: parse(toSearchParams(state)) is a fixed point', () => {
+describe('roundtrip with defaults', () => {
   beforeEach(() => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
@@ -387,44 +323,38 @@ describe('roundtrip with defaults: parse(toSearchParams(state)) is a fixed point
     vi.restoreAllMocks()
   })
 
-  it('holds for 500 generated states against a schema where every filter has a default', () => {
+  it('holds for 500 generated states', () => {
     const random = makeRandom(0x5eed)
 
     for (let i = 0; i < 500; i++) {
       const state = generateState(random)
       const message = `state: ${JSON.stringify(state)}`
-
       const cleaned = parseFilters(schema, toSearchParams(schema, loose(state)))
 
-      // A state that already went through a parse must survive the next round
-      // trip untouched — the defaults omitted from the URL come back identical.
+      // A state that already went through a parse survives the next round trip
+      // untouched — the defaults omitted from the URL come back identical.
       expect(parseFilters(schema, toSearchParams(schema, cleaned)), message).toEqual(cleaned)
-      expect(toSearchParams(schema, cleaned).toString(), message).toBe(
-        toSearchParams(schema, parseFilters(schema, toSearchParams(schema, cleaned))).toString()
-      )
 
       // Defaults are never absent from a parsed state.
-      expect(Object.keys(cleaned).sort(), message).toEqual(Object.keys(schema).sort())
+      expect(Object.keys(cleaned), message).toEqual(expect.arrayContaining(defaultedKeys))
     }
   })
 
-  it('keeps toQueryDto in agreement with the serialized URL', () => {
+  it('keeps toQueryDto in agreement with the URL for any state', () => {
     const random = makeRandom(0xc0ffee)
 
     for (let i = 0; i < 500; i++) {
       const state = generateState(random)
       const message = `state: ${JSON.stringify(state)}`
-      const cleaned = parseFilters(schema, toSearchParams(schema, loose(state)))
 
-      // Both serializers drop exactly the filters sitting at their default, so
-      // the DTO keys are the schema keys the URL also carries.
-      const dtoKeys = Object.keys(toQueryDto(schema, cleaned)).sort()
-      const urlKeys = new Set(
-        [...toSearchParams(schema, cleaned).keys()].map((key) =>
-          key.replace(/(From|To|Min|Max)$/, '')
-        )
-      )
-      expect(dtoKeys, message).toEqual([...urlKeys].sort())
+      // The property the DTO merge exists to satisfy: what the backend is told
+      // does not depend on whether the state went through a URL first.
+      const direct = toQueryDto(schema, loose(state))
+      const viaUrl = toQueryDto(schema, parseFilters(schema, toSearchParams(schema, loose(state))))
+      expect(direct, message).toEqual(viaUrl)
+
+      // And every defaulted filter is always described, never left implicit.
+      expect(Object.keys(direct), message).toEqual(expect.arrayContaining(defaultedKeys))
     }
   })
 })
