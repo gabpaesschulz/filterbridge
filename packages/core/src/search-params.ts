@@ -19,7 +19,7 @@ export function toSearchParams<S extends Record<string, AnyFilter>>(
         // Trimmed on the way out, exactly as parseFilters trims on the way in,
         // so `' foo '` and `'foo'` produce the same URL.
         const trimmed = typeof value === 'string' ? value.trim() : ''
-        if (trimmed && !isAtDefault(filter, trimmed)) {
+        if (trimmed) {
           params.set(key, trimmed)
         }
         break
@@ -60,12 +60,8 @@ export function toSearchParams<S extends Record<string, AnyFilter>>(
         const next: DateRangeValue = {}
         if (typeof range.from === 'string' && range.from.trim()) next.from = range.from.trim()
         if (typeof range.to === 'string' && range.to.trim()) next.to = range.to.trim()
-        // Compared as a whole: a range that matches the default on one side
-        // only is still a different range and must reach the URL.
-        if (!isAtDefault(filter, next)) {
-          if (next.from !== undefined) params.set(`${key}From`, next.from)
-          if (next.to !== undefined) params.set(`${key}To`, next.to)
-        }
+        if (next.from !== undefined) params.set(`${key}From`, next.from)
+        if (next.to !== undefined) params.set(`${key}To`, next.to)
         break
       }
 
@@ -74,10 +70,8 @@ export function toSearchParams<S extends Record<string, AnyFilter>>(
         const next: NumberRangeValue = {}
         if (Number.isFinite(range.min)) next.min = range.min
         if (Number.isFinite(range.max)) next.max = range.max
-        if (!isAtDefault(filter, next)) {
-          if (next.min !== undefined) params.set(`${key}Min`, String(next.min))
-          if (next.max !== undefined) params.set(`${key}Max`, String(next.max))
-        }
+        if (next.min !== undefined) params.set(`${key}Min`, String(next.min))
+        if (next.max !== undefined) params.set(`${key}Max`, String(next.max))
         break
       }
     }

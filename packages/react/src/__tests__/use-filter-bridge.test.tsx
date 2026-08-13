@@ -11,7 +11,9 @@ import {
   parseFilters,
   select,
   text,
+  toSearchParams,
 } from '@filterbridge/core'
+import type { InferFilterState } from '@filterbridge/core'
 import { useFilterBridge } from '../index'
 
 const schema = defineFilters({
@@ -681,12 +683,12 @@ describe('derived state', () => {
 // ---------------------------------------------------------------------------
 
 const defaulted = defineFilters({
-  search: text({ default: 'invoice' }),
+  search: text(),
   status: select(['pending', 'paid', 'failed'] as const, { default: 'paid' }),
   tags: multiSelect(['urgent', 'review', 'archived'] as const, { default: ['urgent'] }),
   active: boolean({ default: false }),
-  createdAt: dateRange({ default: { from: '2026-01-01' } }),
-  amount: numberRange({ default: { min: 0 } }),
+  createdAt: dateRange(),
+  amount: numberRange(),
 })
 
 describe('activeFilterCount with schema defaults', () => {
@@ -737,15 +739,6 @@ describe('activeFilterCount with schema defaults', () => {
 
     act(() => result.current.set('active', false))
     expect(result.current.activeFilterCount).toBe(0)
-  })
-
-  it('ignores surrounding whitespace, as the serializers do', () => {
-    const { result } = renderHook(() => useFilterBridge(defaulted))
-
-    act(() => result.current.set('search', '  invoice  '))
-
-    expect(result.current.activeFilterCount).toBe(0)
-    expect(result.current.toSearchParams().toString()).toBe('')
   })
 
   it('counts a reordered multiSelect, which is a different state', () => {
@@ -863,5 +856,163 @@ describe('type inference', () => {
     expectTypeOf(state.active).toEqualTypeOf<boolean | undefined>()
     expectTypeOf(state.createdAt).toEqualTypeOf<{ from?: string; to?: string } | undefined>()
     expectTypeOf(state.amount).toEqualTypeOf<{ min?: number; max?: number } | undefined>()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Hook state stays inside the range of parseFilters
+// ---------------------------------------------------------------------------
+
+/**
+ * The invariant the defaults merge exists to hold: whatever the caller does,
+ * there is always some URL that parses to `bridge.state`. Without it, `{}` is
+ * reachable through reset/clear/syncState but is not a state any query string
+ * can express — the UI would render a filter as cleared while the URL and the
+ * DTO both read it as its default.
+ */
+function expectRepresentable(state: Record<string, unknown>, message: string) {
+  expect(parseFilters(defaulted, toSearchParams(defaulted, state as never)), message).toEqual(state)
+}
+
+describe('state is always a state some URL parses to', () => {
+  it('starts at the defaults even with no initialState', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    expect(result.current.state).toEqual(getDefaultFilterState(defaulted))
+    expectRepresentable(result.current.state as Record<string, unknown>, 'mount')
+  })
+
+  it('reset() lands on the defaults, not on {}', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    act(() => result.current.setMany({ status: 'failed', search: 'acme' }))
+    act(() => result.current.reset())
+
+    expect(result.current.state).toEqual(getDefaultFilterState(defaulted))
+    expectRepresentable(result.current.state as Record<string, unknown>, 'after reset')
+  })
+
+  it('clear() on a defaulted filter returns it to its default', () => {
+    // "Absent" is not expressible for a filter with a default, so clear means
+    // the only thing it can mean. It is durable now: a reload shows the same.
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    act(() => result.current.set('status', 'failed'))
+    act(() => result.current.clear('status'))
+
+    expect(result.current.state.status).toBe('paid')
+    expectRepresentable(result.current.state as Record<string, unknown>, 'after clear')
+  })
+
+  it('clear() on a filter without a default still removes it', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    act(() => result.current.set('search', 'acme'))
+    act(() => result.current.clear('search'))
+
+    expect(result.current.state.search).toBeUndefined()
+    expectRepresentable(result.current.state as Record<string, unknown>, 'after clear no-default')
+  })
+
+  it('syncState({}) adopts the defaults rather than an unreachable state', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    act(() => result.current.syncState({}))
+
+    expect(result.current.state).toEqual(getDefaultFilterState(defaulted))
+  })
+
+  it('what the UI renders and what the backend is told never disagree', () => {
+    // The mirror of the virgin-page defect, from the other side: after reset
+    // the control must not read "no status" while the DTO says paid.
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+    act(() => result.current.reset())
+
+    expect(result.current.state.status).toBe('paid')
+    expect(result.current.toQueryDto().status).toBe('paid')
+  })
+
+  it('leaves a schema without defaults resetting to {} exactly as before', () => {
+    const { result } = renderHook(() => useFilterBridge(schema))
+    act(() => result.current.setMany({ search: 'invoice', status: 'paid' }))
+    act(() => result.current.reset())
+
+    expect(result.current.state).toEqual({})
+  })
+
+  it('holds for 200 generated operation sequences', () => {
+    const { result } = renderHook(() => useFilterBridge(defaulted))
+
+    let seed = 0x51de >>> 0
+    const random = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0
+      return seed / 0x100000000
+    }
+
+    const operations: Array<[string, () => void]> = [
+      ['set status', () => result.current.set('status', 'failed')],
+      ['set search', () => result.current.set('search', 'acme')],
+      ['set tags', () => result.current.set('tags', ['review', 'urgent'])],
+      ['set active', () => result.current.set('active', true)],
+      ['set amount', () => result.current.set('amount', { min: 10 })],
+      ['set empty search', () => result.current.set('search', '')],
+      ['clear status', () => result.current.clear('status')],
+      ['clear tags', () => result.current.clear('tags')],
+      ['clear amount', () => result.current.clear('amount')],
+      ['setMany', () => result.current.setMany({ status: 'pending', active: false })],
+      ['reset', () => result.current.reset()],
+      ['resetToInitial', () => result.current.resetToInitial()],
+      ['syncState empty', () => result.current.syncState({})],
+      ['syncState partial', () => result.current.syncState({ status: 'failed' })],
+    ]
+
+    const applied: string[] = []
+    for (let i = 0; i < 200; i++) {
+      const [label, run] = operations[Math.floor(random() * operations.length)]
+      applied.push(label)
+      act(run)
+      expectRepresentable(
+        result.current.state as Record<string, unknown>,
+        `after: ${applied.slice(-6).join(' -> ')}`
+      )
+    }
+  })
+})
+
+describe('resetToInitial() under the defaults rule', () => {
+  it('captures the defaults-merged initialState at mount', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: { search: 'acme' } })
+    )
+
+    // initialState is layered over the defaults, so the captured value is
+    // representable too — not the bare { search: 'acme' } that was passed in.
+    expect(result.current.state).toEqual({ ...getDefaultFilterState(defaulted), search: 'acme' })
+
+    act(() => result.current.setMany({ status: 'failed', search: 'other' }))
+    act(() => result.current.resetToInitial())
+
+    expect(result.current.state).toEqual({ ...getDefaultFilterState(defaulted), search: 'acme' })
+    expectRepresentable(result.current.state as Record<string, unknown>, 'after resetToInitial')
+  })
+
+  it('restores the defaults for a key the initialState did not carry', () => {
+    const { result } = renderHook(() =>
+      useFilterBridge(defaulted, { initialState: { search: 'acme' } })
+    )
+
+    act(() => result.current.set('status', 'failed'))
+    act(() => result.current.resetToInitial())
+
+    expect(result.current.state.status).toBe('paid')
+  })
+
+  it('still ignores later changes to options.initialState', () => {
+    type Initial = Partial<InferFilterState<typeof defaulted>>
+    const { result, rerender } = renderHook(
+      ({ initial }: { initial: Initial }) =>
+        useFilterBridge(defaulted, { initialState: initial }),
+      { initialProps: { initial: { search: 'acme' } as Initial } }
+    )
+
+    rerender({ initial: { search: 'changed' } as Initial })
+    act(() => result.current.resetToInitial())
+
+    expect(result.current.state.search).toBe('acme')
   })
 })

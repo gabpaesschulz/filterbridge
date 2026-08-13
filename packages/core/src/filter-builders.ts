@@ -1,35 +1,36 @@
 import type {
   BooleanFilter,
   DateRangeFilter,
-  DateRangeValue,
   MultiSelectFilter,
   NumberRangeFilter,
-  NumberRangeValue,
   SelectFilter,
   TextFilter,
 } from './filter-types'
 import { assertValidDefaults } from './filter-validation'
 
 /**
- * Shared configuration accepted as the last argument of every filter builder.
+ * Configuration accepted as the last argument of the filter builders that take
+ * one: `select`, `multiSelect` and `boolean`.
  *
  * `default` is the value `parseFilters` uses when the key is absent from the
- * input or present but invalid. It is also the value the serializers omit, so a
- * filter sitting at its default produces no query param at all.
+ * input or present but invalid. It is also the value `toSearchParams` omits, so
+ * a filter sitting at its default produces no query param at all.
+ *
+ * `text`, `dateRange` and `numberRange` deliberately do not accept one — see
+ * the note on each, and `docs/decisions/002-default-values.md`.
  */
 export interface FilterConfig<TValue> {
   readonly default?: TValue
 }
 
 /**
- * Defaults are normalized once, here, to the exact shape the parsers produce —
- * a trimmed string, a range without empty sides. Otherwise `{ from: '' }` as a
- * default would never compare equal to the parsed `{}` and the round trip would
- * emit a param for a filter that is at its default.
+ * No `default`. Under the hook's defaults rule, clearing a filter means
+ * returning it to its default — which is coherent for a discrete choice and
+ * hostile for free text: deleting is continuous editing, so the input would
+ * repopulate itself while the user is still backspacing through it.
  */
-export function text(config?: FilterConfig<string>): TextFilter {
-  const value = typeof config?.default === 'string' ? config.default.trim() : ''
-  return value ? { _kind: 'text', default: value } : { _kind: 'text' }
+export function text(): TextFilter {
+  return { _kind: 'text' }
 }
 
 export function select<const T extends readonly string[]>(
@@ -58,28 +59,21 @@ export function boolean(config?: FilterConfig<boolean>): BooleanFilter {
     : { _kind: 'boolean' }
 }
 
-export function dateRange(config?: FilterConfig<DateRangeValue>): DateRangeFilter {
-  const value = config?.default
-  if (value === undefined) return { _kind: 'dateRange' }
-
-  const next: DateRangeValue = {}
-  if (typeof value.from === 'string' && value.from.trim()) next.from = value.from.trim()
-  if (typeof value.to === 'string' && value.to.trim()) next.to = value.to.trim()
-
-  return next.from !== undefined || next.to !== undefined
-    ? { _kind: 'dateRange', default: next }
-    : { _kind: 'dateRange' }
+/**
+ * No `default`. A literal date default is wrong by construction: `'2026-01-01'`
+ * means something different every month and goes stale on its own. The case it
+ * would serve — "last 30 days" — is a discrete choice and belongs in a
+ * `select(['7d', '30d', '90d'], { default: '30d' })`.
+ */
+export function dateRange(): DateRangeFilter {
+  return { _kind: 'dateRange' }
 }
 
-export function numberRange(config?: FilterConfig<NumberRangeValue>): NumberRangeFilter {
-  const value = config?.default
-  if (value === undefined) return { _kind: 'numberRange' }
-
-  const next: NumberRangeValue = {}
-  if (Number.isFinite(value.min)) next.min = value.min
-  if (Number.isFinite(value.max)) next.max = value.max
-
-  return next.min !== undefined || next.max !== undefined
-    ? { _kind: 'numberRange', default: next }
-    : { _kind: 'numberRange' }
+/**
+ * No `default`, for the same reason as `text`: a number input passes through
+ * the empty string as an ordinary step of editing — backspacing `150` to `20`
+ * goes through `''` — so a default would snap the field back mid-edit.
+ */
+export function numberRange(): NumberRangeFilter {
+  return { _kind: 'numberRange' }
 }

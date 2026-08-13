@@ -225,11 +225,30 @@ toQueryDto(schema, { status: 'bogus', tags: ['urgent', 'zzz'] } as never)
 // { tags: ['urgent'] }
 ```
 
-A filter at its [default](#default-values) is omitted here too, so the DTO and the URL always describe the same query. A backend that does not know the schema can be given the full picture with [`getDefaultFilterState`](#getdefaultfilterstateschema):
+### The DTO carries defaults; the URL does not
+
+A filter at its [default](#default-values) **is** included here, even though `toSearchParams` omits it. The two outputs carry deliberately different bytes, and the reason is what happens on the other side.
+
+Omitting a default from the URL is compression with a guaranteed decompressor: the URL is read back by `parseFilters`, which puts the default in again. Nothing is lost.
+
+The DTO has no such closure. It leaves for a backend that does not run FilterBridge and cannot know the schema, so an omitted default is not compressed — it is gone. A page sitting at `status: 'paid'` would render "paid" in the control while the backend, handed `{}`, returned every row.
 
 ```ts
-const full = { ...getDefaultFilterState(schema), ...toQueryDto(schema, state) }
+const schema = defineFilters({
+  status: select(['pending', 'paid', 'failed'], { default: 'paid' }),
+})
+
+const state = parseFilters(schema, new URLSearchParams(''))
+// { status: 'paid' } — the page is filtering
+
+toSearchParams(schema, state).toString()
+// '' — safe: parseFilters restores 'paid' on the way back in
+
+toQueryDto(schema, state)
+// { status: 'paid' } — the backend is told what is actually being filtered
 ```
+
+`toQueryDto` applies the same fallback rule as `parseFilters`: a value that is absent, empty or invalid becomes the filter's default. That is what makes the DTO independent of whether the state has been through a URL — `toQueryDto(state)` always equals `toQueryDto(parseFilters(schema, toSearchParams(schema, state)))`.
 
 **Example:**
 
@@ -287,14 +306,9 @@ getDefaultFilterState(schema)
 // { status: 'paid', pageSize: '25' }
 ```
 
-It returns the same object `parseFilters(schema, {})` does — this is the way to get it without an input. Range objects and `multiSelect` arrays are fresh copies on every call, so mutating the result never reaches the schema.
+It returns the same object `parseFilters(schema, {})` does — this is the way to get it without an input. `multiSelect` arrays are fresh copies on every call, so mutating the result never reaches the schema.
 
-Useful for restoring what the serializers omit:
-
-```ts
-// The full query, defaults included, for a backend that does not know the schema
-const full = { ...getDefaultFilterState(schema), ...toQueryDto(schema, state) }
-```
+You do **not** need it to complete a DTO: [`toQueryDto` already carries the defaults](#the-dto-carries-defaults-the-url-does-not). It is useful for seeding state outside the parse path, and it is what `@filterbridge/react` uses to keep hook state representable.
 
 See [Defaults and `useFilterBridge`](#defaults-and-usefilterbridge) for the React side.
 
@@ -302,7 +316,7 @@ See [Defaults and `useFilterBridge`](#defaults-and-usefilterbridge) for the Reac
 
 ## Filter factories
 
-Every factory takes an optional configuration object as its last argument:
+`select`, `multiSelect` and `boolean` take an optional configuration object as their last argument. `text`, `dateRange` and `numberRange` take no configuration — see [which filters accept a default](#which-filters-accept-a-default):
 
 ```ts
 interface FilterConfig<TValue> {
@@ -324,10 +338,10 @@ Creates a text filter definition.
 defineFilters({ search: text() })
 // search?: string
 
-defineFilters({ search: text({ default: 'invoice' }) })
+defineFilters({ search: text() })
 ```
 
-The default is trimmed, and a whitespace-only default is the same as no default.
+`text()` takes no configuration and **accepts no default** — see [which filters accept a default](#which-filters-accept-a-default). Deleting is continuous editing, so a default would repopulate the input while the user was still backspacing through it.
 
 ---
 
@@ -422,10 +436,10 @@ The URL keys are derived from the filter name:
 defineFilters({ createdAt: dateRange() })
 // createdAt?: { from?: string; to?: string }
 
-defineFilters({ createdAt: dateRange({ default: { from: '2026-01-01' } }) })
+defineFilters({ createdAt: dateRange() })
 ```
 
-A partial default is allowed. Empty sides are dropped, and a default with no side left is the same as no default.
+`dateRange()` takes no configuration and **accepts no default**. A literal date default is wrong by construction — `'2026-01-01'` means something different every month and goes stale on its own. Express "last 30 days" as a discrete choice instead: `select(['7d', '30d', '90d'], { default: '30d' })`.
 
 ---
 
@@ -445,10 +459,10 @@ The URL keys are derived from the filter name:
 defineFilters({ amount: numberRange() })
 // amount?: { min?: number; max?: number }
 
-defineFilters({ amount: numberRange({ default: { min: 0 } }) })
+defineFilters({ amount: numberRange() })
 ```
 
-A partial default is allowed. Non-finite sides are dropped, and a default with no side left is the same as no default.
+`numberRange()` takes no configuration and **accepts no default**, for the same reason as `text()`: a number input passes through the empty string as an ordinary step of editing — backspacing `150` to `20` goes through `''` — so a default would snap the field back mid-edit.
 
 ---
 
@@ -492,18 +506,44 @@ The round trip is what makes this work: a default is omitted on the way out and 
 
 Filters without a default behave exactly as they always have.
 
+### Which filters accept a default
+
+Only the filters whose value space is a **fixed, enumerable set**: `select`, `multiSelect` and `boolean`. `text()`, `dateRange()` and `numberRange()` take no configuration at all, so a default on them is a type error, not a runtime one.
+
+The criterion is not the widget you bind to — the library cannot know that. It is whether the value can pass through "empty" as an intermediate step of a single editing gesture.
+
+| Filter | Default | Why |
+|---|---|---|
+| `select` | yes | A fixed set. Choosing another option is one discrete act. |
+| `boolean` | yes | Three states, all discrete. |
+| `multiSelect` | yes | Unchecking to `[]` is the destination of a click, not a step on the way somewhere. |
+| `text` | **no** | Free text is edited character by character and passes through `''`. A default would repopulate the input mid-backspace. |
+| `numberRange` | **no** | Same: changing `150` to `20` passes through `''`. |
+| `dateRange` | **no** | A literal date default is stale by construction — `'2026-01-01'` means something different every month. |
+
+The cases those three would have served are better modelled discretely. "Last 30 days" is a choice, not a date:
+
+```ts
+// Not this
+createdAt: dateRange({ default: { from: '2026-01-01' } }) // ← type error
+
+// This — the window is a fixed set, and it does not go stale
+period: select(['7d', '30d', '90d'], { default: '30d' })
+```
+
+`docs/decisions/002-default-values.md` records the reasoning in full.
+
 ### Comparison rules
 
 A value is considered "at its default" after the same normalization the serializers already apply:
 
 | Type | Equal to the default when |
 |------|---------------------------|
-| `text` | The trimmed value is identical — `' invoice '` matches a default of `'invoice'` |
 | `select` | The value is identical |
 | `multiSelect` | Same entries in the same order — a reordered selection is a different state and stays in the URL |
 | `boolean` | The value is identical |
-| `dateRange` | Both sides match; a range that matches on one side only is still written in full |
-| `numberRange` | Both sides match, after dropping non-finite sides |
+
+`isAtDefault` answers `false` for every other filter kind, since they cannot carry a default.
 
 ### `isAtDefault(filter, value)`
 

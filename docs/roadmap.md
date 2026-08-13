@@ -14,7 +14,7 @@ Ongoing improvements to the existing packages. No new packages planned.
 - [x] `popstate` handler for `@filterbridge/browser` — `usePopstateSync` + `useFilterBridge().syncState` update React state on back/forward
 - [ ] Better examples for Next.js App Router pattern (client + server components)
 - [x] Repeated query params support in `multiSelect` (`tags=a&tags=b` in addition to `tags=a,b`)
-- [x] Optional default values per filter in schema — `text({ default })` and friends, plus `getDefaultFilterState(schema)`
+- [x] Optional default values per filter in schema — `select`, `multiSelect` and `boolean` accept `{ default }`, plus `getDefaultFilterState(schema)`
 - [ ] Optional custom key suffixes for `dateRange` and `numberRange`
 - [ ] Bug fixes as they are reported
 

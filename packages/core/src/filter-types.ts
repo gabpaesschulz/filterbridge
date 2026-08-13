@@ -1,10 +1,10 @@
-/** State shape of a `dateRange` filter, and of its configured default. */
+/** State shape of a `dateRange` filter. */
 export interface DateRangeValue {
   from?: string
   to?: string
 }
 
-/** State shape of a `numberRange` filter, and of its configured default. */
+/** State shape of a `numberRange` filter. */
 export interface NumberRangeValue {
   min?: number
   max?: number
@@ -12,7 +12,6 @@ export interface NumberRangeValue {
 
 export interface TextFilter {
   readonly _kind: 'text'
-  readonly default?: string
 }
 
 export interface SelectFilter<T extends readonly string[]> {
@@ -34,12 +33,10 @@ export interface BooleanFilter {
 
 export interface DateRangeFilter {
   readonly _kind: 'dateRange'
-  readonly default?: Readonly<DateRangeValue>
 }
 
 export interface NumberRangeFilter {
   readonly _kind: 'numberRange'
-  readonly default?: Readonly<NumberRangeValue>
 }
 
 export type AnyFilter =
@@ -51,3 +48,9 @@ export type AnyFilter =
   | NumberRangeFilter
 
 export type FilterSchema = Record<string, AnyFilter>
+
+/** The filters that accept a `default` — those whose value space is enumerable. */
+export type DefaultableFilter =
+  | SelectFilter<readonly string[]>
+  | MultiSelectFilter<readonly string[]>
+  | BooleanFilter
