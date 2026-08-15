@@ -72,6 +72,18 @@ separately from the API reference so that "what it does" and "why it does that" 
 
 ---
 
+## Runnable code
+
+Prose is checked against these, not the other way round.
+
+| Application                                               | Stack                 | What it proves                                                                                 |
+| --------------------------------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------- |
+| [`apps/demo`](../apps/demo)                               | Vite + React          | `core`, `react`, `browser` and `tanstack` together. `pnpm demo` from the root                  |
+| [`examples/next-app-router`](../examples/next-app-router) | Next.js 15 App Router | The server/client boundary in `@filterbridge/next`. Outside the pnpm workspace; installs alone |
+| [`examples/basic`](../examples/basic)                     | —                     | Copy-paste snippets, not an application                                                        |
+
+---
+
 ## Repository links
 
 | Resource                  | Link                                             |

@@ -5,6 +5,15 @@ with Next.js App Router's server/client component model.
 
 This guide shows a complete pattern for a filters page.
 
+> **Every snippet below is copied out of a running application.**
+> [`examples/next-app-router`](../../examples/next-app-router) is a Next.js 15 app that exercises
+> this exact pattern, kept outside the pnpm workspace so it costs nothing to install. Read it, or
+> run it: `cd examples/next-app-router && npm install && npm run dev`.
+>
+> Until `0.3.0` this guide was 220 lines of snippets that had never been executed, and two of its
+> claims were wrong — see [back/forward](#back-and-forward-need-two-things), which is why the
+> example exists.
+
 ---
 
 ## The pattern
@@ -13,17 +22,16 @@ This guide shows a complete pattern for a filters page.
 Next.js server component
   → receives searchParams from Next.js (plain object or Promise)
   → parseNextSearchParamsAsync() → typed initialState
+  → toQueryDto() → fetch
   → passes initialState to a client component
 
 Client component
   → useFilterBridge(schema, { initialState })
   → renders filter inputs bound to bridge.set()
   → createNextFilterHref() → href string
-  → navigates using <Link href>, router.push(), or router.replace()
+  → router.push(href) to navigate
+  → usePopstateSync(schema, bridge.syncState) so back/forward reaches the controls
 ```
-
-Back/forward navigation triggers a full server component re-render,
-which re-parses the URL params and passes new `initialState` down.
 
 ---
 
@@ -57,24 +65,28 @@ export const invoiceFilters = defineFilters({
 
 ```tsx
 // app/invoices/page.tsx
+import { toQueryDto } from '@filterbridge/core'
 import { parseNextSearchParamsAsync } from '@filterbridge/next'
+import { fetchInvoices } from './data'
 import { invoiceFilters } from './filters'
 import { InvoicesClient } from './invoices-client'
 
-// Works with both Next.js 14 (sync searchParams) and Next.js 15 (Promise searchParams)
+// Next.js 15: searchParams is a Promise. For Next.js 14 the sync
+// parseNextSearchParams works with a plain record.
 type PageProps = {
-  searchParams:
-    | Record<string, string | string[] | undefined>
-    | Promise<Record<string, string | string[] | undefined>>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
 export default async function InvoicesPage({ searchParams }: PageProps) {
   const initialFilters = await parseNextSearchParamsAsync(invoiceFilters, searchParams)
 
-  // You can fetch data here using the typed state
-  // const invoices = await fetchInvoices(toQueryDto(invoiceFilters, initialFilters))
+  // The DTO, not the state, is what a backend receives. Note what this holds on
+  // a bare URL with no query string: any filter declaring a `default` is in it,
+  // because the URL omits a default and the DTO carries it. See ADR-002.
+  const dto = toQueryDto(invoiceFilters, initialFilters)
+  const invoices = await fetchInvoices(dto)
 
-  return <InvoicesClient initialFilters={initialFilters} />
+  return <InvoicesClient initialFilters={initialFilters} invoices={invoices} />
 }
 ```
 
@@ -86,11 +98,12 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
 // app/invoices/invoices-client.tsx
 'use client'
 
-import { useFilterBridge } from '@filterbridge/react'
-import { createNextFilterHref } from '@filterbridge/next'
-import { useRouter, usePathname } from 'next/navigation'
-import { invoiceFilters } from './filters'
+import { usePopstateSync } from '@filterbridge/browser/react'
 import type { InferFilterState } from '@filterbridge/core'
+import { createNextFilterHref } from '@filterbridge/next'
+import { useFilterBridge } from '@filterbridge/react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { invoiceFilters } from './filters'
 
 type Props = {
   initialFilters: InferFilterState<typeof invoiceFilters>
@@ -99,15 +112,19 @@ type Props = {
 export function InvoicesClient({ initialFilters }: Props) {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   const bridge = useFilterBridge(invoiceFilters, {
     initialState: initialFilters,
     onChange(nextState) {
-      // Navigate on every filter change
-      const href = createNextFilterHref(invoiceFilters, nextState, { pathname })
-      router.replace(href, { scroll: false })
+      const href = createNextFilterHref(invoiceFilters, nextState, { pathname, searchParams })
+      // queueMicrotask is a workaround — see "onChange and the render phase" below
+      queueMicrotask(() => router.push(href, { scroll: false }))
     },
   })
+
+  // Back and forward. See below for why this is not optional.
+  usePopstateSync(invoiceFilters, bridge.syncState)
 
   return (
     <div>
@@ -135,27 +152,107 @@ export function InvoicesClient({ initialFilters }: Props) {
 
 ---
 
-## Step 4 — Server-side data fetching with the typed DTO
+## Back and forward need two things
+
+_Corrected in `0.3.0`, after the pattern above was executed for the first time._
+
+This guide previously used `router.replace` and stated that back/forward "triggers a full server
+component re-render, which re-parses and re-initializes state correctly". Both halves were wrong.
+
+### 1. `router.push`, not `router.replace`
+
+`replace` overwrites the current history entry. A page that only ever replaces has exactly one
+entry, so pressing Back leaves the application entirely — there is no filter state to go back to.
+
+The cost of `push` is one history entry per change, which includes one per keystroke in a text
+input. Debounce the text field before calling `set`, or use `replace` for text and `push` for the
+discrete controls.
+
+### 2. `usePopstateSync`, because a server re-render is not enough
+
+Back and forward really do re-run the server component and really do hand down a fresh
+`initialFilters`. That changes nothing on its own. `useFilterBridge` is uncontrolled **by design**:
+it captures `initialState` on the first render and ignores it afterwards, so that a parent re-render
+cannot stomp on what the user is typing. React reconciles the client component rather than
+remounting it.
+
+Without a sync, the URL changes and the server-rendered rows change while the filter controls stay
+exactly where they were. The two halves of the page disagree, which is worse than either being wrong
+on its own.
 
 ```tsx
-// app/invoices/page.tsx (extended)
-import { toQueryDto } from '@filterbridge/core'
-import { parseNextSearchParamsAsync } from '@filterbridge/next'
-import { invoiceFilters } from './filters'
-import { InvoicesClient } from './invoices-client'
+import { usePopstateSync } from '@filterbridge/browser/react'
 
-export default async function InvoicesPage({ searchParams }) {
-  const initialFilters = await parseNextSearchParamsAsync(invoiceFilters, searchParams)
-
-  // Convert typed state to a clean backend DTO
-  const dto = toQueryDto(invoiceFilters, initialFilters)
-  // dto: { search?: string, status?: string, tags?: string[], ... }
-
-  const invoices = await fetchInvoices(dto)
-
-  return <InvoicesClient initialFilters={initialFilters} invoices={invoices} />
-}
+usePopstateSync(invoiceFilters, bridge.syncState)
 ```
+
+Two properties matter, and they are why this is the right tool rather than a hand-rolled effect on
+`initialFilters`:
+
+- **It fires on popstate and nothing else.** An effect keyed on the server's `initialFilters` also
+  fires after every ordinary filter change, one server round trip late — which can snap a search box
+  back to a stale value while the user is still typing.
+- **`syncState` does not fire `onChange`.** Adopting the URL must not write the URL again; that
+  turns one Back press into a fight with the history stack.
+
+`@filterbridge/browser` is a separate install. The alternative is `key`-ing the client component off
+the search string to force a remount, which works but throws away all component state on every
+navigation.
+
+---
+
+## `onChange` and the render phase
+
+`useFilterBridge` currently fires `onChange` from inside its `setState` updater, and React runs
+updaters during render. Calling `router.push` directly from `onChange` therefore logs:
+
+```txt
+Cannot update a component (`Router`) while rendering a different component
+```
+
+Wrap the navigation in `queueMicrotask` until the hook is fixed:
+
+```ts
+queueMicrotask(() => router.push(href, { scroll: false }))
+```
+
+Tracked in
+[Sprint 1 task 6](../sprints/sprint-1/06-onchange-fires-during-render.md). It does not affect
+`@filterbridge/browser`'s `pushUrlFilters` / `replaceUrlFilters`, which write to `window.history`
+rather than to React state.
+
+---
+
+## Step 4 — What the DTO carries that the URL does not
+
+Step 2 already builds the DTO, because in practice you fetch in the same place you parse. The part
+worth calling out separately is what it contains.
+
+For a filter declaring a default:
+
+```ts
+const invoiceFilters = defineFilters({
+  status: select(['pending', 'paid', 'failed'] as const, { default: 'pending' }),
+})
+```
+
+a request to `/invoices` with **no query string at all** produces:
+
+```ts
+initialFilters // { status: 'pending' }
+toQueryDto(invoiceFilters, initialFilters) // { status: 'pending' }
+createNextFilterHref(invoiceFilters, initialFilters, { pathname }) // '/invoices'
+```
+
+The URL stays clean; the backend still receives the filter. Omitting a default from the URL is
+compression with a guaranteed decompressor — `parseFilters` puts it back. Omitting it from the DTO
+would be loss: the backend does not know the schema and would return everything, so the page would
+render "pending" over a list of everything.
+
+This is the rule from [ADR-002](../decisions/002-default-values.md), and the server component is
+where it is easiest to get wrong. The
+[example](../../examples/next-app-router) prints both outputs next to each other for exactly this
+reason.
 
 ---
 
@@ -220,9 +317,21 @@ const searchParams = useSearchParams() // ReadonlyURLSearchParams
 
 ## Known limitations
 
-- No automatic URL sync — you call `router.replace(href)` in `onChange` explicitly
-- No `popstate` listener — browser back/forward triggers a full server component re-render,
-  which re-parses and re-initializes state correctly via `initialState`
+- No automatic URL sync — you call `router.push(href)` in `onChange` explicitly
+- No `popstate` listener **in this package**. Back/forward needs
+  `usePopstateSync` from `@filterbridge/browser/react` — a server re-render alone does not reach the
+  filter controls. [See above](#2-usepopstatesync-because-a-server-re-render-is-not-enough)
+- `onChange` fires during the render phase, so a navigation call from it needs a `queueMicrotask`
+  wrapper — [task 6](../sprints/sprint-1/06-onchange-fires-during-render.md)
 - No pagination or sorting adapters
 - Repeated non-filter URL params (e.g., `?tag=a&tag=b`) are deduplicated when passed through
   `createNextFilterHref`'s `searchParams` option
+
+---
+
+## The running example
+
+[`examples/next-app-router`](../../examples/next-app-router) is this guide as an application:
+server parse, client state, back/forward, a filter with a `default` so the URL-omits-but-DTO-carries
+rule is visible, and a non-filter param that survives. Verified against Next.js `15.5.23`, React
+`19.2.8` and FilterBridge `0.2.0`.

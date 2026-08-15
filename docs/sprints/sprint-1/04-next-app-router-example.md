@@ -2,7 +2,54 @@
 
 **Priority:** P2 — the adapter with the most users and the least proof
 **Area:** docs, `examples/`
-**Status:** open
+**Status:** done — **and it found two defects, which was the point**
+
+---
+
+## Outcome
+
+[`examples/next-app-router/`](../../../examples/next-app-router) runs, builds, and typechecks
+against Next.js `15.5.23`, React `19.2.8` and published FilterBridge `0.2.0`. Option C as
+recommended: outside `pnpm-workspace.yaml` (via a `!examples/next-app-router` exclusion), installed
+with `npm install`, invisible to the root install and to CI.
+
+Verification was 26 assertions driven through real Chromium — back, forward, back-to-the-start, a
+deep link exercising every filter type, and a non-filter param surviving a filter change. All pass.
+
+### The guide was wrong about back/forward, in two independent ways
+
+This is the finding. The guide's known-limitations section said back/forward "triggers a full server
+component re-render, which re-parses and re-initializes state correctly". Executing it:
+
+**1. `router.replace` means there is no history to go back to.** The guide navigated with `replace`,
+which overwrites the current entry. The app therefore had exactly one history entry, and pressing
+Back left the application — the Playwright run landed on `about:blank`. The example uses
+`router.push`.
+
+**2. A server re-render does not reach the filter controls.** With `push` in place, Back updated the
+URL and the server-rendered rows, and left every filter input where it was. That is correct
+behavior from `useFilterBridge`, which captures `initialState` once on purpose
+([ADR-002](../../decisions/002-default-values.md)) — but it makes the guide's claim false, and the
+resulting half-updated page is worse than either half being wrong alone.
+
+The fix is `usePopstateSync` from `@filterbridge/browser/react`, paired with `syncState` — the pair
+[ADR-004](../../decisions/004-external-state-sync.md) introduced for exactly this. A hand-rolled
+effect keyed on the server's `initialFilters` was tried first and rejected: it fires one server
+round trip after every ordinary change too, and was observed clobbering a search box mid-typing.
+
+### A second defect, in `@filterbridge/react`
+
+Every filter change logged `Cannot update a component (Router) while rendering a different
+component`. `useFilterBridge` fires `onChange` from inside its `setState` updater, and React runs
+updaters during the render phase.
+
+Pre-existing since `0.1.0`, invisible until now because `apps/demo` writes to `window.history` — not
+a React state update — so the impurity never produced a warning.
+
+Written up as [task 6](./06-onchange-fires-during-render.md) and **deferred to Sprint 2**: the fix
+moves `onChange` timing, which is the contract 80 hook tests describe, and that is not a decision to
+take in the last hour of a release. The example and the guide both carry the one-line
+`queueMicrotask` workaround with a pointer to the task.
 
 ---
 
@@ -74,15 +121,16 @@ reverse.
 
 ## Acceptance criteria
 
-- [ ] `examples/next-app-router/` runs against a published FilterBridge version, verified by
+- [x] `examples/next-app-router/` runs against a published FilterBridge version, verified by
       actually starting it
-- [ ] It is excluded from `pnpm-workspace.yaml` and does not affect the root `pnpm install`
-- [ ] Its README states the Next.js version, the FilterBridge version, and the install command
-- [ ] Back/forward is verified by hand and the result recorded — if it does not work as the guide
-      claims, that is a defect and gets its own task, not a footnote here
-- [ ] The guide's snippets match the example's code
-- [ ] The guide links to the example, and the example links back to the guide
-- [ ] Roadmap item checked off
+- [x] It is excluded from `pnpm-workspace.yaml` and does not affect the root `pnpm install`
+- [x] Its README states the Next.js version, the FilterBridge version, and the install command
+- [x] Back/forward is verified — by Playwright rather than by hand, 26 assertions. It did **not**
+      work as the guide claimed; both causes are in the Outcome above, and the library defect the
+      run exposed is [task 6](./06-onchange-fires-during-render.md)
+- [x] The guide's snippets match the example's code
+- [x] The guide links to the example, and the example links back to the guide
+- [x] Roadmap item checked off
 
 ## Risk
 
