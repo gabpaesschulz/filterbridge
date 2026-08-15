@@ -29,6 +29,9 @@ Moved here from the sections below rather than deleted, so the roadmap shows wha
 
 Ongoing improvements to the existing packages. No new packages planned.
 
+Most of this section is now planned work: [Sprint 1](./sprints/sprint-1/README.md) covers the two
+housekeeping items, the custom key suffixes and the Next.js examples, and targets `0.3.0`.
+
 - [ ] Optional custom key suffixes for `dateRange` and `numberRange`
 - [ ] Better examples for the Next.js App Router pattern (client + server components)
 - [ ] `pnpm format:check` in CI — currently fails on 69 files, so the repository needs one
