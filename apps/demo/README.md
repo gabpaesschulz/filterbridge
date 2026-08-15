@@ -1,6 +1,6 @@
 # FilterBridge Demo
 
-A local Vite + React app demonstrating `@filterbridge/core`, `@filterbridge/react`, and `@filterbridge/browser` in a realistic invoice admin screen.
+A local Vite + React app demonstrating `@filterbridge/core`, `@filterbridge/react`, `@filterbridge/browser` and `@filterbridge/tanstack` in a realistic invoice admin screen.
 
 ---
 

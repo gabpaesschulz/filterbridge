@@ -152,13 +152,16 @@ pnpm changeset publish
 - [x] `packages/tanstack/README.md` — removed internal wave language
 - [x] `packages/next/README.md` — fixed repository link
 
-### Pending before publish
-- [ ] `npm whoami` — confirm npm login as correct user
-- [ ] Confirm 2FA is configured on npm account
-- [ ] Create `@filterbridge` organization scope on npm (or confirm user owns it)
-- [ ] Commit Wave 10 changes to git
-- [ ] `git tag v0.1.0`
-- [ ] Run `pnpm changeset publish` or individual publish commands
+### Publish — done
+- [x] `npm whoami` — confirmed npm login as correct user
+- [x] Confirmed 2FA is configured on npm account
+- [x] `@filterbridge` organization scope created on npm
+- [x] Wave 10 changes committed
+- [x] `git tag v0.1.0`
+- [x] `pnpm changeset publish` — all five packages live on npm
+
+`0.1.0` is published and superseded by `0.2.0`. This section is kept as the record of what the first
+release had to go through; the live checklist is the `0.2.0` one below.
 
 ---
 
@@ -201,23 +204,29 @@ draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
       the intermediate shape where all six builders accepted a default. While a change is
       unpublished, its changeset is editable.
 
-### Pending before publish
+### Publish — done (2026-08-15)
 - [x] `pnpm changeset version` — all five at `0.2.0`, `CHANGELOG.md` generated, changesets consumed
 - [x] `.smoke/package.json` repinned to the `0.2.0` tarballs, `.packs/` cleared of `0.1.0` so a
       cached install could not substitute them, `node_modules` wiped — 54 ESM / 38 CJS pass
 - [x] Re-read the documentation pass — API reference, READMEs, roadmap and release notes all
       describe `0.2.0` rather than the path taken to it
-- [ ] **`main` contains the release commit.** PR #1 merged at `70ac225`, before the documentation
-      pass and the version bump were pushed, so `main` is still at `0.1.0`. A second PR from
-      `sprint-0` is needed before anything is tagged
+- [x] **`main` contains the release commit.** PR #1 merged at `70ac225`, *before* the documentation
+      pass and the version bump were pushed — so a second PR from `sprint-0` was needed. It merged
+      at `8a07d2e`, which is the commit the release was built from. Worth remembering next sprint:
+      a version bump that lands after its own PR needs a follow-up PR, and tagging the branch
+      instead would have tagged a commit that was never on `main`
 - [x] Demo header version badge — no longer a manual step. `apps/demo/vite.config.ts` injects it
       from `packages/core/package.json` via `define`, so `changeset version` updates the deployed
       demo on its own. Nothing to do here unless the build stops inlining it.
-- [ ] CI green on the release commit, on the pull request that merges it
-- [ ] `npm whoami` and 2FA confirmed
-- [ ] `git tag v0.2.0` **from `main`**, not from the branch
-- [ ] `pnpm changeset publish` — note it creates one tag per package
+- [x] CI green on the release commit — 5 successful checks on `8a07d2e`
+- [x] `npm whoami` and 2FA confirmed
+- [x] `git tag v0.2.0` from `main`
+- [x] `pnpm changeset publish` — note it creates one tag per package
       (`@filterbridge/core@0.2.0`, …) and **not** `v0.2.0`, because this is a monorepo. The manual
       `v0.2.0` above is additional and does not conflict. Tags are created locally after the npm
       publish succeeds, so `git push --tags` is still a separate step
-- [ ] Publish the GitHub Release from `docs/releases/v0.2.0.md`
+- [x] GitHub Release published from `docs/releases/v0.2.0.md` —
+      https://github.com/gabpaesschulz/filterbridge/releases/tag/v0.2.0
+
+`0.2.0` is live on npm: `npm view @filterbridge/core version` returns `0.2.0`, and the same for the
+other four packages.

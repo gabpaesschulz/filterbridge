@@ -6,13 +6,13 @@ This directory holds public assets referenced in the root `README.md` and docume
 
 **File:** `docs/assets/filterbridge-demo.png`
 
-Referenced in `README.md` as:
+Referenced from the root `README.md` as:
 
 ```md
-![FilterBridge demo](../../docs/assets/filterbridge-demo.png)
-
-From the repository root (for example in `README.md`) the path is `./docs/assets/filterbridge-demo.png`.
+![FilterBridge demo](./docs/assets/filterbridge-demo.png)
 ```
+
+From a file inside `docs/`, the path is relative to that file instead — `../assets/filterbridge-demo.png` from `docs/concepts/`, for example.
 
 ### Generating the screenshot
 

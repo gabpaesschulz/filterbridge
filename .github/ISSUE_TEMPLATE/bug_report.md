@@ -16,7 +16,7 @@ labels: bug
 
 ## Version
 
-<!-- e.g. 0.1.0 -->
+<!-- e.g. 0.2.0 -->
 
 ## Environment
 
