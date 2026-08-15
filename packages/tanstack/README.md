@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@filterbridge/tanstack)](https://www.npmjs.com/package/@filterbridge/tanstack)
 [![license](https://img.shields.io/npm/l/@filterbridge/tanstack)](../../LICENSE)
 
-> **Status:** experimental — `v0.1.0` published. API may change before `v1.0`.
+> **Status:** experimental — `v0.2.0`. API may change before `v1.0`.
 
 TanStack Table adapter for [FilterBridge](https://github.com/gabpaesschulz/filterbridge).
 

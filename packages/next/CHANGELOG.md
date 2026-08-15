@@ -1,5 +1,19 @@
 # @filterbridge/next
 
+## 0.2.0
+
+### Patch Changes
+
+- Updated dependencies [e5f5036]
+- Updated dependencies [e5f5036]
+- Updated dependencies [e5f5036]
+- Updated dependencies [e5f5036]
+- Updated dependencies
+- Updated dependencies [e5f5036]
+- Updated dependencies [e5f5036]
+  - @filterbridge/core@0.2.0
+  - @filterbridge/browser@0.2.0
+
 ## 0.1.0
 
 ### Initial Release

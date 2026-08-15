@@ -4,6 +4,10 @@
 **Area:** `@filterbridge/core`
 **Status:** done — option B (drop + dev warning)
 
+> ⚠️ **Historical record.** See [the sprint README](./README.md#-historical-record). Still accurate for `select` and `multiSelect` in
+> `toSearchParams`. `toQueryDto` no longer merely drops an invalid value: it substitutes the
+> filter's default when there is one, mirroring `parseFilters`.
+
 ---
 
 ## Problem

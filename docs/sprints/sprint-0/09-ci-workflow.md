@@ -2,7 +2,13 @@
 
 **Priority:** P2 — infrastructure gap
 **Area:** repository infrastructure
-**Status:** done
+**Status:** done — with two defects found afterwards
+
+> ⚠️ **Historical record.** See [the sprint README](./README.md#-historical-record). The workflow shipped, but as written here it could never
+> have gone green: `dist/` is gitignored and `typecheck`/`test` ran before `build`. The
+> "pre-flight verification done locally" below was true only on a machine that already had
+> `dist/` from earlier builds. Fixed by moving `build` first. CI is green now — Node 18/20/22
+> on Linux, Node 20 on Windows.
 
 ---
 

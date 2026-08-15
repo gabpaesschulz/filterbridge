@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@filterbridge/next)](https://www.npmjs.com/package/@filterbridge/next)
 [![license](https://img.shields.io/npm/l/@filterbridge/next)](../../LICENSE)
 
-> **Status:** experimental — `v0.1.0` published. API may change before `v1.0`.
+> **Status:** experimental — `v0.2.0`. API may change before `v1.0`.
 
 Next.js App Router adapter for [FilterBridge](https://github.com/gabpaesschulz/filterbridge).
 
