@@ -217,8 +217,13 @@ Three things worth knowing before you push:
   [ADR-003](docs/decisions/003-test-resolution.md) — it records the bug that made it necessary.
 - **The install uses `--frozen-lockfile`.** If you add or change a dependency, commit the updated
   `pnpm-lock.yaml` or CI will fail on the install step.
-- **Changes under `packages/**` need a changeset.** Run `pnpm changeset` and commit the generated
-  file. For a change that should not trigger a release, use `pnpm changeset add --empty`.
+- **Changes to any workspace package need a changeset** — that means `apps/demo` too, not only
+  `packages/**`. `@filterbridge/demo` is private and never published, but changesets still counts it
+  as changed, so a commit touching nothing but `apps/demo/README.md` fails the check. Run
+  `pnpm changeset`, or `pnpm changeset add --empty` for a change that should not trigger a release.
+
+  **Commit the generated file.** `changeset status --since=origin/main` looks for changesets through
+  git, so an uncommitted one does not count and the job fails exactly as if you had not created it.
 
 ---
 
