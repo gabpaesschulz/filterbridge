@@ -71,6 +71,9 @@ pnpm demo
 # Build the demo for static hosting
 pnpm demo:build
 
+# Audit the running demo in real Chromium, including colour contrast
+pnpm demo:a11y
+
 # Pack all packages to .packs/ (for local inspection)
 pnpm pack:all
 ```
@@ -137,6 +140,10 @@ Guidelines:
 - Test edge cases: empty input, invalid values, partial range objects.
 - For React hook tests, use `@testing-library/react`.
 - Avoid testing internal implementation details — test observable behavior.
+- **If you change a colour in `apps/demo`, run `pnpm demo:a11y`.** The axe suite that runs under
+  `pnpm test` cannot check contrast — jsdom has no layout engine — so `pnpm demo:a11y` drives real
+  Chromium against the running demo and is the only thing that will catch it. See
+  [`apps/demo/README.md`](apps/demo/README.md#accessibility).
 
 ---
 

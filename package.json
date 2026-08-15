@@ -16,6 +16,7 @@
     "format:check": "prettier --check .",
     "demo": "pnpm --filter @filterbridge/demo dev",
     "demo:build": "pnpm --filter @filterbridge/demo build",
+    "demo:a11y": "node scripts/audit-demo-a11y.mjs",
     "pack:all": "node scripts/pack-all.mjs",
     "clean:packs": "node -e \"require('fs').rmSync('.packs', { recursive: true, force: true })\"",
     "screenshot": "node scripts/capture-demo-screenshot.mjs",
