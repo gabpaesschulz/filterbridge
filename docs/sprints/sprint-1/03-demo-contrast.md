@@ -2,7 +2,43 @@
 
 **Priority:** P2 — the demo is the first thing anyone sees
 **Area:** `apps/demo`
-**Status:** open
+**Status:** done
+
+---
+
+## Outcome
+
+Zero `color-contrast` violations in real Chromium, on the initial render and after "Fill example".
+
+Decisions taken as recommended: option A (minimum viable darkening), dark-text-on-tint for the
+pills, a `pnpm demo:a11y` script run by hand and left out of CI, and no change to the jsdom suite.
+
+| Value            | Was                | Now                    | Ratio                             |
+| ---------------- | ------------------ | ---------------------- | --------------------------------- |
+| `--color-muted`  | `#6b7280`          | `#5b6270`              | 4.43 → 5.62 on `--color-bg`       |
+| `--color-green`  | `#16a34a`          | `#166534`              | 3.00 → 6.49 on `--color-green-bg` |
+| `paid` pill      | white on `#16a34a` | `#166534` on `#dcfce7` | 3.30 → 6.49                       |
+| `pending` pill   | white on `#d97706` | `#92400e` on `#fef3c7` | 3.19 → 6.37                       |
+| `cancelled` pill | white on `#9ca3af` | `#4b5563` on `#e5e7eb` | 2.54 → 6.10                       |
+| `draft` pill     | white on `#6b7280` | `#374151` on `#f3f4f6` | 4.83 → 9.37                       |
+| `failed` pill    | white on `#dc2626` | `#991b1b` on `#fee2e2` | 4.83 → 6.80                       |
+
+Two things the task did not list turned up while measuring and were fixed in the same pass: the
+`.clear-btn:hover` red on its `#fef2f2` tint was **4.41:1** (now `--color-red-h` `#b91c1c`, 5.60:1),
+and `--color-green` is used for `.url-path` on `--color-url-bg` as well as for the badge — one value,
+two failing surfaces, both closed by the same change.
+
+The pills moved from inline styles in `InvoiceTable.tsx` into `styles.css` classes, so the whole
+palette is in one file with its measured ratio in a comment beside each value.
+
+**The script was verified against a known-bad state, not only a good one.** Reverting
+`--color-muted` to `#6b7280` and re-running reproduced 15 violations with the exact 4.43:1 figure —
+so a clean run means the rule ran, not that it was skipped. That check is worth repeating whenever
+an audit reports zero.
+
+The verification method is written down in
+[`apps/demo/README.md`](../../../apps/demo/README.md#accessibility) and in the "Writing tests"
+section of [`CONTRIBUTING.md`](../../../CONTRIBUTING.md), not only here.
 
 ---
 
@@ -79,12 +115,12 @@ produce a silent pass, which is worse than an acknowledged gap.
 
 ## Acceptance criteria
 
-- [ ] Zero `color-contrast` violations in a real-Chromium axe run against the demo
-- [ ] The screenshot in [`docs/assets/`](../../assets/) is regenerated if the palette shifted
+- [x] Zero `color-contrast` violations in a real-Chromium axe run against the demo
+- [x] The screenshot in [`docs/assets/`](../../assets/) is regenerated if the palette shifted
       visibly — a README screenshot that no longer matches the deployed demo is its own defect
-- [ ] The existing jsdom a11y suite still passes, unmodified
-- [ ] The roadmap's housekeeping entry is removed
-- [ ] Whatever verification method is chosen is written down where the next person will find it, not
+- [x] The existing jsdom a11y suite still passes, unmodified
+- [x] The roadmap's housekeeping entry is removed
+- [x] Whatever verification method is chosen is written down where the next person will find it, not
       only in this file
 
 ## Risk

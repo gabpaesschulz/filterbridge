@@ -34,6 +34,9 @@ Delivered by [Sprint 1](./sprints/sprint-1/README.md).
 - [x] Optional custom URL keys for `dateRange` and `numberRange` — `keys: { from, to }` /
       `keys: { min, max }`, with key derivation collapsed from four copies into one in
       `@filterbridge/core`. `defineFilters` now throws on a duplicate param key
+- [x] The demo's colour-contrast violations — palette re-measured against WCAG AA, plus
+      `pnpm demo:a11y`, a real-Chromium axe run that can check contrast where the jsdom suite
+      structurally cannot
 
 ---
 
@@ -85,21 +88,8 @@ Prerequisites before marking the API stable:
 
 Known, deliberately deferred, and easy to lose track of once a sprint closes.
 
-### The demo has 25 colour-contrast violations
-
-Found by an axe-core audit in real Chromium during Sprint 0. All pre-existing, none related to the
-label fixes that sprint made:
-
-- `--color-muted` (`#6b7280`) on `--color-bg` (`#f4f5f7`) is **4.43:1**, just under the 4.5:1 AA
-  threshold. This accounts for most of them: column titles, hints, table headers, the active filter
-  count.
-- Status pills use white text on `#16a34a` / `#d97706` / `#9ca3af` — **3.29:1**, **3.18:1**,
-  **2.53:1**.
-- The green URL-sync badge and `.url-path` are around **3:1**.
-
-Fixing them means changing the palette, which is a visual decision rather than a correctness one.
-The committed jsdom suite disables the `color-contrast` rule because jsdom has no layout engine and
-cannot measure it, so re-running the audit in a real browser is the only way to verify a fix.
+_Nothing is outstanding._ Sprint 1 closed both entries that lived here — `pnpm format:check` is a CI
+job, and the demo's palette clears WCAG AA with `pnpm demo:a11y` to keep it that way.
 
 ---
 
