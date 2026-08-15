@@ -84,14 +84,18 @@ filterbridge/
     api/               — API reference docs
     guides/            — Usage guides
     concepts/          — Architecture and non-goals
+    decisions/         — Architecture decision records (ADRs)
     releases/          — Release notes
-    marketing/         — Portfolio and announcement materials
+    sprints/           — Per-sprint process records
+  examples/            — Copy-paste snippets (not a workspace package)
   scripts/             — Workspace scripts (pack-all, etc.)
+  .changeset/          — Changesets awaiting release
   .github/             — Issue templates, PR template, CI workflow
   package.json         — Workspace root
   pnpm-workspace.yaml
   tsconfig.base.json
-  vitest.config.ts
+  vitest.workspace.ts  — the project list (vitest.config.ts is empty by design)
+  vitest.aliases.ts    — resolves @filterbridge/* to source in tests
 ```
 
 ---
@@ -109,7 +113,8 @@ pnpm --filter @filterbridge/core test
 pnpm --filter @filterbridge/react test
 ```
 
-Test files live alongside source files or in `src/__tests__/`.
+Test files live in `src/__tests__/` (core, react, tanstack, next) or `src/tests/` (browser). Follow
+whichever the package you are touching already uses.
 
 ---
 
@@ -135,10 +140,15 @@ New filter types require changes in several files across `@filterbridge/core`:
 4. Update `src/parse-filters.ts` to handle the new type
 5. Update `src/search-params.ts` to serialize the new type
 6. Update `src/query-dto.ts` to handle DTO conversion
-7. Export from `src/index.ts`
-8. Add tests
-9. Update `packages/core/README.md`
-10. Update `docs/api/core.md`
+7. Update `src/filter-validation.ts` if the type validates its values, and `src/defaults.ts` if it
+   accepts a `{ default }` — both hold one rule shared by parsing and both serializers, so a type
+   handled in only one of them will drift. See [ADR-002](docs/decisions/002-default-values.md) for
+   which types may accept a default and [ADR-005](docs/decisions/005-serialization-validation.md)
+   for the validation contract.
+8. Export from `src/index.ts`
+9. Add tests
+10. Update `packages/core/README.md`
+11. Update `docs/api/core.md`
 
 Propose new filter types via an issue first.
 
@@ -164,7 +174,11 @@ A new package needs:
 - Tests
 - `docs/api/<package>.md`
 - Entry in root `pnpm-workspace.yaml`
-- Entry in root `vitest.config.ts`
+- Entry in root [`vitest.workspace.ts`](vitest.workspace.ts) — **not** `vitest.config.ts`, which is
+  deliberately empty. Vitest 2 discovers projects through the workspace file only; a package missing
+  from it is silently skipped by `pnpm test`. See [ADR-003](docs/decisions/003-test-resolution.md).
+- Entry in root [`vitest.aliases.ts`](vitest.aliases.ts) if the package is imported by another
+  package's tests, so it resolves to source rather than to a built `dist/`
 - Entry in root `package.json` build script
 
 ---
@@ -203,8 +217,13 @@ Three things worth knowing before you push:
   [ADR-003](docs/decisions/003-test-resolution.md) — it records the bug that made it necessary.
 - **The install uses `--frozen-lockfile`.** If you add or change a dependency, commit the updated
   `pnpm-lock.yaml` or CI will fail on the install step.
-- **Changes under `packages/**` need a changeset.** Run `pnpm changeset` and commit the generated
-  file. For a change that should not trigger a release, use `pnpm changeset add --empty`.
+- **Changes to any workspace package need a changeset** — that means `apps/demo` too, not only
+  `packages/**`. `@filterbridge/demo` is private and never published, but changesets still counts it
+  as changed, so a commit touching nothing but `apps/demo/README.md` fails the check. Run
+  `pnpm changeset`, or `pnpm changeset add --empty` for a change that should not trigger a release.
+
+  **Commit the generated file.** `changeset status --since=origin/main` looks for changesets through
+  git, so an uncommitted one does not count and the job fails exactly as if you had not created it.
 
 ---
 

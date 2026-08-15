@@ -18,7 +18,7 @@ TanStack Table has a built-in column filter model. FilterBridge is not a competi
 
 TanStack Table column filters are designed to work closely with the table's data pipeline. FilterBridge filter state is designed to work with URLs and backend APIs. These two concerns are related but distinct.
 
-A future adapter could translate FilterBridge state into TanStack column filters. That adapter would be thin.
+`@filterbridge/tanstack` translates FilterBridge state into TanStack column filters and back. It is deliberately thin — a converter plus a set of client-side filter functions, no table behavior of its own. See [the guide](../guides/tanstack-table.md).
 
 ---
 
@@ -28,7 +28,7 @@ nuqs is a React hook for syncing state with URL query strings. If that is all yo
 
 FilterBridge adds a typed schema layer on top: it defines *what* the filters are, not just *where* their values live. The schema drives parsing, serialization format, and backend DTO shape. The tradeoff is that FilterBridge is more opinionated about filter types.
 
-FilterBridge does not currently sync with the browser URL at all. A future adapter could use nuqs (or the Next.js router) as the backing store for `useFilterBridge` state.
+URL synchronization lives in a separate, opt-in package (`@filterbridge/browser`) rather than in the hook itself, so `@filterbridge/core` and `@filterbridge/react` stay usable without browser globals. FilterBridge does not wrap nuqs or replace it as the backing store for `useFilterBridge`.
 
 ---
 
@@ -80,9 +80,12 @@ These are common in admin screens but are different concerns from filter state. 
 
 ## Routing integration
 
-FilterBridge does not integrate with any router (Next.js, React Router, TanStack Router). The `useFilterBridge` hook manages in-memory state only.
+The `useFilterBridge` hook manages in-memory state only and knows nothing about any router. Anything URL-shaped is an opt-in package on top of it:
 
-URL synchronization is out of scope for the current version. A future `@filterbridge/next` package would provide App Router helpers.
+- `@filterbridge/browser` — the History API directly (`pushUrlFilters`, `replaceUrlFilters`, `usePopstateSync`)
+- `@filterbridge/next` — App Router `searchParams` parsing and href building, without importing from `next/*`
+
+React Router and TanStack Router have no adapter, and FilterBridge does not own navigation in any of these: it produces a URL or reads one, and the application calls the router.
 
 ---
 

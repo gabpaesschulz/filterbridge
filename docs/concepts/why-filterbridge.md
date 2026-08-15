@@ -106,12 +106,17 @@ It is a small, focused layer that sits between your filter UI and these tools, k
 
 ## Limitations of the current version
 
-FilterBridge v0 solves the most common case but intentionally leaves some things for later:
+FilterBridge is at `0.2.0` and solves the most common case, but intentionally leaves some things for
+later:
 
-- No automatic URL synchronization (the browser URL does not update as filters change)
-- No per-filter default values
-- No `multiSelect` with repeated query params (`tags=a&tags=b`)
-- No date validation
-- No custom URL key suffixes for ranges
+- No date validation — `dateRange()` accepts date-shaped strings without checking that `from`
+  precedes `to`, and has no timezone handling
+- No custom URL key suffixes for ranges — `amount` is always `amountMin` / `amountMax`
+- No pagination or sorting
+- No async or dynamic `select` options — the option list is fixed in the schema
+- No router integration beyond the helpers in `@filterbridge/browser` and `@filterbridge/next`;
+  React Router and TanStack Router are not covered
 
-These are planned for future waves. The goal of the first version is to prove the schema contract and get the core parsing/serialization behavior right.
+URL synchronization, per-filter defaults and repeated query params (`tags=a&tags=b`) were on this
+list and now ship — see the [roadmap](../roadmap.md) for what is still open and
+[v0.2.0](../releases/v0.2.0.md) for what closed.
