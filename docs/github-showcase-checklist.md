@@ -6,24 +6,26 @@ Steps to complete before or after the first public announcement.
 
 ## Repository settings (manual — GitHub UI)
 
-- [ ] Add repository description:
-  `Schema-first filters for React admin screens.`
-- [ ] Add website URL to repository About:
-  `https://filterbridge-demo.vercel.app`
-- [ ] Add npm package URL to the About section or README badge
-- [ ] Add topics (gear icon next to **About** on the repository sidebar):
-  `typescript`, `react`, `nextjs`, `tanstack-table`, `filters`, `url-state`, `search-params`, `admin-dashboard`, `frontend`, `developer-tools`, `npm-package`, `open-source`, `monorepo`
+- [x] Repository description — live as `Schema-first filters for React admin dashboards.`
+- [x] Website URL in repository About — `https://filterbridge-demo.vercel.app`
+- [x] npm package URLs — README badges
+- [x] Topics (gear icon next to **About** on the repository sidebar). Live:
+  `typescript`, `react`, `nextjs`, `tanstack-table`, `filters`, `url-state`, `search-params`,
+  `query-params`
 
   Topics improve discoverability in GitHub search and on the npm registry. They are platform
   configuration rather than documentation, so this list is the only copy — there is no separate file.
+- [ ] Optional additional topics, not yet applied: `admin-dashboard`, `frontend`,
+  `developer-tools`, `npm-package`, `open-source`, `monorepo`
 - [ ] Pin repository on GitHub profile (if applicable)
 
 ---
 
 ## README
 
-- [x] Screenshot added at `docs/assets/filterbridge-demo.png` (run `pnpm demo && pnpm screenshot` to generate)
-- [ ] Replace screenshot with real image after running `pnpm screenshot`
+- [x] Screenshot captured at `docs/assets/filterbridge-demo.png` via `pnpm demo && pnpm screenshot`
+- [ ] Recapture the screenshot — the committed one predates the Sprint 0 demo changes (tri-state
+      boolean control, TanStack table) and no longer matches what the live demo renders
 - [x] Add live demo URL — https://filterbridge-demo.vercel.app
 - [x] npm badges reference published packages
 - [x] Install instructions are accurate
@@ -34,7 +36,12 @@ Steps to complete before or after the first public announcement.
 ## GitHub Release
 
 - [x] Create GitHub release from tag `v0.1.0` — https://github.com/gabpaesschulz/filterbridge/releases/tag/v0.1.0
+- [x] Create GitHub release from tag `v0.2.0` — https://github.com/gabpaesschulz/filterbridge/releases/tag/v0.2.0
 - [x] Attach no binaries (packages are on npm, not GitHub releases)
+
+Note that `pnpm changeset publish` creates one tag per package (`@filterbridge/core@0.2.0`, …), not
+a `vX.Y.Z` tag. The `vX.Y.Z` tags the releases are cut from are created manually — see
+[the release checklist](./release-checklist.md).
 
 ---
 
@@ -48,7 +55,7 @@ Steps to complete before or after the first public announcement.
 
 ## npm packages
 
-- [x] All 5 packages published at `0.1.0`
+- [x] All 5 packages published — `latest` is `0.2.0`
 - [x] npm README for each package links to GitHub
 - [ ] Verify npm pages render correctly at:
   - https://www.npmjs.com/package/@filterbridge/core

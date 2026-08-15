@@ -218,4 +218,4 @@ const bridge = useFilterBridge(invoiceFilters, {
 - `filterBridgeFilterFns.dateRange` uses lexicographic ISO string comparison. It does not handle timezones or non-ISO date formats.
 - `filterBridgeFilterFns.text` does substring matching, not ranking.
 - Back/forward navigation does not update filter state automatically (see `@filterbridge/browser` known limitations).
-- No pagination or sorting adapters in this wave.
+- No pagination or sorting adapters — see the [roadmap](../roadmap.md).

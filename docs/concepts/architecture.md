@@ -261,8 +261,6 @@ create-next-filter-href.ts      — createNextFilterHref()
 
 ---
 
-## Planned future packages
-
 ## Design decisions
 
 **Why are core functions pure?**
@@ -273,9 +271,21 @@ Pure functions are easy to test, easy to reason about, and work in any environme
 
 The generic React hook manages in-memory state only. URL synchronization requires browser globals (`window.history`) and carries different environment assumptions than the hook itself. Keeping them separate means core and react both work in SSR contexts without modification. The browser package is an explicit layer you opt into.
 
-**Why does `reset()` go to `{}` instead of `initialState`?**
+**Why does `reset()` clear everything instead of restoring `initialState`?**
 
-`initialState` is a one-time initialization value, not a "default" baseline. Resetting to `initialState` would require storing it through the hook's lifetime and makes the semantics less clear. If you want "reset to defaults", you can call `setMany(yourDefaultState)` explicitly. This may be revisited in a later wave.
+Because they are two different intentions, and one method cannot be both. `reset()` means "clear the
+filters" — the state a user expects from a *Clear all* button. `initialState` is a one-time
+initialization value, often something arbitrary like a shared link's filters, and restoring it is a
+separate action.
+
+Both exist since `0.2.0`: `reset()` clears, and `resetToInitial()` restores the `initialState`
+captured on the first render. Naming them apart was preferred over one method whose meaning depends
+on how the hook was mounted. See [ADR-002 §5](../decisions/002-default-values.md).
+
+"Clear everything" is not literally `{}` for a schema that declares defaults. Every write, `reset()`
+included, is layered over `getDefaultFilterState(schema)`, so the floor is the schema's defaults —
+`{}` only for a schema without any. That is what keeps hook state representable: there is always
+some URL that parses to it.
 
 **Why no Zod / Valibot?**
 
