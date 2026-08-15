@@ -190,10 +190,11 @@ draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
       unit suite
 
 ### Changesets
-- [x] 8 changesets present: `repeated-query-params`, `non-finite-numbers`,
-      `serialization-validation`, `empty-value-normalization`, `dto-boolean-parity`,
-      `filter-defaults`, `external-state-sync`, `reset-semantics`
-- [x] Three are `minor` (defaults, `syncState`, `resetToInitial`) — the release is `0.2.0`
+- [x] 10 changesets, each owned by a single package so that every `CHANGELOG.md` opens with what
+      changed in *that* package. `external-state-sync` and `filter-defaults` were each split in two
+      for this reason (`popstate-sync` for browser, `hook-schema-defaults` for react)
+- [x] Four are `minor` (core defaults, `syncState`, hook defaults, `resetToInitial`, plus
+      `usePopstateSync` for browser) — the release is `0.2.0`
 - [x] Every behavior change is stated in the changeset that causes it
 - [x] `filter-defaults.md` was edited rather than supplemented as the design narrowed. A changeset
       is the source of a release note, not an audit log: nobody reading the `0.2.0` CHANGELOG saw
@@ -201,16 +202,22 @@ draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
       unpublished, its changeset is editable.
 
 ### Pending before publish
-- [ ] `pnpm changeset version` — bumps all five to `0.2.0` and writes the `CHANGELOG.md` files
-- [ ] Update the pinned tarball versions in `.smoke/package.json`, then re-pack and re-run the
-      smoke test against `0.2.0` tarballs (wiping `node_modules` first — see above)
+- [x] `pnpm changeset version` — all five at `0.2.0`, `CHANGELOG.md` generated, changesets consumed
+- [x] `.smoke/package.json` repinned to the `0.2.0` tarballs, `.packs/` cleared of `0.1.0` so a
+      cached install could not substitute them, `node_modules` wiped — 54 ESM / 38 CJS pass
+- [x] Re-read the documentation pass — API reference, READMEs, roadmap and release notes all
+      describe `0.2.0` rather than the path taken to it
+- [ ] **`main` contains the release commit.** PR #1 merged at `70ac225`, before the documentation
+      pass and the version bump were pushed, so `main` is still at `0.1.0`. A second PR from
+      `sprint-0` is needed before anything is tagged
 - [x] Demo header version badge — no longer a manual step. `apps/demo/vite.config.ts` injects it
       from `packages/core/package.json` via `define`, so `changeset version` updates the deployed
       demo on its own. Nothing to do here unless the build stops inlining it.
-- [ ] Re-read the documentation pass — API reference, READMEs, roadmap and release notes all
-      describe `0.2.0` rather than the path taken to it
-- [ ] CI green on the release commit on `main`
+- [ ] CI green on the release commit, on the pull request that merges it
 - [ ] `npm whoami` and 2FA confirmed
-- [ ] `git tag v0.2.0`
-- [ ] `pnpm changeset publish`
+- [ ] `git tag v0.2.0` **from `main`**, not from the branch
+- [ ] `pnpm changeset publish` — note it creates one tag per package
+      (`@filterbridge/core@0.2.0`, …) and **not** `v0.2.0`, because this is a monorepo. The manual
+      `v0.2.0` above is additional and does not conflict. Tags are created locally after the npm
+      publish succeeds, so `git push --tags` is still a separate step
 - [ ] Publish the GitHub Release from `docs/releases/v0.2.0.md`
