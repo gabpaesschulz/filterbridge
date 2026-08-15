@@ -20,7 +20,9 @@ export const invoiceFilters = defineFilters({
 export const exampleState = {
   search: 'acme',
   status: 'paid' as const,
-  tags: ['urgent', 'recurring'] as Array<'urgent' | 'recurring' | 'international' | 'manual-review'>,
+  tags: ['urgent', 'recurring'] as Array<
+    'urgent' | 'recurring' | 'international' | 'manual-review'
+  >,
   archived: false,
   issuedAt: {
     from: '2026-01-01',

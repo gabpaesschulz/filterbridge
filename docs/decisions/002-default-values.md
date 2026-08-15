@@ -51,7 +51,7 @@ Two alternatives were rejected. Making only `reset()` restore defaults fixes one
 
 `select`, `multiSelect` and `boolean` accept `{ default }`. `text`, `dateRange` and `numberRange` take no configuration at all — the restriction is a type error at the call site, not a runtime check.
 
-The criterion is deliberately stated as a **property, not a list**, so a future builder can be judged against it without reopening this: *a filter may declare a default when its value space is a fixed, enumerable set.*
+The criterion is deliberately stated as a **property, not a list**, so a future builder can be judged against it without reopening this: _a filter may declare a default when its value space is a fixed, enumerable set._
 
 What that property is standing in for is whether a value can pass through "empty" as an intermediate step of a single editing gesture. Under decision 3, clearing returns a filter to its default — coherent for a discrete choice, hostile for continuous editing:
 
@@ -75,13 +75,13 @@ It is deliberately **not** done now. Narrowing optionality is a breaking type ch
 
 Stated together, because the point of this record is that they were accumulated deliberately and not discovered one at a time:
 
-| Cost | Where it lands |
-|---|---|
-| A URL no longer fully describes the state | Bookmarks change meaning when a default changes in code |
-| "No value" is unreachable for a defaulted filter | Model the extra state as an explicit option |
-| `clear()` changed meaning | "Back to the default" for defaulted filters only |
-| The DTO needed a merge the URL does not | Two outputs, deliberately different bytes |
-| `InferFilterState` is less precise than it could be | Deferred to `v1.0`, see above |
+| Cost                                                | Where it lands                                          |
+| --------------------------------------------------- | ------------------------------------------------------- |
+| A URL no longer fully describes the state           | Bookmarks change meaning when a default changes in code |
+| "No value" is unreachable for a defaulted filter    | Model the extra state as an explicit option             |
+| `clear()` changed meaning                           | "Back to the default" for defaulted filters only        |
+| The DTO needed a merge the URL does not             | Two outputs, deliberately different bytes               |
+| `InferFilterState` is less precise than it could be | Deferred to `v1.0`, see above                           |
 
 ## Consequences
 

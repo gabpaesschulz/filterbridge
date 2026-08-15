@@ -79,13 +79,13 @@ function fromTanStackColumnFilters<S extends FilterSchema>(
 
 ### Type coercion per filter type
 
-| Filter type | Accepted values |
-|-------------|-----------------|
-| `text` | `string` (trimmed, non-empty) |
-| `select` | `string` in options list |
-| `multiSelect` | `string[]` (filtered) or comma-separated string |
-| `boolean` | `boolean`, `"true"`, `"false"`, `"1"`, `"0"` |
-| `dateRange` | `{ from?: string; to?: string }` |
+| Filter type   | Accepted values                                        |
+| ------------- | ------------------------------------------------------ |
+| `text`        | `string` (trimmed, non-empty)                          |
+| `select`      | `string` in options list                               |
+| `multiSelect` | `string[]` (filtered) or comma-separated string        |
+| `boolean`     | `boolean`, `"true"`, `"false"`, `"1"`, `"0"`           |
+| `dateRange`   | `{ from?: string; to?: string }`                       |
 | `numberRange` | `{ min?: number; max?: number }` or `[min, max]` tuple |
 
 ---

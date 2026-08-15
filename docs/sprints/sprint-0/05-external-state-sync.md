@@ -41,11 +41,11 @@ Two independent choices.
 
 ### 1. How does external state enter the hook?
 
-| Option | Shape | Trade-off |
-|--------|-------|-----------|
+| Option                       | Shape                                                                         | Trade-off                                                                      |
+| ---------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | A — `syncState(next)` method | New method on the return object that replaces state without firing `onChange` | Smallest change; keeps the hook uncontrolled; caller must avoid feedback loops |
-| B — controlled mode | Optional `state` + `onStateChange` props, like a controlled input | Most flexible and familiar; doubles the hook's surface and its documentation |
-| C — `key` remount | Document remounting the component on navigation | Zero new API; loses focus and any unrelated local state on every back/forward |
+| B — controlled mode          | Optional `state` + `onStateChange` props, like a controlled input             | Most flexible and familiar; doubles the hook's surface and its documentation   |
+| C — `key` remount            | Document remounting the component on navigation                               | Zero new API; loses focus and any unrelated local state on every back/forward  |
 
 **Recommendation: A.** It solves the actual problem with one method, keeps the hook small
 (CLAUDE.md §9: "Keep the hook small"), and does not fork the hook into two modes. B can be added
@@ -54,13 +54,13 @@ later without breaking A. The `onChange`-suppression detail matters: `syncState`
 
 ### 2. Where does the `popstate` listener live?
 
-| Option | Trade-off |
-|--------|-----------|
+| Option                                                            | Trade-off                                                                                                                                                                                    |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D — `usePopstateSync(schema, onState)` in `@filterbridge/browser` | Natural home — the package already owns URL reading. But it currently has no React dependency, and adding a hook makes React a peer dependency of a package documented as framework-agnostic |
-| E — option on `useFilterBridge` | Puts browser-specific behavior in the generic React hook, which CLAUDE.md §9 explicitly forbids |
-| F — document the pattern, ship no listener | Zero API cost; every user writes the same ten lines |
+| E — option on `useFilterBridge`                                   | Puts browser-specific behavior in the generic React hook, which CLAUDE.md §9 explicitly forbids                                                                                              |
+| F — document the pattern, ship no listener                        | Zero API cost; every user writes the same ten lines                                                                                                                                          |
 
-**Recommendation: D**, with React as an *optional* peer dependency and the hook in a separate entry
+**Recommendation: D**, with React as an _optional_ peer dependency and the hook in a separate entry
 point so the core browser functions stay importable without React. E is ruled out by the project's
 own rules. F is acceptable as a stopgap if D's packaging cost is judged too high for `0.1.x`.
 
@@ -73,7 +73,7 @@ Both confirmed before implementation:
 
 - **A** — `syncState(next)` on the hook's return value. Replaces state, does not fire `onChange`.
 - **D** — `usePopstateSync(schema, onState, options?)` in `@filterbridge/browser`, behind a new
-  `@filterbridge/browser/react` entry point, with React as an *optional* peer dependency
+  `@filterbridge/browser/react` entry point, with React as an _optional_ peer dependency
   (`peerDependenciesMeta.react.optional`). The root entry never imports React.
 
 The demo also moved from `replaceUrlFilters` to `pushUrlFilters` in `onChange` — `replaceState`
@@ -105,12 +105,12 @@ history entry per keystroke) and the alternatives are documented in
 
 New tests:
 
-| File | Covers |
-|------|--------|
-| `packages/react/src/__tests__/use-filter-bridge.test.tsx` | `syncState` replaces, cleans, does not fire `onChange`, stable identity |
-| `packages/browser/src/tests/use-popstate-sync.test.tsx` | subscribe/unsubscribe, event-time URL read, `enabled`, ref-based re-subscription |
-| `packages/browser/src/tests/use-popstate-sync.ssr.test.tsx` | node environment: server render does not throw, root entry has no React |
-| `packages/browser/src/tests/popstate-round-trip.test.tsx` | end-to-end back/forward against a fake history — the no-loop invariant |
+| File                                                        | Covers                                                                           |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `packages/react/src/__tests__/use-filter-bridge.test.tsx`   | `syncState` replaces, cleans, does not fire `onChange`, stable identity          |
+| `packages/browser/src/tests/use-popstate-sync.test.tsx`     | subscribe/unsubscribe, event-time URL read, `enabled`, ref-based re-subscription |
+| `packages/browser/src/tests/use-popstate-sync.ssr.test.tsx` | node environment: server render does not throw, root entry has no React          |
+| `packages/browser/src/tests/popstate-round-trip.test.tsx`   | end-to-end back/forward against a fake history — the no-loop invariant           |
 
 ## Risk
 

@@ -206,9 +206,7 @@ export function InvoiceFilters() {
         Reset all
       </button>
 
-      {bridge.hasActiveFilters && (
-        <span>{bridge.activeFilterCount} active filters</span>
-      )}
+      {bridge.hasActiveFilters && <span>{bridge.activeFilterCount} active filters</span>}
     </form>
   )
 }
@@ -239,13 +237,13 @@ Open [http://localhost:5173](http://localhost:5173).
 
 ## Packages
 
-| Package | Description | npm |
-|---------|-------------|-----|
-| [`@filterbridge/core`](./packages/core) | Schema DSL, parsing, URL serialization, backend DTO | [![npm](https://img.shields.io/npm/v/@filterbridge/core)](https://www.npmjs.com/package/@filterbridge/core) |
-| [`@filterbridge/react`](./packages/react) | `useFilterBridge` React hook | [![npm](https://img.shields.io/npm/v/@filterbridge/react)](https://www.npmjs.com/package/@filterbridge/react) |
-| [`@filterbridge/browser`](./packages/browser) | Browser URL sync helpers | [![npm](https://img.shields.io/npm/v/@filterbridge/browser)](https://www.npmjs.com/package/@filterbridge/browser) |
-| [`@filterbridge/tanstack`](./packages/tanstack) | TanStack Table adapter | [![npm](https://img.shields.io/npm/v/@filterbridge/tanstack)](https://www.npmjs.com/package/@filterbridge/tanstack) |
-| [`@filterbridge/next`](./packages/next) | Next.js App Router adapter | [![npm](https://img.shields.io/npm/v/@filterbridge/next)](https://www.npmjs.com/package/@filterbridge/next) |
+| Package                                         | Description                                         | npm                                                                                                                 |
+| ----------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| [`@filterbridge/core`](./packages/core)         | Schema DSL, parsing, URL serialization, backend DTO | [![npm](https://img.shields.io/npm/v/@filterbridge/core)](https://www.npmjs.com/package/@filterbridge/core)         |
+| [`@filterbridge/react`](./packages/react)       | `useFilterBridge` React hook                        | [![npm](https://img.shields.io/npm/v/@filterbridge/react)](https://www.npmjs.com/package/@filterbridge/react)       |
+| [`@filterbridge/browser`](./packages/browser)   | Browser URL sync helpers                            | [![npm](https://img.shields.io/npm/v/@filterbridge/browser)](https://www.npmjs.com/package/@filterbridge/browser)   |
+| [`@filterbridge/tanstack`](./packages/tanstack) | TanStack Table adapter                              | [![npm](https://img.shields.io/npm/v/@filterbridge/tanstack)](https://www.npmjs.com/package/@filterbridge/tanstack) |
+| [`@filterbridge/next`](./packages/next)         | Next.js App Router adapter                          | [![npm](https://img.shields.io/npm/v/@filterbridge/next)](https://www.npmjs.com/package/@filterbridge/next)         |
 
 All packages ship ESM and CJS with TypeScript declarations bundled.
 
@@ -257,14 +255,14 @@ Full reference: [`docs/api/core.md`](./docs/api/core.md)
 
 ### Filter factories
 
-| Factory | State type | URL format | `{ default }` |
-|---------|------------|------------|---------------|
-| `text()` | `string \| undefined` | `search=invoice` | — |
-| `select(options)` | `"opt1" \| "opt2" \| undefined` | `status=paid` | ✅ |
-| `multiSelect(options)` | `Array<"opt1" \| "opt2"> \| undefined` | `tags=urgent,review` | ✅ |
-| `boolean()` | `boolean \| undefined` | `active=true` | ✅ |
-| `dateRange()` | `{ from?: string; to?: string } \| undefined` | `createdAtFrom=…&createdAtTo=…` | — |
-| `numberRange()` | `{ min?: number; max?: number } \| undefined` | `amountMin=…&amountMax=…` | — |
+| Factory                | State type                                    | URL format                      | `{ default }` |
+| ---------------------- | --------------------------------------------- | ------------------------------- | ------------- |
+| `text()`               | `string \| undefined`                         | `search=invoice`                | —             |
+| `select(options)`      | `"opt1" \| "opt2" \| undefined`               | `status=paid`                   | ✅            |
+| `multiSelect(options)` | `Array<"opt1" \| "opt2"> \| undefined`        | `tags=urgent,review`            | ✅            |
+| `boolean()`            | `boolean \| undefined`                        | `active=true`                   | ✅            |
+| `dateRange()`          | `{ from?: string; to?: string } \| undefined` | `createdAtFrom=…&createdAtTo=…` | —             |
+| `numberRange()`        | `{ min?: number; max?: number } \| undefined` | `amountMin=…&amountMax=…`       | —             |
 
 A default is accepted only where the value space is a fixed, enumerable set. A filter at its default
 emits no query param, so the landing page has no query string — but the backend DTO still carries it,
@@ -273,14 +271,14 @@ because the URL is read back by `parseFilters` and the backend is not.
 
 ### Key functions
 
-| Function | Description |
-|----------|-------------|
-| `defineFilters(schema)` | Creates a typed filter schema |
-| `parseFilters(schema, input)` | Parses untrusted input into typed state |
-| `toSearchParams(schema, state)` | Serializes state into `URLSearchParams`, omitting defaults |
-| `toQueryDto(schema, state)` | Converts state into a backend-friendly object, defaults included |
-| `getDefaultFilterState(schema)` | The state a schema starts from |
-| `isAtDefault(filter, value)` | Whether a value equals its filter's default |
+| Function                        | Description                                                      |
+| ------------------------------- | ---------------------------------------------------------------- |
+| `defineFilters(schema)`         | Creates a typed filter schema                                    |
+| `parseFilters(schema, input)`   | Parses untrusted input into typed state                          |
+| `toSearchParams(schema, state)` | Serializes state into `URLSearchParams`, omitting defaults       |
+| `toQueryDto(schema, state)`     | Converts state into a backend-friendly object, defaults included |
+| `getDefaultFilterState(schema)` | The state a schema starts from                                   |
+| `isAtDefault(filter, value)`    | Whether a value equals its filter's default                      |
 
 ---
 
@@ -290,19 +288,19 @@ Full reference: [`docs/api/react.md`](./docs/api/react.md)
 
 ### `useFilterBridge(schema, options?)`
 
-| Return | Type | Description |
-|--------|------|-------------|
-| `state` | `InferFilterState<TSchema>` | Current filter state |
-| `set(key, value)` | `void` | Update one filter |
-| `setMany(values)` | `void` | Update multiple filters |
-| `clear(key)` | `void` | Remove one filter, or return it to its default if it has one |
-| `reset()` | `void` | Back to the baseline — `{}`, or the schema defaults |
-| `resetToInitial()` | `void` | Restore the `initialState` passed at mount |
-| `syncState(state)` | `void` | Adopt externally-owned state without firing `onChange` |
-| `hasActiveFilters` | `boolean` | Whether any filter is active |
-| `activeFilterCount` | `number` | Count of filters moved off their default |
-| `toQueryDto()` | object | Current state as backend DTO |
-| `toSearchParams()` | `URLSearchParams` | Current state as URL params |
+| Return              | Type                        | Description                                                  |
+| ------------------- | --------------------------- | ------------------------------------------------------------ |
+| `state`             | `InferFilterState<TSchema>` | Current filter state                                         |
+| `set(key, value)`   | `void`                      | Update one filter                                            |
+| `setMany(values)`   | `void`                      | Update multiple filters                                      |
+| `clear(key)`        | `void`                      | Remove one filter, or return it to its default if it has one |
+| `reset()`           | `void`                      | Back to the baseline — `{}`, or the schema defaults          |
+| `resetToInitial()`  | `void`                      | Restore the `initialState` passed at mount                   |
+| `syncState(state)`  | `void`                      | Adopt externally-owned state without firing `onChange`       |
+| `hasActiveFilters`  | `boolean`                   | Whether any filter is active                                 |
+| `activeFilterCount` | `number`                    | Count of filters moved off their default                     |
+| `toQueryDto()`      | object                      | Current state as backend DTO                                 |
+| `toSearchParams()`  | `URLSearchParams`           | Current state as URL params                                  |
 
 ### Keeping the URL in sync
 
@@ -340,7 +338,7 @@ imports it, so the root entry works in plain Node or any non-React app.
 
 ## Why not just TanStack Table?
 
-TanStack Table is a headless table engine with its own column filter model. FilterBridge is not a table engine — it focuses on a different problem: the filter *contract* around an admin list, how filters are parsed from a URL, how they become a backend query DTO, and how they stay typed throughout.
+TanStack Table is a headless table engine with its own column filter model. FilterBridge is not a table engine — it focuses on a different problem: the filter _contract_ around an admin list, how filters are parsed from a URL, how they become a backend query DTO, and how they stay typed throughout.
 
 You can use both together. The `@filterbridge/tanstack` adapter converts between the two filter formats.
 

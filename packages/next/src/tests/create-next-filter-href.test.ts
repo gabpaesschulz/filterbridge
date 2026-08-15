@@ -52,11 +52,7 @@ describe('createNextFilterHref', () => {
     })
 
     it('serializes boolean as "true"/"false"', () => {
-      const href = createNextFilterHref(
-        filters,
-        { archived: true },
-        { pathname: '/invoices' }
-      )
+      const href = createNextFilterHref(filters, { archived: true }, { pathname: '/invoices' })
       expect(href).toContain('archived=true')
     })
 

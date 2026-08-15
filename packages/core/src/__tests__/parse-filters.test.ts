@@ -15,7 +15,14 @@ const schema = defineFilters({
 
 describe('defineFilters', () => {
   it('preserves schema keys', () => {
-    expect(Object.keys(schema)).toEqual(['search', 'status', 'tags', 'active', 'createdAt', 'amount'])
+    expect(Object.keys(schema)).toEqual([
+      'search',
+      'status',
+      'tags',
+      'active',
+      'createdAt',
+      'amount',
+    ])
   })
 
   it('select preserves options', () => {

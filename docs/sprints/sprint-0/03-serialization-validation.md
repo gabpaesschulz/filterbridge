@@ -65,11 +65,11 @@ the check properly on the way in.
 
 **How should an invalid value be handled on serialization?**
 
-| Option | Behavior | Trade-off |
-|--------|----------|-----------|
-| A — drop silently | Match `parseFilters`: invalid values are omitted | Consistent and simple; the bug becomes invisible to the caller |
-| B — drop + `console.warn` in dev | Same output, plus a message when `process.env.NODE_ENV !== 'production'` | Surfaces caller bugs; needs an env guard so it is stripped from production bundles |
-| C — throw | Fail loudly on invalid state | Wrong for a serializer that is called on every render — a bad value would crash the UI |
+| Option                           | Behavior                                                                 | Trade-off                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| A — drop silently                | Match `parseFilters`: invalid values are omitted                         | Consistent and simple; the bug becomes invisible to the caller                         |
+| B — drop + `console.warn` in dev | Same output, plus a message when `process.env.NODE_ENV !== 'production'` | Surfaces caller bugs; needs an env guard so it is stripped from production bundles     |
+| C — throw                        | Fail loudly on invalid state                                             | Wrong for a serializer that is called on every render — a bad value would crash the UI |
 
 **Recommendation: B.** Dropping is the only behavior consistent with the parse side, and a dev-only
 warning is what makes the drop discoverable instead of just relocating the silence. Option C is not

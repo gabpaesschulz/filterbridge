@@ -31,23 +31,17 @@ describe('fromTanStackColumnFilters', () => {
   })
 
   it('removes invalid select value', () => {
-    const state = fromTanStackColumnFilters(filters, [
-      { id: 'status', value: 'cancelled' },
-    ])
+    const state = fromTanStackColumnFilters(filters, [{ id: 'status', value: 'cancelled' }])
     expect(state.status).toBeUndefined()
   })
 
   it('accepts multiSelect as array', () => {
-    const state = fromTanStackColumnFilters(filters, [
-      { id: 'tags', value: ['urgent', 'review'] },
-    ])
+    const state = fromTanStackColumnFilters(filters, [{ id: 'tags', value: ['urgent', 'review'] }])
     expect(state.tags).toEqual(['urgent', 'review'])
   })
 
   it('accepts multiSelect as comma-separated string', () => {
-    const state = fromTanStackColumnFilters(filters, [
-      { id: 'tags', value: 'urgent,review' },
-    ])
+    const state = fromTanStackColumnFilters(filters, [{ id: 'tags', value: 'urgent,review' }])
     expect(state.tags).toEqual(['urgent', 'review'])
   })
 
@@ -59,9 +53,7 @@ describe('fromTanStackColumnFilters', () => {
   })
 
   it('removes fully invalid multiSelect', () => {
-    const state = fromTanStackColumnFilters(filters, [
-      { id: 'tags', value: ['nonexistent'] },
-    ])
+    const state = fromTanStackColumnFilters(filters, [{ id: 'tags', value: ['nonexistent'] }])
     expect(state.tags).toBeUndefined()
   })
 
@@ -76,16 +68,12 @@ describe('fromTanStackColumnFilters', () => {
   })
 
   it('accepts boolean as string "true"', () => {
-    const state = fromTanStackColumnFilters(filters, [
-      { id: 'archived', value: 'true' },
-    ])
+    const state = fromTanStackColumnFilters(filters, [{ id: 'archived', value: 'true' }])
     expect(state.archived).toBe(true)
   })
 
   it('accepts boolean as string "false"', () => {
-    const state = fromTanStackColumnFilters(filters, [
-      { id: 'archived', value: 'false' },
-    ])
+    const state = fromTanStackColumnFilters(filters, [{ id: 'archived', value: 'false' }])
     expect(state.archived).toBe(false)
   })
 
@@ -111,9 +99,7 @@ describe('fromTanStackColumnFilters', () => {
   })
 
   it('accepts numberRange as tuple [min, max]', () => {
-    const state = fromTanStackColumnFilters(filters, [
-      { id: 'amount', value: [100, 2500] },
-    ])
+    const state = fromTanStackColumnFilters(filters, [{ id: 'amount', value: [100, 2500] }])
     expect(state.amount).toEqual({ min: 100, max: 2500 })
   })
 
@@ -131,9 +117,7 @@ describe('fromTanStackColumnFilters', () => {
   })
 
   it('ignores column ids not in schema', () => {
-    const state = fromTanStackColumnFilters(filters, [
-      { id: 'unknownColumn', value: 'something' },
-    ])
+    const state = fromTanStackColumnFilters(filters, [{ id: 'unknownColumn', value: 'something' }])
     expect(Object.keys(state)).toHaveLength(0)
   })
 

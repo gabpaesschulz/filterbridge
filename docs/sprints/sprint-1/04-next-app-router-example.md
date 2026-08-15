@@ -22,18 +22,18 @@ The gap that matters is the server/client boundary. `parseNextSearchParams` runs
 component, `useFilterBridge` runs in a client component, and the interesting failure modes —
 hydration mismatch, `searchParams` arriving as a Promise in Next 15, back/forward triggering a
 server re-render — all live exactly where a unit test does not look. The roadmap asks for
-*"[better examples for the Next.js App Router pattern (client + server components)]"*
+_"[better examples for the Next.js App Router pattern (client + server components)]"_
 ([roadmap](../../roadmap.md#02x--stability-and-ergonomics)); this is why.
 
 ## Decisions needed before implementing
 
 ### 1. Runnable app, or better snippets?
 
-| Option | Trade-off |
-|--------|-----------|
-| A — a real Next.js app in the workspace | Proves the pattern works, and the CI demo job could build it. Adds Next.js, React DOM and a second framework's toolchain to `pnpm install` for everyone, and to every CI leg |
-| B — a copy-paste example directory, not a workspace package | Matches [`examples/basic`](../../../examples/basic), which is a README of snippets and nothing else. Costs nothing to install. Proves nothing |
-| C — a real app kept **outside** the workspace | Files live in `examples/next-app-router/` with their own `package.json`, excluded from `pnpm-workspace.yaml`. Runnable by anyone who `cd`s in and installs, invisible to the root install and to CI |
+| Option                                                      | Trade-off                                                                                                                                                                                           |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A — a real Next.js app in the workspace                     | Proves the pattern works, and the CI demo job could build it. Adds Next.js, React DOM and a second framework's toolchain to `pnpm install` for everyone, and to every CI leg                        |
+| B — a copy-paste example directory, not a workspace package | Matches [`examples/basic`](../../../examples/basic), which is a README of snippets and nothing else. Costs nothing to install. Proves nothing                                                       |
+| C — a real app kept **outside** the workspace               | Files live in `examples/next-app-router/` with their own `package.json`, excluded from `pnpm-workspace.yaml`. Runnable by anyone who `cd`s in and installs, invisible to the root install and to CI |
 
 **Recommendation: C.** It is the only option that lets the code be executed at least once by its
 author without making every contributor pay for a framework they may not use.

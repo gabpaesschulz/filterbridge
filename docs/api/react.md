@@ -94,12 +94,12 @@ set: <TKey extends keyof InferFilterState<TSchema>>(
 Updates a single filter. Setting a filter to an empty value removes it from state.
 
 ```ts
-bridge.set('search', 'invoice')    // sets search
-bridge.set('search', '')           // removes search
-bridge.set('tags', ['paid'])       // sets tags
-bridge.set('tags', [])             // removes tags
+bridge.set('search', 'invoice') // sets search
+bridge.set('search', '') // removes search
+bridge.set('tags', ['paid']) // sets tags
+bridge.set('tags', []) // removes tags
 bridge.set('amount', { min: 100 }) // sets amount
-bridge.set('amount', {})           // removes amount
+bridge.set('amount', {}) // removes amount
 ```
 
 Calls `onChange` after the update.
@@ -140,11 +140,11 @@ bridge.clear('status')
 
 This matters most for `boolean()` filters, which have **three** states, not two:
 
-| State | Meaning | URL |
-|---|---|---|
-| `true` | Filter to archived rows | `archived=true` |
-| `false` | Filter to non-archived rows | `archived=false` |
-| `undefined` | Not filtering on this field at all | *(absent)* |
+| State       | Meaning                            | URL              |
+| ----------- | ---------------------------------- | ---------------- |
+| `true`      | Filter to archived rows            | `archived=true`  |
+| `false`     | Filter to non-archived rows        | `archived=false` |
+| `undefined` | Not filtering on this field at all | _(absent)_       |
 
 `set('archived', false)` is a real filter value and stays in the URL and the query DTO. Only
 `clear('archived')` removes it.
@@ -172,7 +172,7 @@ A filter sitting at its [schema default](./core.md#default-values) is not counte
 
 ##### For a filter with a schema default, `clear()` means "back to the default"
 
-A filter declared with a [`default`](./core.md#default-values) has no "absent" state to return to — the URL cannot express one, because an omitted param *is* the default. So clearing it restores the default rather than removing the key:
+A filter declared with a [`default`](./core.md#default-values) has no "absent" state to return to — the URL cannot express one, because an omitted param _is_ the default. So clearing it restores the default rather than removing the key:
 
 ```ts
 const schema = defineFilters({
@@ -256,11 +256,11 @@ Calls `onChange` with the restored state.
 
 Which one to put behind a "Reset" button depends on where `initialState` comes from:
 
-| `initialState` source | Meaning of `reset()` | Meaning of `resetToInitial()` |
-|---|---|---|
-| Nothing / hardcoded `{}` | Clear everything | Same as `reset()` |
-| Hardcoded defaults (`{ status: 'paid' }`) | Show everything, unfiltered | Back to the page's default view |
-| Parsed from the URL | Clear the shared link's filters | Back to the link the user arrived with |
+| `initialState` source                     | Meaning of `reset()`            | Meaning of `resetToInitial()`          |
+| ----------------------------------------- | ------------------------------- | -------------------------------------- |
+| Nothing / hardcoded `{}`                  | Clear everything                | Same as `reset()`                      |
+| Hardcoded defaults (`{ status: 'paid' }`) | Show everything, unfiltered     | Back to the page's default view        |
+| Parsed from the URL                       | Clear the shared link's filters | Back to the link the user arrived with |
 
 ---
 
@@ -277,7 +277,7 @@ Two properties distinguish it from the other mutators:
 - It **replaces** rather than merges. Keys absent from the argument end up absent from the state. `syncState({})` clears everything.
 - It does **not** fire `onChange`.
 
-That second point is the whole reason the method exists. The usual `onChange` writes state back to the URL; `syncState` is called *because* the URL already changed. If it fired `onChange`, adopting a URL would immediately write it back, and a `popstate` handler would loop.
+That second point is the whole reason the method exists. The usual `onChange` writes state back to the URL; `syncState` is called _because_ the URL already changed. If it fired `onChange`, adopting a URL would immediately write it back, and a `popstate` handler would loop.
 
 ```ts
 bridge.syncState({ search: 'invoice' })
@@ -313,9 +313,9 @@ hasActiveFilters: boolean
 Useful for rendering a "clear all" button or an active filter indicator:
 
 ```tsx
-{bridge.hasActiveFilters && (
-  <button onClick={() => bridge.reset()}>Clear all filters</button>
-)}
+{
+  bridge.hasActiveFilters && <button onClick={() => bridge.reset()}>Clear all filters</button>
+}
 ```
 
 ---
@@ -339,7 +339,7 @@ const schema = defineFilters({
 const bridge = useFilterBridge(schema, { initialState: parseFiltersFromUrl(schema) })
 
 bridge.activeFilterCount // 0
-bridge.toSearchParams()  // '' — the same fact stated two ways
+bridge.toSearchParams() // '' — the same fact stated two ways
 
 bridge.set('status', 'failed')
 bridge.activeFilterCount // 1

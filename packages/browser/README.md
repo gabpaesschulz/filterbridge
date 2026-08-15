@@ -77,10 +77,10 @@ usePopstateSync(invoiceFilters, bridge.syncState)
 
 ## Entry points
 
-| Import path | Contents | Requires React |
-|-------------|----------|----------------|
-| `@filterbridge/browser` | URL parsing and history helpers | No |
-| `@filterbridge/browser/react` | `usePopstateSync` | Yes |
+| Import path                   | Contents                        | Requires React |
+| ----------------------------- | ------------------------------- | -------------- |
+| `@filterbridge/browser`       | URL parsing and history helpers | No             |
+| `@filterbridge/browser/react` | `usePopstateSync`               | Yes            |
 
 React is an **optional** peer dependency. The root entry never imports it, so this package still works in a non-React app.
 
@@ -122,17 +122,25 @@ createFilterUrl(filters, { search: 'acme' }, { pathname: '/invoices' })
 // "/invoices?search=acme"
 
 // Preserving non-filter params
-createFilterUrl(filters, { search: 'acme' }, {
-  pathname: '/invoices',
-  currentSearch: '?page=2&tab=open',
-})
+createFilterUrl(
+  filters,
+  { search: 'acme' },
+  {
+    pathname: '/invoices',
+    currentSearch: '?page=2&tab=open',
+  }
+)
 // "/invoices?page=2&tab=open&search=acme"
 
 // Removing old filter params
-createFilterUrl(filters, {}, {
-  pathname: '/invoices',
-  currentSearch: '?page=2&search=old&status=paid',
-})
+createFilterUrl(
+  filters,
+  {},
+  {
+    pathname: '/invoices',
+    currentSearch: '?page=2&search=old&status=paid',
+  }
+)
 // "/invoices?page=2"
 ```
 
@@ -140,10 +148,10 @@ Options:
 
 ```ts
 type CreateFilterUrlOptions = {
-  pathname?: string                        // Default: window.location.pathname or "/"
+  pathname?: string // Default: window.location.pathname or "/"
   currentSearch?: string | URLSearchParams // Existing params to preserve
-  hash?: string                            // Hash fragment without #
-  preserveExistingParams?: boolean         // Default: true
+  hash?: string // Hash fragment without #
+  preserveExistingParams?: boolean // Default: true
 }
 ```
 
@@ -176,11 +184,13 @@ pushUrlFilters(filters, { search: 'acme' })
 Returns the URL search-param keys produced by the schema.
 
 ```ts
-getFilterParamKeys(defineFilters({
-  search: text(),
-  issuedAt: dateRange(),
-  amount: numberRange(),
-}))
+getFilterParamKeys(
+  defineFilters({
+    search: text(),
+    issuedAt: dateRange(),
+    amount: numberRange(),
+  })
+)
 // ["search", "issuedAtFrom", "issuedAtTo", "amountMin", "amountMax"]
 ```
 

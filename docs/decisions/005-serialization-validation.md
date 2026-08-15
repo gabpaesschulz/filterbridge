@@ -12,8 +12,8 @@ into the backend DTO, and then vanished when the URL was read back:
 ```ts
 const state = { status: 'bogus', tags: ['zzz'] }
 
-toSearchParams(schema, state).toString()   // 'status=bogus&tags=zzz'
-parseFilters(schema, toSearchParams(schema, state))  // {} — everything gone
+toSearchParams(schema, state).toString() // 'status=bogus&tags=zzz'
+parseFilters(schema, toSearchParams(schema, state)) // {} — everything gone
 ```
 
 The library's premise is that one schema keeps state, URL and DTO consistent. The schema was being
@@ -26,11 +26,11 @@ serializers are reachable from the same places.
 
 ## Decision 1 — an invalid value is dropped, not thrown on
 
-| Option | Why not |
-|---|---|
-| A — drop silently | Consistent with parsing, but the caller's bug becomes invisible |
-| **B — drop + dev-only `console.warn`** ✅ | chosen |
-| C — throw | **Not viable.** `toSearchParams` runs inside `useFilterBridge`'s render path, so a bad filter value would turn into a blank page |
+| Option                                    | Why not                                                                                                                          |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| A — drop silently                         | Consistent with parsing, but the caller's bug becomes invisible                                                                  |
+| **B — drop + dev-only `console.warn`** ✅ | chosen                                                                                                                           |
+| C — throw                                 | **Not viable.** `toSearchParams` runs inside `useFilterBridge`'s render path, so a bad filter value would turn into a blank page |
 
 Dropping is the only behavior consistent with the parse side. The dev warning is what makes the drop
 discoverable rather than just relocating the silence.
@@ -39,7 +39,7 @@ The environment guard is a bare `process.env.NODE_ENV !== 'production'` inside a
 bundlers still replace the literal and eliminate the branch, while an unbundled browser build — where
 `process` is undefined — returns `false` instead of throwing.
 
-Parsing does **not** warn. Untrusted input is what `parseFilters` is for. Only a *serializer*
+Parsing does **not** warn. Untrusted input is what `parseFilters` is for. Only a _serializer_
 receiving a value the schema rejects indicates a caller bug.
 
 ## Decision 2 — a configured default throws instead

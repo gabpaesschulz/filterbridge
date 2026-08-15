@@ -26,7 +26,7 @@ TanStack Table column filters are designed to work closely with the table's data
 
 nuqs is a React hook for syncing state with URL query strings. If that is all you need, nuqs may be the right tool.
 
-FilterBridge adds a typed schema layer on top: it defines *what* the filters are, not just *where* their values live. The schema drives parsing, serialization format, and backend DTO shape. The tradeoff is that FilterBridge is more opinionated about filter types.
+FilterBridge adds a typed schema layer on top: it defines _what_ the filters are, not just _where_ their values live. The schema drives parsing, serialization format, and backend DTO shape. The tradeoff is that FilterBridge is more opinionated about filter types.
 
 URL synchronization lives in a separate, opt-in package (`@filterbridge/browser`) rather than in the hook itself, so `@filterbridge/core` and `@filterbridge/react` stay usable without browser globals. FilterBridge does not wrap nuqs or replace it as the backing store for `useFilterBridge`.
 

@@ -27,6 +27,7 @@ A single package would be simpler today but would make it harder to keep adapter
 `@filterbridge/core` contains schema definitions, parsing, and serialization as pure TypeScript. It has no dependency on React, Next.js, or any UI framework.
 
 This means:
+
 - Core can be used in non-React environments (Node.js scripts, CLI tools, server-side code).
 - Core is easy to test without a renderer.
 - Future adapters can depend on core without pulling in unrelated framework code.

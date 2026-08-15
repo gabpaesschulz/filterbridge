@@ -55,7 +55,9 @@ Both serializers guard with `!== undefined`, which `NaN` passes:
   ```
 - [`packages/core/src/query-dto.ts:44-50`](../../../packages/core/src/query-dto.ts)
   ```ts
-  if (range.min !== undefined || range.max !== undefined) { dto[key] = range }
+  if (range.min !== undefined || range.max !== undefined) {
+    dto[key] = range
+  }
   ```
 
 Note the DTO case is coarser: it copies the whole `range` object through, so it emits the bad value

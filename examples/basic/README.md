@@ -51,7 +51,7 @@ getDefaultFilterState(orderFilters)
 error. See [which filters accept a default](../../docs/api/core.md#which-filters-accept-a-default).
 
 Note that `clear()` on a filter with a default returns it to that default rather than removing it:
-there is no "absent" state for it to return to, because an omitted param *is* the default.
+there is no "absent" state for it to return to, because an omitted param _is_ the default.
 
 ---
 
@@ -87,32 +87,22 @@ export function OrdersFilters() {
       <button onClick={() => bridge.clear('status')}>Clear status</button>
 
       {/* Multi-select */}
-      <button onClick={() => bridge.set('tags', ['urgent', 'review'])}>
-        Urgent + Review
-      </button>
+      <button onClick={() => bridge.set('tags', ['urgent', 'review'])}>Urgent + Review</button>
 
       {/* Date range */}
-      <button
-        onClick={() =>
-          bridge.set('createdAt', { from: '2026-01-01', to: '2026-01-31' })
-        }
-      >
+      <button onClick={() => bridge.set('createdAt', { from: '2026-01-01', to: '2026-01-31' })}>
         January 2026
       </button>
 
       {/* Number range */}
-      <button onClick={() => bridge.set('amount', { min: 100, max: 500 })}>
-        $100 – $500
-      </button>
+      <button onClick={() => bridge.set('amount', { min: 100, max: 500 })}>$100 – $500</button>
 
       {/* Reset: back to the baseline, or back to the initial state */}
       <button onClick={() => bridge.reset()}>Reset all</button>
       <button onClick={() => bridge.resetToInitial()}>Back to start</button>
 
       {/* Active filter count */}
-      {bridge.hasActiveFilters && (
-        <span>{bridge.activeFilterCount} active filters</span>
-      )}
+      {bridge.hasActiveFilters && <span>{bridge.activeFilterCount} active filters</span>}
 
       {/* Backend DTO */}
       <pre>{JSON.stringify(bridge.toQueryDto(), null, 2)}</pre>

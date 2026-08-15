@@ -83,11 +83,11 @@ from the local machine.
 Three jobs in `.github/workflows/ci.yml`, on `push` to `main` and on `pull_request`, under a
 concurrency group that cancels superseded runs on the same ref:
 
-| Job | Matrix | Steps |
-|-----|--------|-------|
-| `check` | `ubuntu-latest` × Node 18/20/22, plus `windows-latest` × Node 20 | install → lint → typecheck → test → build |
-| `demo build` | `ubuntu-latest` × Node 20 | install → build → `demo:build` |
-| `changeset` | `ubuntu-latest` × Node 20, pull requests only | `changeset status --since=origin/<base>` |
+| Job          | Matrix                                                           | Steps                                     |
+| ------------ | ---------------------------------------------------------------- | ----------------------------------------- |
+| `check`      | `ubuntu-latest` × Node 18/20/22, plus `windows-latest` × Node 20 | install → lint → typecheck → test → build |
+| `demo build` | `ubuntu-latest` × Node 20                                        | install → build → `demo:build`            |
+| `changeset`  | `ubuntu-latest` × Node 20, pull requests only                    | `changeset status --since=origin/<base>`  |
 
 Supporting changes:
 

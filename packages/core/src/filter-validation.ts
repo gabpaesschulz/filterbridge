@@ -64,7 +64,8 @@ function isDevelopment(): boolean {
 
 function formatValue(value: unknown): string {
   if (typeof value === 'string') return JSON.stringify(value)
-  if (typeof value === 'object' && value !== null) return Array.isArray(value) ? 'an array' : 'an object'
+  if (typeof value === 'object' && value !== null)
+    return Array.isArray(value) ? 'an array' : 'an object'
   return String(value)
 }
 

@@ -10,13 +10,14 @@ Steps to complete before or after the first public announcement.
 - [x] Website URL in repository About — `https://filterbridge-demo.vercel.app`
 - [x] npm package URLs — README badges
 - [x] Topics (gear icon next to **About** on the repository sidebar). Live:
-  `typescript`, `react`, `nextjs`, `tanstack-table`, `filters`, `url-state`, `search-params`,
-  `query-params`
+      `typescript`, `react`, `nextjs`, `tanstack-table`, `filters`, `url-state`, `search-params`,
+      `query-params`
 
   Topics improve discoverability in GitHub search and on the npm registry. They are platform
   configuration rather than documentation, so this list is the only copy — there is no separate file.
+
 - [ ] Optional additional topics, not yet applied: `admin-dashboard`, `frontend`,
-  `developer-tools`, `npm-package`, `open-source`, `monorepo`
+      `developer-tools`, `npm-package`, `open-source`, `monorepo`
 - [ ] Pin repository on GitHub profile (if applicable)
 
 ---
@@ -73,4 +74,5 @@ a `vX.Y.Z` tag. The `vX.Y.Z` tags the releases are cut from are created manually
 
 Drafts for these used to live in `docs/marketing/`, which was deliberately removed from version
 control — announcement copy is not project documentation and went stale between releases.
+
 - [ ] Submit to relevant newsletters or communities

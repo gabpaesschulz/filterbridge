@@ -33,7 +33,9 @@ describe('task 2 — NaN and Infinity leak into URL and DTO', () => {
   const schema = defineFilters({ amount: numberRange() })
 
   it('omits a NaN side from the URL and keeps the finite one', () => {
-    expect(toSearchParams(schema, { amount: { min: NaN, max: 10 } }).toString()).toBe('amountMax=10')
+    expect(toSearchParams(schema, { amount: { min: NaN, max: 10 } }).toString()).toBe(
+      'amountMax=10'
+    )
   })
 
   it('never emits null in the DTO for a non-finite side', () => {

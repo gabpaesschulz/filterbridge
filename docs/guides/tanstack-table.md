@@ -32,7 +32,15 @@ pnpm add @tanstack/react-table
 ## Step 1 — Define your FilterBridge schema
 
 ```ts
-import { defineFilters, text, select, multiSelect, boolean, dateRange, numberRange } from '@filterbridge/core'
+import {
+  defineFilters,
+  text,
+  select,
+  multiSelect,
+  boolean,
+  dateRange,
+  numberRange,
+} from '@filterbridge/core'
 
 export const invoiceFilters = defineFilters({
   search: text(),
@@ -57,11 +65,11 @@ const col = createColumnHelper<Invoice>()
 
 const columns = [
   col.accessor('customerName', { filterFn: 'text' }),
-  col.accessor('status',       { filterFn: 'select' }),
-  col.accessor('tags',         { filterFn: 'multiSelect' }),
-  col.accessor('archived',     { filterFn: 'boolean' }),
-  col.accessor('issuedAt',     { filterFn: 'dateRange' }),
-  col.accessor('amount',       { filterFn: 'numberRange' }),
+  col.accessor('status', { filterFn: 'select' }),
+  col.accessor('tags', { filterFn: 'multiSelect' }),
+  col.accessor('archived', { filterFn: 'boolean' }),
+  col.accessor('issuedAt', { filterFn: 'dateRange' }),
+  col.accessor('amount', { filterFn: 'numberRange' }),
 ]
 ```
 
@@ -103,11 +111,7 @@ The `columnIds` option is only needed when the column ID in TanStack differs fro
 ## Step 4 — Pass to `useReactTable`
 
 ```ts
-import {
-  useReactTable,
-  getCoreRowModel,
-  getFilteredRowModel,
-} from '@tanstack/react-table'
+import { useReactTable, getCoreRowModel, getFilteredRowModel } from '@tanstack/react-table'
 import { filterBridgeFilterFns } from '@filterbridge/tanstack'
 
 const table = useReactTable({
