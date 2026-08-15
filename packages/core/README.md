@@ -155,6 +155,7 @@ Serializes typed filter state into `URLSearchParams`.
 - `multiSelect` arrays are joined with commas: `tags=urgent,review`
 - `dateRange` uses `<name>From` / `<name>To`: `createdAtFrom=…&createdAtTo=…`
 - `numberRange` uses `<name>Min` / `<name>Max`: `amountMin=…&amountMax=…`
+- Both range key names can be overridden — see [custom URL keys](#custom-url-keys)
 
 ```ts
 const params = toSearchParams(schema, state)
@@ -314,7 +315,7 @@ defineFilters({ active: boolean() })
 
 ---
 
-### `dateRange()`
+### `dateRange(config?)`
 
 A range of ISO-like date strings.
 
@@ -324,6 +325,7 @@ A range of ISO-like date strings.
 | Parse      | Reads `<name>From` and `<name>To` keys; empty strings ignored |
 | URL        | `createdAtFrom=2026-01-01&createdAtTo=2026-01-31`             |
 | DTO        | `{ createdAt: { from: '2026-01-01', to: '2026-01-31' } }`     |
+| Config     | `{ keys?: { from?: string; to?: string } }`                   |
 
 ```ts
 defineFilters({ createdAt: dateRange() })
@@ -334,7 +336,7 @@ No date library is used. Strings are accepted as-is. Date validation is out of s
 
 ---
 
-### `numberRange()`
+### `numberRange(config?)`
 
 A numeric range.
 
@@ -344,11 +346,40 @@ A numeric range.
 | Parse      | Reads `<name>Min` and `<name>Max` keys; non-numeric strings ignored |
 | URL        | `amountMin=100&amountMax=500`                                       |
 | DTO        | `{ amount: { min: 100, max: 500 } }`                                |
+| Config     | `{ keys?: { min?: string; max?: string } }`                         |
 
 ```ts
 defineFilters({ amount: numberRange() })
 // amount?: { min?: number; max?: number }
 ```
+
+---
+
+## Custom URL keys
+
+_Added in `0.3.0`._
+
+The `From` / `To` / `Min` / `Max` names above are defaults. When the query string is read by an API that already has an opinion about its parameter names, `keys` renames them:
+
+```ts
+const filters = defineFilters({
+  createdAt: dateRange({ keys: { from: 'created_after', to: 'created_before' } }),
+  amount: numberRange({ keys: { min: 'min_cents' } }),
+})
+
+toSearchParams(filters, {
+  createdAt: { from: '2026-01-01' },
+  amount: { min: 100, max: 500 },
+}).toString()
+// created_after=2026-01-01&min_cents=100&amountMax=500
+```
+
+- Either side may be given alone; the other stays derived.
+- The key replaces the whole param name, so `created_after` is reachable from a filter named `createdAt`.
+- `toQueryDto` is unaffected — the DTO is keyed by filter name, always. A custom key is a URL concern.
+- `getFilterParamKeys`, `@filterbridge/browser` and `@filterbridge/next` all read the same derivation, so nothing has to be told twice.
+
+`defineFilters` throws when two filters end up on the same param key — including without any override, as `{ createdAtFrom: text(), createdAt: dateRange() }` always did. Full details in [`docs/api/core.md`](https://github.com/gabpaesschulz/filterbridge/blob/main/docs/api/core.md#custom-url-keys).
 
 ---
 
@@ -370,14 +401,21 @@ MultiSelectFilter<T>
 BooleanFilter
 DateRangeFilter
 NumberRangeFilter
+
+// Builder configuration
+FilterConfig<TValue> // select / multiSelect / boolean
+DateRangeConfig // { keys?: DateRangeKeys }
+NumberRangeConfig // { keys?: NumberRangeKeys }
+DateRangeKeys
+NumberRangeKeys
 ```
 
 ---
 
 ## Known limitations
 
-- No custom key suffixes for `dateRange` / `numberRange` (always uses `From`/`To` and `Min`/`Max`)
-- No default values per filter
+- No custom key for the scalar filters — `text('search')` cannot serialize to `q` yet. Ranges have
+  one; the option shape leaves `key: string` free for scalars to be added without a rename
 - No date string validation beyond accepting non-empty strings
 - No React integration in this package — see `@filterbridge/react`
 

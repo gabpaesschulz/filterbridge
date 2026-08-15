@@ -189,6 +189,48 @@ describe('core and next agree on a schema with defaults', () => {
   })
 })
 
+/**
+ * Custom range keys are derived in `@filterbridge/core` and consumed here. Until
+ * `0.3.0` this package spelled out its own `From`/`To`/`Min`/`Max`, so an
+ * override would have been invisible to it: the server would have parsed `{}`
+ * from a URL the client parsed a full range from, which is the hydration
+ * mismatch this file exists to rule out.
+ */
+const customKeys = defineFilters({
+  search: text(),
+  status: select(['pending', 'paid', 'failed'] as const, { default: 'pending' }),
+  createdAt: dateRange({ keys: { from: 'created_after', to: 'created_before' } }),
+  amount: numberRange({ keys: { min: 'min_cents' } }),
+})
+
+const customKeyUrls = [
+  '',
+  'created_after=2026-01-01',
+  'created_after=2026-01-01&created_before=2026-01-31',
+  'min_cents=100&amountMax=500',
+  'created_after=2026-01-01&created_after=2026-02-01',
+  // The keys the schema would have used without the override. Both packages
+  // have to ignore them, and ignore them the same way.
+  'createdAtFrom=2026-01-01&amountMin=100',
+  'search=invoice&created_before=2026-03-01&min_cents=5&page=2',
+]
+
+describe('core and next agree on custom range keys', () => {
+  it.each(customKeyUrls)('%s', (query) => {
+    const params = new URLSearchParams(query)
+    const fromCore = parseFilters(customKeys, params)
+    expect(parseNextSearchParams(customKeys, params)).toEqual(fromCore)
+    expect(parseNextSearchParams(customKeys, recordFrom(params))).toEqual(fromCore)
+  })
+
+  it('both read the override rather than the derived key', () => {
+    const params = new URLSearchParams('created_after=2026-01-01&createdAtFrom=1999-01-01')
+    expect(parseNextSearchParams(customKeys, params)).toMatchObject({
+      createdAt: { from: '2026-01-01' },
+    })
+  })
+})
+
 /** The `searchParams` record shape Next.js passes to a server component. */
 function recordFrom(params: URLSearchParams): Record<string, string | string[]> {
   const record: Record<string, string | string[]> = {}

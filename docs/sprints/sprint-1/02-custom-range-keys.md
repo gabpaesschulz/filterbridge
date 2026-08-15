@@ -2,7 +2,46 @@
 
 **Priority:** P1 — the sprint's only API change
 **Area:** `@filterbridge/core`, `@filterbridge/browser`, `@filterbridge/next`
-**Status:** open
+**Status:** done
+
+---
+
+## Outcome
+
+Every decision was taken as recommended. Key derivation lives in
+[`packages/core/src/param-keys.ts`](../../../packages/core/src/param-keys.ts) and nothing else in the
+repository concatenates a suffix onto a filter name — verified by grep, not by intention.
+
+| Decision                   | Taken                                                                                          |
+| -------------------------- | ---------------------------------------------------------------------------------------------- |
+| 1 — where derivation lives | Core. `browser/src/filter-param-keys.ts` is now a one-line re-export                           |
+| 2 — option shape           | A, full key override, partial allowed                                                          |
+| 3 — scalars                | Out of scope, and the option is named `keys` so `key: string` stays free. Filed on the roadmap |
+| 4 — DTO                    | Unaffected, with a test that says so                                                           |
+| 5 — collisions             | `defineFilters` throws, including for the pre-existing case                                    |
+
+Core gained four exports beyond the option itself: `filterParamKeys`, `getFilterParamKeys`,
+`dateRangeParamKeys` and `numberRangeParamKeys`. The last two were not in the sketched surface, and
+`next` is why — it needs the sides by name inside its `switch`, and destructuring
+`filterParamKeys()` positionally would have been exactly the implicit coupling this task exists to
+remove.
+
+**The 538 existing tests passed unmodified**, which was the guard against the refactor changing
+behavior. 35 tests were added: 25 in
+[`param-keys.test.ts`](../../../packages/core/src/__tests__/param-keys.test.ts), 8 in the
+[cross-package parity suite](../../../packages/next/src/tests/core-parity.test.ts), 2 in
+`@filterbridge/browser`. Suite: 538 → 573.
+
+**One `.smoke/` assertion did have to change**, and it is worth recording rather than burying. It
+read `dateRange.length === 0 && numberRange.length === 0` — an arity check standing in for
+ADR-002's "these builders take no configuration". They take one now. The assertion was rewritten to
+test the rule instead of the proxy: that neither builder produces a default no matter what it is
+handed. The `.smoke/` ESM and CJS suites then went 60/44 green against freshly packed tarballs.
+
+One process note for the next release: `npm install` in `.smoke/` reuses a cached tarball when the
+version has not changed, so the first run was silently exercising the previous build.
+`rm -rf node_modules package-lock.json` before installing is the fix, and belongs in the release
+checklist.
 
 ---
 
@@ -117,23 +156,23 @@ its own line in the changeset.
 
 ## Acceptance criteria
 
-- [ ] `dateRange` and `numberRange` accept an optional `keys` override, partial or complete
-- [ ] A schema with no `keys` produces byte-identical URLs to `0.2.0` — verified by the existing
+- [x] `dateRange` and `numberRange` accept an optional `keys` override, partial or complete
+- [x] A schema with no `keys` produces byte-identical URLs to `0.2.0` — verified by the existing
       suite passing **unmodified**
-- [ ] `parseFilters` and `toSearchParams` round-trip through custom keys
-- [ ] `getFilterParamKeys` reports the custom keys, so `createFilterUrl` strips stale ones
+- [x] `parseFilters` and `toSearchParams` round-trip through custom keys
+- [x] `getFilterParamKeys` reports the custom keys, so `createFilterUrl` strips stale ones
       correctly
-- [ ] `@filterbridge/next` resolves custom keys identically to core, asserted by a test in the
+- [x] `@filterbridge/next` resolves custom keys identically to core, asserted by a test in the
       existing cross-package parity suite
       ([`packages/next/src/tests/core-parity.test.ts`](../../../packages/next/src/tests/core-parity.test.ts))
-- [ ] Exactly one implementation of key derivation remains in the repository
-- [ ] `getFilterParamKeys` still exports from `@filterbridge/browser` with an unchanged signature
-- [ ] `toQueryDto` output is unaffected by `keys`, and a test says so
-- [ ] Duplicate param keys throw at `defineFilters`, including the pre-existing case with no custom
+- [x] Exactly one implementation of key derivation remains in the repository
+- [x] `getFilterParamKeys` still exports from `@filterbridge/browser` with an unchanged signature
+- [x] `toQueryDto` output is unaffected by `keys`, and a test says so
+- [x] Duplicate param keys throw at `defineFilters`, including the pre-existing case with no custom
       keys
-- [ ] Documented in [`docs/api/core.md`](../../api/core.md) and
+- [x] Documented in [`docs/api/core.md`](../../api/core.md) and
       [`docs/api/browser.md`](../../api/browser.md); roadmap item checked off
-- [ ] `.smoke/` assertions cover the new option in ESM and CJS
+- [x] `.smoke/` assertions cover the new option in ESM and CJS
 
 ## Risk
 

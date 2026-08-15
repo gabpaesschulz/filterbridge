@@ -1,4 +1,5 @@
-import type { MultiSelectFilter, SelectFilter } from './filter-types'
+import type { FilterSchema, MultiSelectFilter, SelectFilter } from './filter-types'
+import { filterParamKeys } from './param-keys'
 
 /**
  * Bundlers replace the literal `process.env.NODE_ENV`, so the dev warning is
@@ -49,6 +50,56 @@ export function assertValidDefaults(
         `[filterbridge] ${builder}(): default ${formatValue(value)} is not one of its ` +
           `options (${options.join(', ')}).`
       )
+    }
+  }
+}
+
+/**
+ * Rejects a `keys` override that cannot address anything. Throws for the same
+ * reason `assertValidDefaults` does: it is static configuration, so the failure
+ * is a typo that fails identically on every run rather than untrusted input
+ * arriving in a render path.
+ */
+export function assertValidParamKeys(
+  builder: 'dateRange' | 'numberRange',
+  side: string,
+  key: unknown
+): void {
+  if (typeof key !== 'string' || key.trim() === '') {
+    throw new Error(
+      `[filterbridge] ${builder}(): keys.${side} must be a non-empty string, got ` +
+        `${formatValue(key)}.`
+    )
+  }
+}
+
+/**
+ * Rejects a schema in which two filters resolve to the same URL param key.
+ *
+ * This is possible without any custom key — `{ createdAtFrom: text(), createdAt:
+ * dateRange() }` collides today, and `toSearchParams` silently lets the last
+ * writer win, so one of the two filters round-trips to a value it never held.
+ * A custom key makes the collision much easier to reach, which is why the check
+ * arrives with the feature.
+ *
+ * It throws rather than warns for the `assertValidDefaults` reason: a schema is
+ * evaluated once at module load, and two filters fighting over one param was
+ * never a working configuration.
+ */
+export function assertUniqueParamKeys(schema: FilterSchema): void {
+  const owners = new Map<string, string>()
+
+  for (const [name, filter] of Object.entries(schema)) {
+    for (const key of filterParamKeys(name, filter)) {
+      const owner = owners.get(key)
+      if (owner !== undefined) {
+        throw new Error(
+          `[filterbridge] defineFilters(): filters ${JSON.stringify(owner)} and ` +
+            `${JSON.stringify(name)} both use the URL param ${JSON.stringify(key)}. ` +
+            `Rename one, or give it an explicit keys override.`
+        )
+      }
+      owners.set(key, name)
     }
   }
 }

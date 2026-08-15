@@ -8,6 +8,7 @@ import {
   select,
   text,
 } from '@filterbridge/core'
+import { createFilterUrl } from '../create-filter-url'
 import { getFilterParamKeys } from '../filter-param-keys'
 
 const schema = defineFilters({
@@ -57,5 +58,34 @@ describe('getFilterParamKeys', () => {
 
   it('returns empty array for empty schema', () => {
     expect(getFilterParamKeys(defineFilters({}))).toEqual([])
+  })
+
+  /**
+   * The export moved into `@filterbridge/core` in `0.3.0` and is re-exported
+   * here unchanged. What matters for this package is that it reports overrides:
+   * `createFilterUrl` strips exactly the keys this returns before writing the
+   * new state, so a custom key it failed to report would sit in the URL
+   * forever, and the next parse would read a value the user had cleared.
+   */
+  it('reports custom range keys', () => {
+    const keys = getFilterParamKeys(
+      defineFilters({
+        issuedAt: dateRange({ keys: { from: 'issued_after', to: 'issued_before' } }),
+        amount: numberRange({ keys: { min: 'min_cents' } }),
+      })
+    )
+    expect(keys).toEqual(['issued_after', 'issued_before', 'min_cents', 'amountMax'])
+  })
+
+  it('strips a stale custom key from the URL', () => {
+    const schema = defineFilters({
+      issuedAt: dateRange({ keys: { from: 'issued_after', to: 'issued_before' } }),
+    })
+    const url = createFilterUrl(
+      schema,
+      {},
+      { pathname: '/invoices', currentSearch: 'issued_after=2026-01-01&tab=open' }
+    )
+    expect(url).toBe('/invoices?tab=open')
   })
 })
