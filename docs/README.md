@@ -68,6 +68,7 @@ separately from the API reference so that "what it does" and "why it does that" 
 | Sprint | Description |
 |--------|-------------|
 | [Sprint 0](./sprints/sprint-0/README.md) | Post-release hardening — correctness fixes, API gaps, CI |
+| [Sprint 1](./sprints/sprint-1/README.md) | Ergonomics and debt — formatting in CI, custom range keys, demo contrast, a Next.js example (open) |
 
 ---
 
