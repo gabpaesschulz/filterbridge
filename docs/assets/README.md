@@ -9,7 +9,9 @@ This directory holds public assets referenced in the root `README.md` and docume
 Referenced in `README.md` as:
 
 ```md
-![FilterBridge demo](./docs/assets/filterbridge-demo.png)
+![FilterBridge demo](../../docs/assets/filterbridge-demo.png)
+
+From the repository root (for example in `README.md`) the path is `./docs/assets/filterbridge-demo.png`.
 ```
 
 ### Generating the screenshot

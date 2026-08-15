@@ -5,7 +5,7 @@ React hook for managing filter state defined with `@filterbridge/core`.
 [![npm](https://img.shields.io/npm/v/@filterbridge/react)](https://www.npmjs.com/package/@filterbridge/react)
 [![license](https://img.shields.io/npm/l/@filterbridge/react)](../../LICENSE)
 
-**Status: experimental — `v0.1.0` published. API may change before `v1.0`.**
+**Status: experimental — `v0.2.0`. API may change before `v1.0`.**
 
 ---
 
@@ -100,7 +100,7 @@ const bridge = useFilterBridge(schema, {
 | `set(key, value)` | `void` | Update a single filter. Empty values are removed automatically. |
 | `setMany(values)` | `void` | Update multiple filters at once. `onChange` is called once. |
 | `clear(key)` | `void` | Remove a single filter. |
-| `reset()` | `void` | Clear all filters to `{}`. |
+| `reset()` | `void` | Back to the baseline: `{}`, or the schema defaults if any are declared. |
 | `resetToInitial()` | `void` | Restore the `initialState` passed at mount. |
 | `syncState(state)` | `void` | Replace the whole state with externally-provided state. Does **not** call `onChange`. |
 | `hasActiveFilters` | `boolean` | `true` when at least one filter is active. |
@@ -159,6 +159,12 @@ bridge.clear('status')
 Clears all filters to `{}`.
 
 `reset()` means "clear everything", **not** "back to `initialState`". Use `resetToInitial()` for that.
+
+For a schema that declares defaults the baseline is the defaults, not `{}` — `{}` is not a state any
+URL can express, so landing there would leave the UI disagreeing with both the URL and the DTO. The
+same rule makes `clear(key)` return a defaulted filter to its default. See
+[the React API reference](../../docs/api/react.md#clearkey) and
+[ADR-002](../../docs/decisions/002-default-values.md).
 
 ```ts
 bridge.reset()

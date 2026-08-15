@@ -48,9 +48,3 @@ export type AnyFilter =
   | NumberRangeFilter
 
 export type FilterSchema = Record<string, AnyFilter>
-
-/** The filters that accept a `default` — those whose value space is enumerable. */
-export type DefaultableFilter =
-  | SelectFilter<readonly string[]>
-  | MultiSelectFilter<readonly string[]>
-  | BooleanFilter

@@ -1,5 +1,54 @@
 # @filterbridge/browser
 
+## 0.2.0
+
+### Minor Changes
+
+- Add `usePopstateSync`, in a new `@filterbridge/browser/react` entry point. Back/forward navigation
+  now restores the filter UI instead of leaving it out of sync with the URL.
+
+  Nothing listened for `popstate`, so pressing Back changed the address bar while the UI kept the old
+  filters — the two disagreed until a full reload.
+
+  ```tsx
+  import { parseFiltersFromUrl, pushUrlFilters } from '@filterbridge/browser'
+  import { usePopstateSync } from '@filterbridge/browser/react'
+
+  const bridge = useFilterBridge(orderFilters, {
+    initialState: parseFiltersFromUrl(orderFilters),
+    onChange: (state) => pushUrlFilters(orderFilters, state),
+  })
+
+  usePopstateSync(orderFilters, bridge.syncState)
+  ```
+
+  On each `popstate` it re-parses `window.location.search` with the schema and hands the result to
+  `onState`. It does not fire on mount, removes its listener on unmount, and is a no-op when `window`
+  is undefined, matching the rest of the package.
+
+  Pair it with `useFilterBridge().syncState` specifically — that method applies state **without**
+  firing `onChange`, which is what stops the write-back that put the filters in the URL from running
+  again on every Back press.
+
+  **Packaging:** React is an **optional** peer dependency (`peerDependenciesMeta.react.optional`).
+  Only the `/react` subpath imports it, so `@filterbridge/browser` remains importable in plain Node or
+  any non-React app. Both entry points ship ESM, CJS and type declarations.
+
+  Note that back/forward only has somewhere to go if filter changes are written with `pushUrlFilters`;
+  `replaceUrlFilters` keeps a single history entry.
+
+  Additive — no existing behavior changes.
+
+### Patch Changes
+
+- Updated dependencies [e5f5036]
+- Updated dependencies [e5f5036]
+- Updated dependencies [e5f5036]
+- Updated dependencies [e5f5036]
+- Updated dependencies [e5f5036]
+- Updated dependencies [e5f5036]
+  - @filterbridge/core@0.2.0
+
 ## 0.1.0
 
 ### Initial Release

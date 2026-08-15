@@ -4,6 +4,11 @@
 **Area:** `@filterbridge/react`, docs
 **Status:** done — implemented as **B** (`reset()` unchanged + new `resetToInitial()`)
 
+> ⚠️ **Historical record.** See [the sprint README](./README.md#-historical-record). `reset()` still means "clear to the baseline" and
+> `resetToInitial()` shipped as described. What changed afterwards is what the baseline *is*:
+> for a schema with defaults it is the defaults, not `{}`. The `resetToDefaults()` this file
+> anticipated was therefore never needed.
+
 ---
 
 ## Problem

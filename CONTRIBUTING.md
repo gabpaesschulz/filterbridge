@@ -199,7 +199,8 @@ Three things worth knowing before you push:
   `pnpm typecheck` fails with `TS2307` until the packages have been built once. `pnpm test` does
   not have this constraint: vitest aliases `@filterbridge/*` to source
   ([`vitest.aliases.ts`](vitest.aliases.ts)), so the suite runs on a clean clone with no build and
-  never reports on stale `dist` output.
+  never reports on stale `dist` output. Before changing that, read
+  [ADR-003](docs/decisions/003-test-resolution.md) — it records the bug that made it necessary.
 - **The install uses `--frozen-lockfile`.** If you add or change a dependency, commit the updated
   `pnpm-lock.yaml` or CI will fail on the install step.
 - **Changes under `packages/**` need a changeset.** Run `pnpm changeset` and commit the generated

@@ -28,6 +28,28 @@ The packages have a strict one-way dependency:
 
 Core never imports React or browser APIs. The react, browser, and tanstack packages each depend on core only. The next package depends on both core and browser.
 
+Two packages have **optional** peer dependencies, which is how they stay usable without the thing
+they adapt:
+
+```
+@filterbridge/browser  →  react            (optional peer, only for the /react subpath)
+@filterbridge/tanstack →  @tanstack/react-table  (optional peer, only for filterBridgeFilterFns)
+```
+
+`@filterbridge/browser` is the only package with two entry points. The root entry never imports
+React, so it works in plain Node, a worker, or a non-React app; `@filterbridge/browser/react`
+contains the single React hook. Splitting them is what lets React be optional rather than required
+of everyone who wants to read filters out of a URL:
+
+```
+@filterbridge/browser          →  dist/index.js  dist/index.cjs  (+ .d.ts / .d.cts)
+@filterbridge/browser/react    →  dist/react.js  dist/react.cjs  (+ .d.ts / .d.cts)
+```
+
+The split is verified rather than assumed: the `.smoke/` suite installs the packed tarballs and
+imports both entries in ESM and CJS, and the root entry is additionally checked in a project with
+no React installed at all.
+
 ---
 
 ## @filterbridge/core
@@ -39,9 +61,12 @@ Responsibilities:
 - Parse untrusted input into typed filter state (`parseFilters`)
 - Serialize typed state into `URLSearchParams` (`toSearchParams`)
 - Convert typed state into a backend-ready DTO (`toQueryDto`)
+- Resolve per-filter defaults (`getDefaultFilterState`, `isAtDefault`)
 - Export TypeScript types for schema, state, and filter definitions
 
 The core functions are pure: given the same schema and input, they always produce the same output. They have no side effects, no global state, no timers, and no async behavior.
+
+One deliberate asymmetry: `toSearchParams` omits a value equal to its filter's default and `toQueryDto` includes it. Omitting from the URL is safe because `parseFilters` reads it back and restores it; the DTO leaves for a backend that cannot know the schema, where an omitted default is loss rather than compression. See [ADR-002](../decisions/002-default-values.md).
 
 **Entry point:** `packages/core/src/index.ts`
 
@@ -51,10 +76,18 @@ filter-types.ts     — interface definitions for all filter types
 filter-builders.ts  — text(), select(), boolean(), etc.
 define-filters.ts   — defineFilters() identity function with type inference
 infer.ts            — InferFilterState and FilterStateValue utility types
+defaults.ts         — filterDefault(), isAtDefault(), getDefaultFilterState()
+filter-validation.ts— the single option-membership rule, shared by parse and
+                      both serializers, plus the dev-only dropped-value warning
 parse-filters.ts    — parseFilters() implementation
 search-params.ts    — toSearchParams() implementation
 query-dto.ts        — toQueryDto() implementation
 ```
+
+`filter-validation.ts` and `defaults.ts` are internal — not re-exported from `index.ts` beyond
+`getDefaultFilterState` and `isAtDefault`. The point of both is that one rule lives in one place:
+before them, `parseFilters` validated against `options` and the two serializers did not, so the
+same schema was enforced in one of three directions.
 
 **Build output:** ESM (`dist/index.js`) and CJS (`dist/index.cjs`), with TypeScript declarations (`dist/index.d.ts`).
 
@@ -66,10 +99,20 @@ React adapter. Depends on `@filterbridge/core`. Peer dependency on React 18+.
 
 Responsibilities:
 - Manage local filter state via `useFilterBridge`
-- Expose `set`, `setMany`, `clear`, `reset` for state updates
-- Derive `hasActiveFilters` and `activeFilterCount`
+- Expose `set`, `setMany`, `clear`, `reset`, `resetToInitial` for state updates
+- Accept externally-owned state via `syncState`, without firing `onChange`
+- Derive `hasActiveFilters` and `activeFilterCount`, ignoring filters at their default
 - Delegate `toQueryDto` and `toSearchParams` to core
-- Keep state clean (no empty values in state object)
+- Keep state clean (no empty values) and **representable** (always a state some URL parses to)
+
+The representability rule is what keeps the three outputs in agreement: every write is layered over
+the schema defaults, so `{}` is unreachable for a schema that declares any. Without it the UI could
+render a filter as cleared while the URL and the DTO both read it as its default. See
+[ADR-002](../decisions/002-default-values.md).
+
+`syncState` deliberately does not fire `onChange`. The usual caller writes `onChange` back to the
+URL, so firing it on an externally-driven update would turn "the URL changed, adopt it" into "adopt
+it, then write it back", which loops.
 
 The hook does not perform URL synchronization, routing, or data fetching. Those responsibilities belong to the application layer.
 
@@ -89,25 +132,29 @@ use-filter-bridge.ts  — useFilterBridge() hook implementation
 
 ## @filterbridge/browser
 
-Browser URL helpers. Depends on `@filterbridge/core`. No React dependency — works in any browser context.
+Browser URL helpers. Depends on `@filterbridge/core`. React is an **optional** peer dependency, imported only by the `/react` subpath — the root entry works in any browser or server context without it.
 
 Responsibilities:
 - Enumerate URL search-param keys produced by a schema (`getFilterParamKeys`)
 - Parse filter state from URL strings, `URL`, `URLSearchParams`, or location-like objects (`parseFiltersFromUrl`)
 - Build a URL path string from schema and state, preserving non-filter params (`createFilterUrl`)
 - Push or replace browser history state (`replaceUrlFilters`, `pushUrlFilters`)
+- Adopt the URL on back/forward navigation (`usePopstateSync`, `/react` subpath only)
 
 All helpers degrade gracefully outside a browser context (SSR-safe).
 
-**Entry point:** `packages/browser/src/index.ts`
+**Entry points:** `packages/browser/src/index.ts` and `packages/browser/src/react.ts`
 
 **Source files:**
 ```
-types.ts                  — UrlLike, CreateFilterUrlOptions, SyncUrlOptions
+types.ts                  — UrlLike, CreateFilterUrlOptions, SyncUrlOptions,
+                            UsePopstateSyncOptions
 filter-param-keys.ts      — getFilterParamKeys()
 parse-filters-from-url.ts — parseFiltersFromUrl()
 create-filter-url.ts      — createFilterUrl()
 sync-url.ts               — replaceUrlFilters(), pushUrlFilters()
+use-popstate-sync.ts      — usePopstateSync()          (imports react)
+react.ts                  — the /react entry point
 ```
 
 **Build output:** ESM and CJS with declarations.

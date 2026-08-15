@@ -41,9 +41,25 @@ Documentation index for the FilterBridge project.
 
 | Document | Description |
 |----------|-------------|
-| [v0.1.0 release notes](./releases/v0.1.0.md) | Initial experimental release |
+| [v0.2.0 release notes](./releases/v0.2.0.md) | Current release — hardening, defaults, CI |
+| [v0.1.0 release notes](./releases/v0.1.0.md) | Initial experimental release (superseded) |
 | [Roadmap](./roadmap.md) | Planned and possible future work |
 | [Release checklist](./release-checklist.md) | Pre-publish validation steps |
+
+---
+
+## Decisions
+
+Architecture decision records — the reasoning behind choices that are expensive to revisit, kept
+separately from the API reference so that "what it does" and "why it does that" do not drift.
+
+| Record | Subject |
+|--------|---------|
+| [ADR-001](./decisions/001-project-architecture.md) | Monorepo layout, framework-free core, package boundaries |
+| [ADR-002](./decisions/002-default-values.md) | Per-filter defaults: URL omission, DTO inclusion, which builders accept one |
+| [ADR-003](./decisions/003-test-resolution.md) | Unit tests resolve to source; `.smoke/` covers the published artifact |
+| [ADR-004](./decisions/004-external-state-sync.md) | `syncState` over a controlled mode, and where the `popstate` listener lives |
+| [ADR-005](./decisions/005-serialization-validation.md) | Serialization validates against the schema and never throws |
 
 ---
 
