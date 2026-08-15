@@ -16,7 +16,7 @@ function defineFilters<S extends Record<string, AnyFilter>>(schema: S): S
 
 Creates a typed filter schema.
 
-The function is an identity function at runtime — it returns the same object passed to it. Its purpose is to enable TypeScript to infer and preserve literal types from filter option arrays.
+At runtime it returns the same object passed to it, after one check. Its main purpose is to let TypeScript infer and preserve literal types from filter option arrays.
 
 ```ts
 const orderFilters = defineFilters({
@@ -29,6 +29,24 @@ const orderFilters = defineFilters({
 ```
 
 The returned schema is passed to `parseFilters`, `toSearchParams`, and `toQueryDto`. It serves as the single source of truth for filter structure and type information.
+
+**It throws when two filters resolve to the same URL param key** (`0.3.0`):
+
+```ts
+defineFilters({
+  createdAtFrom: text(),
+  createdAt: dateRange(), // also writes createdAtFrom
+})
+// Error: [filterbridge] defineFilters(): filters "createdAtFrom" and "createdAt"
+// both use the URL param "createdAtFrom". Rename one, or give it an explicit
+// keys override.
+```
+
+This is possible without any [custom key](#custom-url-keys) and was possible before `0.3.0`, where `toSearchParams` silently let the last writer win — so one of the two filters round-tripped to a value it never held. The fix is to rename a filter, or to give one of them a `keys` override.
+
+Throwing, rather than warning, follows the rule [ADR-002](../decisions/002-default-values.md) sets for `assertValidDefaults`: a schema is static configuration evaluated once at module load, so a collision is a source-level mistake that fails identically on every run, not untrusted input arriving in a render path.
+
+Note that `parseFilters`, `toSearchParams` and `toQueryDto` accept a plain object too. `defineFilters` is where a schema gets checked, which is the argument for calling it rather than writing the object literal inline.
 
 ---
 
@@ -93,6 +111,8 @@ parseFilters(schema, new URLSearchParams('search=a&search=b'))
 | `dateRange`   | Reads `<name>From` / `<name>To`; empty string ignored; both absent → `undefined`           |
 | `numberRange` | Reads `<name>Min` / `<name>Max`; non-numeric → ignored; both absent → `undefined`          |
 
+The two range rows describe the default key names. A filter with a [`keys` override](#custom-url-keys) reads whichever keys it declares instead, and does **not** also read the derived ones.
+
 Keys not defined in the schema are ignored. Keys in the schema that produce `undefined` are omitted from the result — unless the filter declares a [default](#default-values), in which case the default takes their place.
 
 ```ts
@@ -132,6 +152,8 @@ Serializes typed filter state to `URLSearchParams`.
 | `boolean`     | `active=true` or `active=false`                                                                                    |
 | `dateRange`   | `<name>From=…` and/or `<name>To=…` (each side trimmed; omitted if absent or empty)                                 |
 | `numberRange` | `<name>Min=…` and/or `<name>Max=…` (each side omitted if absent or non-finite)                                     |
+
+The two range rows describe the default key names; a [`keys` override](#custom-url-keys) replaces them.
 
 Output is deterministic: the same state always produces the same params string, with keys in schema definition order.
 
@@ -314,7 +336,7 @@ See [Defaults and `useFilterBridge`](#defaults-and-usefilterbridge) for the Reac
 
 ## Filter factories
 
-`select`, `multiSelect` and `boolean` take an optional configuration object as their last argument. `text`, `dateRange` and `numberRange` take no configuration — see [which filters accept a default](#which-filters-accept-a-default):
+`select`, `multiSelect` and `boolean` take an optional configuration object as their last argument. `dateRange` and `numberRange` take one too, but it carries only [`keys`](#custom-url-keys); `text` takes none. No filter but the first three accepts a `default` — see [which filters accept a default](#which-filters-accept-a-default):
 
 ```ts
 interface FilterConfig<TValue> {
@@ -421,12 +443,16 @@ defineFilters({ archived: boolean({ default: false }) })
 ### `dateRange(config?)`
 
 ```ts
-function dateRange(config?: FilterConfig<DateRangeValue>): DateRangeFilter
+function dateRange(config?: DateRangeConfig): DateRangeFilter
+
+interface DateRangeConfig {
+  readonly keys?: { readonly from?: string; readonly to?: string }
+}
 ```
 
 Creates a date range filter. State shape: `{ from?: string; to?: string }`.
 
-The URL keys are derived from the filter name:
+By default the URL keys are derived from the filter name:
 
 - `createdAt` → `createdAtFrom` / `createdAtTo`
 - `issuedAt` → `issuedAtFrom` / `issuedAtTo`
@@ -434,23 +460,28 @@ The URL keys are derived from the filter name:
 ```ts
 defineFilters({ createdAt: dateRange() })
 // createdAt?: { from?: string; to?: string }
-
-defineFilters({ createdAt: dateRange() })
+// URL: createdAtFrom=2026-01-01&createdAtTo=2026-01-31
 ```
 
-`dateRange()` takes no configuration and **accepts no default**. A literal date default is wrong by construction — `'2026-01-01'` means something different every month and goes stale on its own. Express "last 30 days" as a discrete choice instead: `select(['7d', '30d', '90d'], { default: '30d' })`.
+`keys` overrides them, one side or both — see [custom URL keys](#custom-url-keys).
+
+`dateRange()` **accepts no default**. A literal date default is wrong by construction — `'2026-01-01'` means something different every month and goes stale on its own. Express "last 30 days" as a discrete choice instead: `select(['7d', '30d', '90d'], { default: '30d' })`.
 
 ---
 
 ### `numberRange(config?)`
 
 ```ts
-function numberRange(config?: FilterConfig<NumberRangeValue>): NumberRangeFilter
+function numberRange(config?: NumberRangeConfig): NumberRangeFilter
+
+interface NumberRangeConfig {
+  readonly keys?: { readonly min?: string; readonly max?: string }
+}
 ```
 
 Creates a number range filter. State shape: `{ min?: number; max?: number }`.
 
-The URL keys are derived from the filter name:
+By default the URL keys are derived from the filter name:
 
 - `amount` → `amountMin` / `amountMax`
 - `price` → `priceMin` / `priceMax`
@@ -458,11 +489,69 @@ The URL keys are derived from the filter name:
 ```ts
 defineFilters({ amount: numberRange() })
 // amount?: { min?: number; max?: number }
-
-defineFilters({ amount: numberRange() })
+// URL: amountMin=100&amountMax=500
 ```
 
-`numberRange()` takes no configuration and **accepts no default**, for the same reason as `text()`: a number input passes through the empty string as an ordinary step of editing — backspacing `150` to `20` goes through `''` — so a default would snap the field back mid-edit.
+`keys` overrides them, one side or both — see [custom URL keys](#custom-url-keys).
+
+`numberRange()` **accepts no default**, for the same reason as `text()`: a number input passes through the empty string as an ordinary step of editing — backspacing `150` to `20` goes through `''` — so a default would snap the field back mid-edit.
+
+---
+
+## Custom URL keys
+
+_Added in `0.3.0`._
+
+A range filter writes two params, named after the filter by default. When the query string is consumed by something that already has an opinion about its parameter names — an existing REST endpoint, a URL scheme that predates the library, a backend shared with a non-JavaScript client — `keys` renames them:
+
+```ts
+const filters = defineFilters({
+  createdAt: dateRange({ keys: { from: 'created_after', to: 'created_before' } }),
+  amount: numberRange({ keys: { min: 'min_cents', max: 'max_cents' } }),
+})
+
+toSearchParams(filters, {
+  createdAt: { from: '2026-01-01', to: '2026-01-31' },
+  amount: { min: 100, max: 500 },
+}).toString()
+// created_after=2026-01-01&created_before=2026-01-31&min_cents=100&max_cents=500
+```
+
+Four things worth knowing:
+
+**Either side may be given alone.** `dateRange({ keys: { from: 'after' } })` on a filter named `createdAt` writes `after` and `createdAtTo`. Half-configured is a real state — an API that renamed one param and not the other — and a mixed URL is a better outcome than a builder that throws for not having been told something it could derive.
+
+**The key replaces the whole param name, not a suffix.** That is what makes `created_after` reachable from a filter named `createdAt`; a suffix override could only ever produce `createdAt_after`.
+
+**`toQueryDto` is unaffected.** The DTO is keyed by filter name and nests ranges as `{ from, to }` / `{ min, max }` no matter what the URL looks like:
+
+```ts
+toQueryDto(filters, { amount: { min: 100 } })
+// { amount: { min: 100 } }  — not { min_cents: 100 }
+```
+
+A custom key is a URL concern. Renaming JSON properties for a backend is a different problem and is out of scope.
+
+**Everything downstream follows automatically.** `parseFilters`, `toSearchParams`, `getFilterParamKeys` and `@filterbridge/next`'s normalization all read the same derivation, so `createFilterUrl` strips a custom key as reliably as a derived one and a server parse matches a client parse.
+
+### `filterParamKeys(name, filter)` and `getFilterParamKeys(schema)`
+
+```ts
+function filterParamKeys(name: string, filter: AnyFilter): string[]
+function getFilterParamKeys(schema: FilterSchema): string[]
+
+function dateRangeParamKeys(name: string, filter: DateRangeFilter): { from: string; to: string }
+function numberRangeParamKeys(name: string, filter: NumberRangeFilter): { min: string; max: string }
+```
+
+The derivation itself, exported because adapters need it. A scalar filter occupies its own name; a range occupies two keys, in from/to and min/max order.
+
+```ts
+getFilterParamKeys(filters)
+// ['created_after', 'created_before', 'min_cents', 'max_cents']
+```
+
+`getFilterParamKeys` is also re-exported from `@filterbridge/browser`, where it has been public since `0.1.0` — the implementation moved into core in `0.3.0`, the export did not move.
 
 ---
 
@@ -508,7 +597,7 @@ Filters without a default behave exactly as they always have.
 
 ### Which filters accept a default
 
-Only the filters whose value space is a **fixed, enumerable set**: `select`, `multiSelect` and `boolean`. `text()`, `dateRange()` and `numberRange()` take no configuration at all, so a default on them is a type error, not a runtime one.
+Only the filters whose value space is a **fixed, enumerable set**: `select`, `multiSelect` and `boolean`. `text()` takes no configuration at all, and the config `dateRange()` and `numberRange()` accept carries only [`keys`](#custom-url-keys) — so a default on any of the three is a type error, not a runtime one.
 
 The criterion is not the widget you bind to — the library cannot know that. It is whether the value can pass through "empty" as an intermediate step of a single editing gesture.
 

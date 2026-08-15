@@ -49,7 +49,7 @@ Two alternatives were rejected. Making only `reset()` restore defaults fixes one
 
 ### 4. Only filters with an enumerable value space accept a default
 
-`select`, `multiSelect` and `boolean` accept `{ default }`. `text`, `dateRange` and `numberRange` take no configuration at all — the restriction is a type error at the call site, not a runtime check.
+`select`, `multiSelect` and `boolean` accept `{ default }`. `text`, `dateRange` and `numberRange` do not — the restriction is a type error at the call site, not a runtime check. (`dateRange` and `numberRange` gained a configuration object in `0.3.0`, but it carries only `keys`; there is still no way to spell a default on them.)
 
 The criterion is deliberately stated as a **property, not a list**, so a future builder can be judged against it without reopening this: _a filter may declare a default when its value space is a fixed, enumerable set._
 

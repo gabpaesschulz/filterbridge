@@ -57,6 +57,34 @@ getFilterParamKeys(filters)
 
 Keys are returned in schema definition order.
 
+### Custom range keys
+
+Since `0.3.0`, `dateRange` and `numberRange` accept a `keys` override ([core reference](./core.md#custom-url-keys)), and this function reports whatever the filter actually uses:
+
+```ts
+getFilterParamKeys(
+  defineFilters({
+    issuedAt: dateRange({ keys: { from: 'issued_after', to: 'issued_before' } }),
+    amount: numberRange({ keys: { min: 'min_cents' } }),
+  })
+)
+// ["issued_after", "issued_before", "min_cents", "amountMax"]
+```
+
+That matters most for `createFilterUrl`, which strips exactly these keys before writing the new state. A custom key this function failed to report would sit in the URL forever, and the next parse would read back a value the user had cleared.
+
+### Where the implementation lives
+
+`getFilterParamKeys` moved into `@filterbridge/core` in `0.3.0` and is re-exported here unchanged — same name, same signature, same return type. Nothing about importing it from `@filterbridge/browser` changed.
+
+The move was the point of the change rather than a side effect. Until then, four packages spelled out the `From` / `To` / `Min` / `Max` rule independently, which is the same duplicated-knowledge shape that let `core` and `next` disagree about repeated query params in `0.1.0`. Adding a `keys` option to four copies would have made that worse, so the option and the collapse landed together.
+
+You can also import it from core directly, along with the per-filter form:
+
+```ts
+import { filterParamKeys, getFilterParamKeys } from '@filterbridge/core'
+```
+
 ---
 
 ## `parseFiltersFromUrl(schema, input?)`

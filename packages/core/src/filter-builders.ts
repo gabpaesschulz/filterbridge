@@ -1,12 +1,14 @@
 import type {
   BooleanFilter,
   DateRangeFilter,
+  DateRangeKeys,
   MultiSelectFilter,
   NumberRangeFilter,
+  NumberRangeKeys,
   SelectFilter,
   TextFilter,
 } from './filter-types'
-import { assertValidDefaults } from './filter-validation'
+import { assertValidDefaults, assertValidParamKeys } from './filter-validation'
 
 /**
  * Configuration accepted as the last argument of the filter builders that take
@@ -60,20 +62,65 @@ export function boolean(config?: FilterConfig<boolean>): BooleanFilter {
 }
 
 /**
- * No `default`. A literal date default is wrong by construction: `'2026-01-01'`
- * means something different every month and goes stale on its own. The case it
- * would serve — "last 30 days" — is a discrete choice and belongs in a
- * `select(['7d', '30d', '90d'], { default: '30d' })`.
+ * Configuration for `dateRange`. `keys` overrides the URL param names the
+ * filter reads and writes; either side may be given alone.
+ *
+ * There is no `default` here, and there will not be. A literal date default is
+ * wrong by construction: `'2026-01-01'` means something different every month
+ * and goes stale on its own. The case it would serve — "last 30 days" — is a
+ * discrete choice and belongs in a `select(['7d', '30d', '90d'], { default:
+ * '30d' })`.
  */
-export function dateRange(): DateRangeFilter {
-  return { _kind: 'dateRange' }
+export interface DateRangeConfig {
+  readonly keys?: DateRangeKeys
 }
 
 /**
+ * Configuration for `numberRange`. `keys` overrides the URL param names.
+ *
  * No `default`, for the same reason as `text`: a number input passes through
  * the empty string as an ordinary step of editing — backspacing `150` to `20`
  * goes through `''` — so a default would snap the field back mid-edit.
  */
-export function numberRange(): NumberRangeFilter {
-  return { _kind: 'numberRange' }
+export interface NumberRangeConfig {
+  readonly keys?: NumberRangeKeys
+}
+
+export function dateRange(config?: DateRangeConfig): DateRangeFilter {
+  const keys = normalizeKeys('dateRange', config?.keys, ['from', 'to'])
+  return keys === undefined ? { _kind: 'dateRange' } : { _kind: 'dateRange', keys }
+}
+
+export function numberRange(config?: NumberRangeConfig): NumberRangeFilter {
+  const keys = normalizeKeys('numberRange', config?.keys, ['min', 'max'])
+  return keys === undefined ? { _kind: 'numberRange' } : { _kind: 'numberRange', keys }
+}
+
+/**
+ * Drops sides that were not given and rejects the ones that were given badly.
+ *
+ * Returning `undefined` for an all-empty override matters beyond tidiness: a
+ * filter carrying `keys: {}` must be indistinguishable from one carrying no
+ * `keys` at all, or `0.2.0` schemas stop deep-equalling their `0.3.0`
+ * counterparts for no visible reason.
+ */
+function normalizeKeys<K extends string>(
+  builder: 'dateRange' | 'numberRange',
+  keys: Partial<Record<K, string>> | undefined,
+  sides: readonly K[]
+): Partial<Record<K, string>> | undefined {
+  if (keys === undefined) return undefined
+
+  const result: Partial<Record<K, string>> = {}
+  let any = false
+
+  for (const side of sides) {
+    const value = keys[side]
+    if (value === undefined) continue
+    assertValidParamKeys(builder, side, value)
+    result[side] = value
+    any = true
+  }
+
+  return any ? result : undefined
 }

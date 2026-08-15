@@ -169,6 +169,9 @@ Schema-aware normalization rules:
 - `multiSelect`: `string[]` is preserved as-is
 - `dateRange`: reads `<name>From` and `<name>To` keys
 - `numberRange`: reads `<name>Min` and `<name>Max` keys
+- Both range key sets come from `@filterbridge/core`, so a filter with a `keys` override is read
+  under its custom names — identically here and in a client-side `parseFilters`, which is what keeps
+  a server parse and a client parse from disagreeing
 - Params outside the schema are ignored
 
 ---

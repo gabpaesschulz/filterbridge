@@ -31,6 +31,9 @@ Delivered by [Sprint 1](./sprints/sprint-1/README.md).
 
 - [x] `pnpm format:check` in CI — one mechanical Prettier pass over the repository, then a `format`
       job that fails a pull request introducing unformatted files
+- [x] Optional custom URL keys for `dateRange` and `numberRange` — `keys: { from, to }` /
+      `keys: { min, max }`, with key derivation collapsed from four copies into one in
+      `@filterbridge/core`. `defineFilters` now throws on a duplicate param key
 
 ---
 
@@ -41,8 +44,9 @@ Ongoing improvements to the existing packages. No new packages planned.
 Most of this section is now planned work: [Sprint 1](./sprints/sprint-1/README.md) covers the two
 housekeeping items, the custom key suffixes and the Next.js examples, and targets `0.3.0`.
 
-- [ ] Optional custom key suffixes for `dateRange` and `numberRange`
 - [ ] Better examples for the Next.js App Router pattern (client + server components)
+- [ ] Custom URL key for the scalar filters — `text('search')` serializing to `q`. The range option
+      is deliberately named `keys`, leaving `key: string` free for this
 - [ ] Fix the demo's colour-contrast violations. Tracked as [housekeeping](#housekeeping)
 - [ ] Bug fixes as they are reported
 
