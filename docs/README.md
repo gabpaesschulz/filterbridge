@@ -39,12 +39,13 @@ Documentation index for the FilterBridge project.
 
 ## Release
 
-| Document                                     | Description                               |
-| -------------------------------------------- | ----------------------------------------- |
-| [v0.2.0 release notes](./releases/v0.2.0.md) | Current release — hardening, defaults, CI |
-| [v0.1.0 release notes](./releases/v0.1.0.md) | Initial experimental release (superseded) |
-| [Roadmap](./roadmap.md)                      | Planned and possible future work          |
-| [Release checklist](./release-checklist.md)  | Pre-publish validation steps              |
+| Document                                     | Description                                                      |
+| -------------------------------------------- | ---------------------------------------------------------------- |
+| [v0.3.0 release notes](./releases/v0.3.0.md) | Current release — custom range keys, formatting in CI, demo a11y |
+| [v0.2.0 release notes](./releases/v0.2.0.md) | Hardening, per-filter defaults, CI (superseded)                  |
+| [v0.1.0 release notes](./releases/v0.1.0.md) | Initial experimental release (superseded)                        |
+| [Roadmap](./roadmap.md)                      | Planned and possible future work                                 |
+| [Release checklist](./release-checklist.md)  | Pre-publish validation steps                                     |
 
 ---
 
@@ -65,10 +66,10 @@ separately from the API reference so that "what it does" and "why it does that" 
 
 ## Sprints
 
-| Sprint                                   | Description                                                                                        |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| [Sprint 0](./sprints/sprint-0/README.md) | Post-release hardening — correctness fixes, API gaps, CI                                           |
-| [Sprint 1](./sprints/sprint-1/README.md) | Ergonomics and debt — formatting in CI, custom range keys, demo contrast, a Next.js example (open) |
+| Sprint                                   | Description                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------- |
+| [Sprint 0](./sprints/sprint-0/README.md) | Post-release hardening — correctness fixes, API gaps, CI                                    |
+| [Sprint 1](./sprints/sprint-1/README.md) | Ergonomics and debt — formatting in CI, custom range keys, demo contrast, a Next.js example |
 
 ---
 

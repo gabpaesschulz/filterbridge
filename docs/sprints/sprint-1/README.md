@@ -6,9 +6,26 @@ two housekeeping items Sprint 0 deferred, one ergonomics gap that keeps coming b
 reference, and the Next.js example the guide promises but does not give.
 
 **Created:** 2026-08-15
-**Status:** open
+**Closed:** 2026-08-15
+**Status:** closed. Five planned tasks done, one found and deferred to Sprint 2.
 **Baseline commit:** `d50c984`
-**Target release:** `0.3.0` — see [task 5](./05-release.md) for why a minor and not a patch.
+**Release:** `0.3.0` — prepared and verified, **not published**. See
+[task 5](./05-release.md) for why a minor and not a patch, and for the publish steps left to run.
+
+## Closing health
+
+| Check               | Baseline               | Now                                       |
+| ------------------- | ---------------------- | ----------------------------------------- |
+| `pnpm test`         | 538 passing / 28 files | **573 passing / 29 files**                |
+| `pnpm lint`         | clean                  | clean                                     |
+| `pnpm typecheck`    | clean                  | clean                                     |
+| `pnpm build`        | clean                  | clean                                     |
+| `pnpm format:check` | **fails — 122 files**  | **clean, and enforced in CI**             |
+| `pnpm demo:a11y`    | did not exist          | **zero violations**                       |
+| `.smoke/`           | 39 ESM / 29 CJS        | 60 ESM / 44 CJS, against `0.3.0` tarballs |
+
+The 538 baseline tests pass **unmodified**, which was the acceptance criterion guarding task 2's
+refactor of the parse and serialize paths.
 
 ---
 
@@ -25,6 +42,12 @@ reference, and the Next.js example the guide promises but does not give.
 Nothing here is a P0. Sprint 0 was about a published package being wrong; this one is about a
 published package being awkward. That difference sets the priorities below — the only task that
 touches parsing or serialization is task 2, and it is additive.
+
+> **The 122 figure is wrong**, and the 68/54 split with it. It was measured on a Windows clone with
+> `core.autocrlf=true`, where every file on disk has CRLF while the repository stores LF and
+> Prettier's `endOfLine` default is `lf` — so it counted every file it could see. The real number
+> was **74: 25 code and 49 Markdown**. Left uncorrected above because a baseline is a record of what
+> was believed at the time; see [task 1](./01-formatting-and-format-check.md#outcome).
 
 ---
 
@@ -85,6 +108,10 @@ task 1 is whitespace, task 3 is demo CSS, task 4 is documentation.
 
 The version bump is therefore a judgement call rather than a forced one. [Task 5](./05-release.md)
 argues for `0.3.0`.
+
+**Settled: `0.3.0`.** Task 2 landed with the collision throw, so the release carries new API surface
+plus one behavior change. Everything up to `npm publish` is done and verified; the publish itself is
+left for the maintainer, with the commands in [task 5](./05-release.md#deliberately-not-done).
 
 ---
 
