@@ -1,0 +1,14 @@
+# Line endings.
+#
+# Every text file is stored and checked out as LF, on every platform. Without
+# `eol=lf`, a Windows clone with `core.autocrlf=true` gets CRLF on disk while the
+# repository holds LF — and `pnpm format:check` then fails on *every* file,
+# because Prettier's `endOfLine` default is `lf`. That is how the 122-file
+# figure in Sprint 1 task 1 was measured: only 74 of those files had a real
+# formatting problem, the rest were line endings.
+#
+# `text=auto` still lets git detect binary content, so the rule is safe to apply
+# with `*`; the explicit entries below are belt and braces.
+* text=auto eol=lf
+
+*.png binary
