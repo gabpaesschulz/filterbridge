@@ -34,7 +34,15 @@ The project aims to be small, well-tested, and easy to explain. Contributions th
 git clone https://github.com/gabpaesschulz/filterbridge.git
 cd filterbridge
 pnpm install
+
+# One-time, per clone: teach `git blame` to skip the formatting pass.
+git config blame.ignoreRevsFile .git-blame-ignore-revs
 ```
+
+That last line is optional but recommended. [`.git-blame-ignore-revs`](.git-blame-ignore-revs) lists
+the commits that changed whitespace and nothing else; without the config, `git blame` on most files
+in `docs/` and `packages/` points at the Sprint 1 formatting pass instead of at the commit that
+wrote the line. GitHub applies the file automatically — only local git needs telling.
 
 ---
 
@@ -53,8 +61,9 @@ pnpm typecheck
 # Lint
 pnpm lint
 
-# Format
+# Format, and the check CI runs
 pnpm format
+pnpm format:check
 
 # Run the demo app at http://localhost:5173
 pnpm demo
@@ -204,13 +213,15 @@ pull request:
 
 | Job          | What it runs                                                                               |
 | ------------ | ------------------------------------------------------------------------------------------ |
+| `format`     | `pnpm format:check`                                                                        |
 | `check`      | `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test` |
 | `demo build` | `pnpm build` then `pnpm demo:build`                                                        |
 | `changeset`  | `pnpm changeset status` — pull requests only                                               |
 
-The `check` job runs on Node 18, 20, and 22 on Linux, plus Node 20 on Windows.
+The `check` job runs on Node 18, 20, and 22 on Linux, plus Node 20 on Windows. `format` runs once,
+on Linux only — Prettier's output does not vary by platform.
 
-Three things worth knowing before you push:
+Four things worth knowing before you push:
 
 - **`pnpm build` runs before `pnpm typecheck`, and has to.** `tsc` resolves `@filterbridge/*`
   through each sibling's emitted `.d.ts`, and `dist/` is gitignored — so on a fresh clone
@@ -219,6 +230,11 @@ Three things worth knowing before you push:
   ([`vitest.aliases.ts`](vitest.aliases.ts)), so the suite runs on a clean clone with no build and
   never reports on stale `dist` output. Before changing that, read
   [ADR-003](docs/decisions/003-test-resolution.md) — it records the bug that made it necessary.
+- **`pnpm format:check` is enforced.** Run `pnpm format` before pushing, or let your editor do it.
+  Every text file is checked out as LF ([`.gitattributes`](.gitattributes)); Prettier's `endOfLine`
+  default is `lf`, so a clone that converts to CRLF fails the check on every file at once. If that
+  happens to you, your git predates the `.gitattributes` — `git rm -r --cached . && git reset --hard`
+  re-checks-out the tree with the right endings.
 - **The install uses `--frozen-lockfile`.** If you add or change a dependency, commit the updated
   `pnpm-lock.yaml` or CI will fail on the install step.
 - **Changes to any workspace package need a changeset** — that means `apps/demo` too, not only

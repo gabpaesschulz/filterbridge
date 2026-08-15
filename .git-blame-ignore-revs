@@ -1,0 +1,10 @@
+# Revisions that changed formatting only. `git blame` should look past them.
+#
+# Enable it locally once, per clone:
+#
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# GitHub reads this file automatically; git does not.
+
+# style: run prettier over the repository (Sprint 1 task 1)
+c87687db3c7fbc87e05a2d7f8c513a5fb754d18c

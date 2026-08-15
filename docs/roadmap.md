@@ -25,6 +25,15 @@ Moved here from the sections below rather than deleted, so the roadmap shows wha
 
 ---
 
+## Shipped in `0.3.0`
+
+Delivered by [Sprint 1](./sprints/sprint-1/README.md).
+
+- [x] `pnpm format:check` in CI — one mechanical Prettier pass over the repository, then a `format`
+      job that fails a pull request introducing unformatted files
+
+---
+
 ## `0.2.x` — Stability and ergonomics
 
 Ongoing improvements to the existing packages. No new packages planned.
@@ -34,8 +43,6 @@ housekeeping items, the custom key suffixes and the Next.js examples, and target
 
 - [ ] Optional custom key suffixes for `dateRange` and `numberRange`
 - [ ] Better examples for the Next.js App Router pattern (client + server components)
-- [ ] `pnpm format:check` in CI — currently fails on 69 files, so the repository needs one
-      formatting pass first. Tracked as [housekeeping](#housekeeping)
 - [ ] Fix the demo's colour-contrast violations. Tracked as [housekeeping](#housekeeping)
 - [ ] Bug fixes as they are reported
 
@@ -73,15 +80,6 @@ Prerequisites before marking the API stable:
 ## Housekeeping
 
 Known, deliberately deferred, and easy to lose track of once a sprint closes.
-
-### `pnpm format:check` is not a CI step
-
-Prettier currently reports 69 files that do not match its configuration. Wiring `format:check` into
-CI before reformatting would make every run red for formatting rather than for correctness, so it
-was left out.
-
-The fix is a single mechanical commit — `pnpm format` across the repository — landed on its own so
-that it does not bury a behavior change in a whitespace diff. Add the CI step in the same change.
 
 ### The demo has 25 colour-contrast violations
 
