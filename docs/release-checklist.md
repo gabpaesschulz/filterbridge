@@ -19,7 +19,11 @@ Use this checklist before publishing packages to npm.
 - [ ] `pnpm build` — all 5 packages build without errors
 - [ ] `pnpm typecheck` — no TypeScript errors
 - [ ] `pnpm test` — all tests pass
+- [ ] `pnpm format:check` — clean. Enforced in CI since `0.3.0`
 - [ ] `pnpm demo:build` — demo app builds without errors
+- [ ] `pnpm demo` then `pnpm demo:a11y` — zero violations. Not in CI, so a release is the moment it
+      gets run. If it reports zero, sanity-check it against a known-bad value first; a rule that
+      silently did not run also reports zero
 
 ## Package inspection
 
@@ -48,8 +52,13 @@ Use this checklist before publishing packages to npm.
   node src/cjs.cjs
   ```
 - [ ] Update the tarball versions in `.smoke/package.json` after `changeset version` — they are
-      pinned filenames. For this release: `0.1.0` → `0.2.0` in all five entries
-      (`file:../.packs/filterbridge-core-0.2.0.tgz`, and the same for react, browser, tanstack, next)
+      pinned filenames. Bump all five entries to the new version
+      (`file:../.packs/filterbridge-core-<version>.tgz`, and the same for react, browser, tanstack,
+      next)
+- [ ] Extend the `.smoke/` assertions to cover whatever public API the release adds, in **both**
+      `src/esm.mjs` and `src/cjs.cjs`. An assertion that encodes a proxy rather than a rule will
+      break when the rule stays true: `0.3.0` had to replace `dateRange.length === 0` — arity
+      standing in for "takes no configuration" — because the builder gained a `keys` option
 - [ ] Confirm both entry points of `@filterbridge/browser` resolve — the smoke suite imports
       `@filterbridge/browser` and `@filterbridge/browser/react` in ESM and in CJS
 - [ ] Confirm no runtime errors or import resolution failures
@@ -107,6 +116,10 @@ pnpm changeset publish
       second file describing the same release drifts from the first and duplicates the maintenance;
       the `v0.1.0` one was deleted for exactly that reason.
 - [ ] Update `README.md` with installation instructions pointing to the published version
+- [ ] **Bump `examples/next-app-router` to the published version and re-run it.** It is pinned to a
+      published range and is outside the workspace, so nothing else will catch it going stale:
+      `cd examples/next-app-router && npm install && npm run dev`, then update the "Verified against"
+      table in its README
 - [ ] Announce release if applicable
 
 ---

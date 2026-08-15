@@ -1,5 +1,15 @@
 # @filterbridge/demo
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [c218ac1]
+  - @filterbridge/core@0.3.0
+  - @filterbridge/browser@0.3.0
+  - @filterbridge/react@0.3.0
+  - @filterbridge/tanstack@0.3.0
+
 ## 0.0.2
 
 ### Patch Changes

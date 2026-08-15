@@ -4,7 +4,7 @@ This roadmap describes planned and possible future work. No dates are promised.
 
 FilterBridge stays narrow by design. Items here are candidates, not commitments.
 
-**Current version:** `0.2.0`. See [the release notes](./releases/v0.2.0.md) for what shipped.
+**Current version:** `0.3.0`. See [the release notes](./releases/v0.3.0.md) for what shipped.
 
 ---
 
@@ -46,10 +46,9 @@ Delivered by [Sprint 1](./sprints/sprint-1/README.md).
 
 ## `0.2.x` — Stability and ergonomics
 
-Ongoing improvements to the existing packages. No new packages planned.
-
-Most of this section is now planned work: [Sprint 1](./sprints/sprint-1/README.md) covers the two
-housekeeping items, the custom key suffixes and the Next.js examples, and targets `0.3.0`.
+Ongoing improvements to the existing packages. No new packages planned. Everything
+[Sprint 1](./sprints/sprint-1/README.md) took from this list shipped in `0.3.0` above; the heading
+keeps its original name so that the sprint records linking to it still resolve.
 
 - [ ] **`onChange` fires during the render phase.** `useFilterBridge` calls it from inside its
       `setState` updater, so an `onChange` that navigates warns and is unsafe. Found by the Next.js
@@ -57,7 +56,6 @@ housekeeping items, the custom key suffixes and the Next.js examples, and target
       [task 6](./sprints/sprint-1/06-onchange-fires-during-render.md)
 - [ ] Custom URL key for the scalar filters — `text('search')` serializing to `q`. The range option
       is deliberately named `keys`, leaving `key: string` free for this
-- [ ] Fix the demo's colour-contrast violations. Tracked as [housekeeping](#housekeeping)
 - [ ] Bug fixes as they are reported
 
 ---
