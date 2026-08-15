@@ -2,7 +2,36 @@
 
 **Priority:** P1 — blocks every other diff in the sprint
 **Area:** infrastructure
-**Status:** open
+**Status:** done
+
+---
+
+## Outcome
+
+Landed as three commits, and the middle one is the formatting pass:
+
+| Commit                                    | What                                                                   |
+| ----------------------------------------- | ---------------------------------------------------------------------- |
+| `chore: check out every text file as LF`  | `.gitattributes` — see the correction below                            |
+| `style: run prettier over the repository` | `pnpm format` output only, 74 files                                    |
+| `ci: enforce pnpm format:check`           | the `format` job, `.git-blame-ignore-revs`, `CONTRIBUTING.md`, roadmap |
+
+**The 122-file figure was wrong, and so was the 68/54 split.** It was measured on a Windows clone
+with `core.autocrlf=true`, where every file on disk has CRLF endings while the repository stores LF.
+Prettier's `endOfLine` default is `lf`, so it was reporting every file it could see, formatting
+problem or not. Re-measured with `--end-of-line auto`, the real number is **74: 25 code files and 49
+Markdown**. The roadmap's "69" was closer to the truth than this task's "122".
+
+That is why there is a commit this task did not plan for. `.gitattributes` now pins every text file
+to LF in the working tree, so `pnpm format:check` means the same thing on Windows as it does in CI.
+Without it the new `format` job would pass on Linux while being permanently red for any contributor
+on Windows — a check that only works on one platform is the failure mode
+[ADR-003](../../decisions/003-test-resolution.md) already warns about in a different guise.
+
+Decisions 1, 2 and 4 were taken as recommended: Prettier owns the Markdown, `printWidth: 100` proved
+to be a no-op for prose (`proseWrap: "preserve"` never reflowed a paragraph — the Markdown diff is
+table padding and `*emphasis*` → `_emphasis_`), and the CI step is its own `format` job on Linux
+only.
 
 ---
 
@@ -76,14 +105,15 @@ job or guard it with an `if` on one leg. Prefer a separate `format` job: a red X
 
 ## Acceptance criteria
 
-- [ ] `pnpm format:check` exits 0 on a clean checkout
-- [ ] The formatting pass is a single commit with no manual edits mixed in
-- [ ] `.git-blame-ignore-revs` exists, contains that commit, and is documented in `CONTRIBUTING.md`
-- [ ] CI fails a pull request that introduces unformatted files, and the failing job is named for
+- [x] `pnpm format:check` exits 0 on a clean checkout — on Linux, and now on Windows too
+- [x] The formatting pass is a single commit with no manual edits mixed in
+- [x] `.git-blame-ignore-revs` exists, contains that commit, and is documented in `CONTRIBUTING.md`
+- [x] CI fails a pull request that introduces unformatted files, and the failing job is named for
       formatting
-- [ ] `pnpm test`, `pnpm lint`, `pnpm typecheck` and `pnpm build` still pass — a formatting pass
-      that changes behavior means a Prettier setting is wrong, not that the code was wrong
-- [ ] The roadmap's housekeeping entry is removed, not just checked off, and the stale "69 files"
+- [x] `pnpm test` (538 / 28 files), `pnpm lint`, `pnpm typecheck` and `pnpm build` still pass — a
+      formatting pass that changes behavior means a Prettier setting is wrong, not that the code was
+      wrong
+- [x] The roadmap's housekeeping entry is removed, not just checked off, and the stale "69 files"
       figure goes with it
 
 ## Risk

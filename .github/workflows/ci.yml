@@ -13,6 +13,28 @@ permissions:
   contents: read
 
 jobs:
+  # Its own job, and not a matrix leg: formatting is platform-independent, so
+  # running it four times buys nothing, and a red X labelled `format` says what
+  # is wrong in a way that a red `ubuntu-latest · node 18` does not.
+  format:
+    name: format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Format check
+        run: pnpm format:check
+
   check:
     name: ${{ matrix.os }} · node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
