@@ -19,20 +19,20 @@ or a backend shared with a non-JavaScript client. Today the only way to use Filt
 such an API is to rename the params by hand after `toSearchParams()`, which reintroduces exactly the
 glue code the library exists to delete ([CLAUDE.md §2](../../../CLAUDE.md)).
 
-Listed on [the roadmap](../../roadmap.md#02x--stability-and-ergonomics) as *"Optional custom key
-suffixes for `dateRange` and `numberRange`"* and excluded by name from
+Listed on [the roadmap](../../roadmap.md#02x--stability-and-ergonomics) as _"Optional custom key
+suffixes for `dateRange` and `numberRange`"_ and excluded by name from
 [Sprint 0](../sprint-0/README.md#not-in-this-sprint).
 
 ## The larger problem underneath it
 
 The suffixes are hardcoded, independently, in **three** packages:
 
-| Package | Location |
-|---------|----------|
-| `core` — parse | [`parse-filters.ts:83-84, 97-98`](../../../packages/core/src/parse-filters.ts) |
-| `core` — serialize | [`search-params.ts:63-64, 73-74`](../../../packages/core/src/search-params.ts) |
-| `browser` — which params to strip | [`filter-param-keys.ts:8, 11`](../../../packages/browser/src/filter-param-keys.ts) |
-| `next` — normalization | [`normalize-next-search-params.ts:84-102`](../../../packages/next/src/normalize-next-search-params.ts) |
+| Package                           | Location                                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `core` — parse                    | [`parse-filters.ts:83-84, 97-98`](../../../packages/core/src/parse-filters.ts)                         |
+| `core` — serialize                | [`search-params.ts:63-64, 73-74`](../../../packages/core/src/search-params.ts)                         |
+| `browser` — which params to strip | [`filter-param-keys.ts:8, 11`](../../../packages/browser/src/filter-param-keys.ts)                     |
+| `next` — normalization            | [`normalize-next-search-params.ts:84-102`](../../../packages/next/src/normalize-next-search-params.ts) |
 
 Four copies of one rule. This is the same shape as
 [Sprint 0 task 1](../sprint-0/01-repeated-query-params.md), where `core` and `next` disagreed about
@@ -68,11 +68,11 @@ export function getFilterParamKeys(schema: FilterSchema): string[]
 
 ### 2. Option shape
 
-| Option | Example | Trade-off |
-|--------|---------|-----------|
-| A — full key override | `dateRange({ keys: { from: 'created_after', to: 'created_before' } })` | Expresses any target scheme, including snake_case, where the filter name is not a prefix at all |
-| B — suffix override | `dateRange({ suffixes: { from: '_after', to: '_before' } })` | Shorter for the common case, but cannot produce `created_after` from a filter named `createdAt` — the base is always the camelCase filter name |
-| C — schema-wide convention | `defineFilters({...}, { rangeKeys: 'snake' })` | One setting for the whole schema, but it is a naming convention with no escape hatch, and conventions are where this kind of API goes to die |
+| Option                     | Example                                                                | Trade-off                                                                                                                                      |
+| -------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| A — full key override      | `dateRange({ keys: { from: 'created_after', to: 'created_before' } })` | Expresses any target scheme, including snake_case, where the filter name is not a prefix at all                                                |
+| B — suffix override        | `dateRange({ suffixes: { from: '_after', to: '_before' } })`           | Shorter for the common case, but cannot produce `created_after` from a filter named `createdAt` — the base is always the camelCase filter name |
+| C — schema-wide convention | `defineFilters({...}, { rangeKeys: 'snake' })`                         | One setting for the whole schema, but it is a naming convention with no escape hatch, and conventions are where this kind of API goes to die   |
 
 **Recommendation: A.** It is the only one that covers the motivating case. Partial overrides should
 be allowed — `dateRange({ keys: { from: 'after' } })` leaves `to` as `createdAtTo` — because
@@ -100,7 +100,7 @@ Two filters can now resolve to the same param key, and a custom key makes it eas
 ```ts
 defineFilters({
   createdAt: dateRange({ keys: { from: 'start' } }),
-  start: text(),          // both own `start`
+  start: text(), // both own `start`
 })
 ```
 

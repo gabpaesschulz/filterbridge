@@ -135,6 +135,7 @@ The schema object is passed to `parseFilters`, `toSearchParams`, and `toQueryDto
 Parses raw input into typed filter state.
 
 Accepts:
+
 - `Record<string, unknown>` — plain objects, Next.js `searchParams`, etc.
 - `URLSearchParams` — browser URL, `new URLSearchParams(url.search)`, etc.
 
@@ -165,6 +166,7 @@ const params = toSearchParams(schema, state)
 Converts typed filter state into a clean object for backend requests.
 
 Rules:
+
 - `text`: trimmed, omitted if nothing survives
 - `select`: included when it is one of `options`, otherwise dropped with a dev warning
 - `multiSelect`: invalid entries dropped; omitted if nothing survives
@@ -208,10 +210,10 @@ const schema = defineFilters({
   status: select(['pending', 'paid', 'failed'], { default: 'paid' }),
 })
 
-parseFilters(schema, {})                                // { status: 'paid' }
-toSearchParams(schema, { status: 'paid' }).toString()   // ''
+parseFilters(schema, {}) // { status: 'paid' }
+toSearchParams(schema, { status: 'paid' }).toString() // ''
 toSearchParams(schema, { status: 'failed' }).toString() // status=failed
-toQueryDto(schema, { status: 'paid' })                  // { status: 'paid' } — kept
+toQueryDto(schema, { status: 'paid' }) // { status: 'paid' } — kept
 ```
 
 **Only filters whose value space is a fixed, enumerable set accept a default.** `text()`, `dateRange()` and `numberRange()` take no configuration at all, and passing one is a type error. Clearing a filter returns it to its default, which is coherent for a discrete choice and hostile for continuous editing — a text or number input would repopulate itself mid-backspace. A literal date default is stale by construction. Express those as discrete choices: `select(['7d', '30d', '90d'], { default: '30d' })`.
@@ -225,7 +227,7 @@ A `select` or `multiSelect` default outside its `options` throws at schema defin
 The comparison the serializers use, exported so adapters and active-filter-chip UIs do not re-implement it. Returns `false` for a filter that has no default.
 
 ```ts
-isAtDefault(schema.status, 'paid')   // true — emits no param
+isAtDefault(schema.status, 'paid') // true — emits no param
 isAtDefault(schema.status, 'failed') // false
 ```
 
@@ -237,13 +239,13 @@ isAtDefault(schema.status, 'failed') // false
 
 Free-text field.
 
-| | |
-|---|---|
-| State type | `string \| undefined` |
-| Parse | Trims whitespace; empty string becomes `undefined` |
-| URL | `search=invoice` |
-| DTO | `{ search: 'invoice' }` |
-| Default | Not accepted — `text()` takes no configuration |
+|            |                                                    |
+| ---------- | -------------------------------------------------- |
+| State type | `string \| undefined`                              |
+| Parse      | Trims whitespace; empty string becomes `undefined` |
+| URL        | `search=invoice`                                   |
+| DTO        | `{ search: 'invoice' }`                            |
+| Default    | Not accepted — `text()` takes no configuration     |
 
 ```ts
 defineFilters({ search: text() })
@@ -255,12 +257,12 @@ defineFilters({ search: text() })
 
 Single value from a fixed list.
 
-| | |
-|---|---|
-| State type | `"opt1" \| "opt2" \| undefined` |
-| Parse | Only values in the options list are accepted; others become `undefined` |
-| URL | `status=paid` |
-| DTO | `{ status: 'paid' }` |
+|            |                                                                         |
+| ---------- | ----------------------------------------------------------------------- |
+| State type | `"opt1" \| "opt2" \| undefined`                                         |
+| Parse      | Only values in the options list are accepted; others become `undefined` |
+| URL        | `status=paid`                                                           |
+| DTO        | `{ status: 'paid' }`                                                    |
 
 ```ts
 defineFilters({
@@ -275,12 +277,12 @@ defineFilters({
 
 Multiple values from a fixed list.
 
-| | |
-|---|---|
-| State type | `Array<"opt1" \| "opt2"> \| undefined` |
-| Parse | Comma-separated string or array; invalid values discarded |
-| URL | `tags=urgent,review` |
-| DTO | `{ tags: ['urgent', 'review'] }` |
+|            |                                                           |
+| ---------- | --------------------------------------------------------- |
+| State type | `Array<"opt1" \| "opt2"> \| undefined`                    |
+| Parse      | Comma-separated string or array; invalid values discarded |
+| URL        | `tags=urgent,review`                                      |
+| DTO        | `{ tags: ['urgent', 'review'] }`                          |
 
 ```ts
 defineFilters({
@@ -299,12 +301,12 @@ the option list are discarded. Serialization always writes the comma-separated f
 
 Boolean toggle.
 
-| | |
-|---|---|
-| State type | `boolean \| undefined` |
-| Parse | `"true"` / `"1"` → `true`; `"false"` / `"0"` → `false`; other values → `undefined` |
-| URL | `active=true` |
-| DTO | `{ active: true }` |
+|            |                                                                                    |
+| ---------- | ---------------------------------------------------------------------------------- |
+| State type | `boolean \| undefined`                                                             |
+| Parse      | `"true"` / `"1"` → `true`; `"false"` / `"0"` → `false`; other values → `undefined` |
+| URL        | `active=true`                                                                      |
+| DTO        | `{ active: true }`                                                                 |
 
 ```ts
 defineFilters({ active: boolean() })
@@ -316,12 +318,12 @@ defineFilters({ active: boolean() })
 
 A range of ISO-like date strings.
 
-| | |
-|---|---|
-| State type | `{ from?: string; to?: string } \| undefined` |
-| Parse | Reads `<name>From` and `<name>To` keys; empty strings ignored |
-| URL | `createdAtFrom=2026-01-01&createdAtTo=2026-01-31` |
-| DTO | `{ createdAt: { from: '2026-01-01', to: '2026-01-31' } }` |
+|            |                                                               |
+| ---------- | ------------------------------------------------------------- |
+| State type | `{ from?: string; to?: string } \| undefined`                 |
+| Parse      | Reads `<name>From` and `<name>To` keys; empty strings ignored |
+| URL        | `createdAtFrom=2026-01-01&createdAtTo=2026-01-31`             |
+| DTO        | `{ createdAt: { from: '2026-01-01', to: '2026-01-31' } }`     |
 
 ```ts
 defineFilters({ createdAt: dateRange() })
@@ -336,12 +338,12 @@ No date library is used. Strings are accepted as-is. Date validation is out of s
 
 A numeric range.
 
-| | |
-|---|---|
-| State type | `{ min?: number; max?: number } \| undefined` |
-| Parse | Reads `<name>Min` and `<name>Max` keys; non-numeric strings ignored |
-| URL | `amountMin=100&amountMax=500` |
-| DTO | `{ amount: { min: 100, max: 500 } }` |
+|            |                                                                     |
+| ---------- | ------------------------------------------------------------------- |
+| State type | `{ min?: number; max?: number } \| undefined`                       |
+| Parse      | Reads `<name>Min` and `<name>Max` keys; non-numeric strings ignored |
+| URL        | `amountMin=100&amountMax=500`                                       |
+| DTO        | `{ amount: { min: 100, max: 500 } }`                                |
 
 ```ts
 defineFilters({ amount: numberRange() })
@@ -354,12 +356,12 @@ defineFilters({ amount: numberRange() })
 
 ```ts
 // Type utilities
-InferFilterState<TSchema>   // infers full state type from a schema
-FilterStateValue<TFilter>   // infers state type for a single filter
+InferFilterState<TSchema> // infers full state type from a schema
+FilterStateValue<TFilter> // infers state type for a single filter
 
 // Schema types
-FilterSchema                // Record<string, AnyFilter>
-AnyFilter                   // union of all filter types
+FilterSchema // Record<string, AnyFilter>
+AnyFilter // union of all filter types
 
 // Individual filter types
 TextFilter

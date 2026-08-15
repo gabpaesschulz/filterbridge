@@ -21,12 +21,12 @@ inputs the implementation was written to handle. The bugs live in the inputs nob
 enumerate — repeated params, `NaN`, out-of-schema values, whitespace.
 
 Adding four targeted tests would close these four holes and leave the next four open. The suite
-needs a different *kind* of test, not more of the same kind.
+needs a different _kind_ of test, not more of the same kind.
 
 ### Stale documentation
 
-- [`examples/basic/README.md:5`](../../../examples/basic/README.md) states *"No demo app is included
-  yet — that comes in a future wave."* The demo shipped in Wave 4 and has been deployed publicly
+- [`examples/basic/README.md:5`](../../../examples/basic/README.md) states _"No demo app is included
+  yet — that comes in a future wave."_ The demo shipped in Wave 4 and has been deployed publicly
   since. CLAUDE.md §13 requires "no placeholder documentation".
 - [`docs/releases/v0.1.0.md:81-89`](../../releases/v0.1.0.md) lists limitations that this sprint
   removes.
@@ -48,7 +48,7 @@ Plus DTO idempotence:
 toQueryDto(schema, parseFilters(schema, params)) === toQueryDto(schema, state)
 ```
 
-A generator producing values *outside* the schema is the part that matters — invalid options,
+A generator producing values _outside_ the schema is the part that matters — invalid options,
 non-finite numbers, whitespace strings, empty range sides. Every P0 defect in this sprint fails
 this property today.
 
@@ -128,7 +128,7 @@ shapes Next.js can produce.
 **Suite:** 299 → 507 tests, 17 → 28 files. Each of the six fixes was reverted individually and the
 suite confirmed red every time.
 
-**Also found:** re-running `npm install` in `.smoke/` over a rebuilt tarball of the *same* version
+**Also found:** re-running `npm install` in `.smoke/` over a rebuilt tarball of the _same_ version
 silently reinstalls the cached old code — the smoke test was passing against `0.1.0` artifacts. The
 checklist now says to wipe `node_modules` and `package-lock.json` first.
 

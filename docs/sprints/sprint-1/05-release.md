@@ -17,9 +17,9 @@ while a release is half-published.
 `.changeset/config.json` puts all five packages in one `fixed` group, so every publish moves all
 five to the same version whether or not their code changed. The question is only which number.
 
-| Option | Argument |
-|--------|----------|
-| `0.2.1` | Only one task changes package code, and it is additive. The roadmap files custom range keys under `0.2.x — Stability and ergonomics` |
+| Option  | Argument                                                                                                                                                                                                                  |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0.2.1` | Only one task changes package code, and it is additive. The roadmap files custom range keys under `0.2.x — Stability and ergonomics`                                                                                      |
 | `0.3.0` | [Task 2](./02-custom-range-keys.md) adds a public option to two builders, moves key derivation into core, and makes a previously-silent schema collision throw. That last part changes behavior for code that works today |
 
 **Recommendation: `0.3.0`.** In `0.x`, minor is the conventional signal for "new API surface", and
@@ -31,12 +31,12 @@ polish only. Decide at the point task 2 lands, not before.
 
 ## What the release covers
 
-| Task | Changeset |
-|------|-----------|
-| [1 — formatting](./01-formatting-and-format-check.md) | empty — no package behavior changed |
-| [2 — custom range keys](./02-custom-range-keys.md) | **minor**, and it must spell out the collision throw as a behavior change, not bury it |
-| [3 — demo contrast](./03-demo-contrast.md) | empty — `@filterbridge/demo` is never published |
-| [4 — Next.js example](./04-next-app-router-example.md) | empty — docs and an out-of-workspace example |
+| Task                                                   | Changeset                                                                              |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| [1 — formatting](./01-formatting-and-format-check.md)  | empty — no package behavior changed                                                    |
+| [2 — custom range keys](./02-custom-range-keys.md)     | **minor**, and it must spell out the collision throw as a behavior change, not bury it |
+| [3 — demo contrast](./03-demo-contrast.md)             | empty — `@filterbridge/demo` is never published                                        |
+| [4 — Next.js example](./04-next-app-router-example.md) | empty — docs and an out-of-workspace example                                           |
 
 Three empty changesets is not a smell here; CI's changeset check fires on any workspace package
 edit, including the demo, and the existing

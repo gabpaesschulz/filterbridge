@@ -57,6 +57,7 @@ no React installed at all.
 Pure TypeScript. No runtime dependencies.
 
 Responsibilities:
+
 - Define the filter schema DSL (`defineFilters`, `text`, `select`, etc.)
 - Parse untrusted input into typed filter state (`parseFilters`)
 - Serialize typed state into `URLSearchParams` (`toSearchParams`)
@@ -71,6 +72,7 @@ One deliberate asymmetry: `toSearchParams` omits a value equal to its filter's d
 **Entry point:** `packages/core/src/index.ts`
 
 **Source files:**
+
 ```
 filter-types.ts     — interface definitions for all filter types
 filter-builders.ts  — text(), select(), boolean(), etc.
@@ -98,6 +100,7 @@ same schema was enforced in one of three directions.
 React adapter. Depends on `@filterbridge/core`. Peer dependency on React 18+.
 
 Responsibilities:
+
 - Manage local filter state via `useFilterBridge`
 - Expose `set`, `setMany`, `clear`, `reset`, `resetToInitial` for state updates
 - Accept externally-owned state via `syncState`, without firing `onChange`
@@ -119,6 +122,7 @@ The hook does not perform URL synchronization, routing, or data fetching. Those 
 **Entry point:** `packages/react/src/index.ts`
 
 **Source files:**
+
 ```
 types.ts              — UseFilterBridgeOptions and UseFilterBridgeReturn types
 clean-state.ts        — cleanFilterState() removes empty values
@@ -135,6 +139,7 @@ use-filter-bridge.ts  — useFilterBridge() hook implementation
 Browser URL helpers. Depends on `@filterbridge/core`. React is an **optional** peer dependency, imported only by the `/react` subpath — the root entry works in any browser or server context without it.
 
 Responsibilities:
+
 - Enumerate URL search-param keys produced by a schema (`getFilterParamKeys`)
 - Parse filter state from URL strings, `URL`, `URLSearchParams`, or location-like objects (`parseFiltersFromUrl`)
 - Build a URL path string from schema and state, preserving non-filter params (`createFilterUrl`)
@@ -146,6 +151,7 @@ All helpers degrade gracefully outside a browser context (SSR-safe).
 **Entry points:** `packages/browser/src/index.ts` and `packages/browser/src/react.ts`
 
 **Source files:**
+
 ```
 types.ts                  — UrlLike, CreateFilterUrlOptions, SyncUrlOptions,
                             UsePopstateSyncOptions
@@ -214,6 +220,7 @@ bridge.onChange(state)
 TanStack Table adapter. Depends on `@filterbridge/core`. TanStack Table (`@tanstack/react-table`) is an optional peer dependency — it is only needed at runtime if you use `filterBridgeFilterFns` with `useReactTable`.
 
 Responsibilities:
+
 - Convert FilterBridge state to TanStack `columnFilters` format (`toTanStackColumnFilters`)
 - Convert TanStack `columnFilters` back to FilterBridge state (`fromTanStackColumnFilters`)
 - Provide simple client-side filter functions for `useReactTable` (`filterBridgeFilterFns`)
@@ -223,6 +230,7 @@ This package does not render a table, wrap `useReactTable`, or manage React stat
 **Entry point:** `packages/tanstack/src/index.ts`
 
 **Source files:**
+
 ```
 types.ts               — TanStackColumnFilter, TanStackColumnFiltersState, options types
 utils.ts               — buildReverseColumnIdMap(), isEmpty()
@@ -241,6 +249,7 @@ Next.js App Router adapter. Depends on `@filterbridge/core` and `@filterbridge/b
 Does not import from Next.js at runtime — accepts Next-shaped inputs by structural typing.
 
 Responsibilities:
+
 - Convert Next.js `searchParams` (plain record or Promise) into typed filter state (`parseNextSearchParams`, `parseNextSearchParamsAsync`)
 - Normalize Next.js-specific input formats for core parsing (`normalizeNextSearchParams`)
 - Build hrefs for `<Link>` or `router.push()` (`createNextFilterHref`)
@@ -250,6 +259,7 @@ Server-safe: does not access `window`, `document`, or Next.js runtime APIs.
 **Entry point:** `packages/next/src/index.ts`
 
 **Source files:**
+
 ```
 types.ts                        — NextSearchParamsInput, MaybePromise, CreateNextFilterHrefOptions
 normalize-next-search-params.ts — normalizeNextSearchParams(), inputToRawRecord()
@@ -274,7 +284,7 @@ The generic React hook manages in-memory state only. URL synchronization require
 **Why does `reset()` clear everything instead of restoring `initialState`?**
 
 Because they are two different intentions, and one method cannot be both. `reset()` means "clear the
-filters" — the state a user expects from a *Clear all* button. `initialState` is a one-time
+filters" — the state a user expects from a _Clear all_ button. `initialState` is a one-time
 initialization value, often something arbitrary like a shared link's filters, and restoring it is a
 separate action.
 

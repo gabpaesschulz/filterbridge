@@ -21,7 +21,9 @@ const schema = defineFilters({
 
 describe('getFilterParamKeys', () => {
   it('returns simple keys for text, select, multiSelect, boolean', () => {
-    const keys = getFilterParamKeys(defineFilters({ search: text(), status: select(['a'] as const), archived: boolean() }))
+    const keys = getFilterParamKeys(
+      defineFilters({ search: text(), status: select(['a'] as const), archived: boolean() })
+    )
     expect(keys).toEqual(['search', 'status', 'archived'])
   })
 

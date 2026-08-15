@@ -26,7 +26,15 @@ npm install @tanstack/react-table
 ## Quick example
 
 ```ts
-import { defineFilters, text, select, multiSelect, boolean, dateRange, numberRange } from '@filterbridge/core'
+import {
+  defineFilters,
+  text,
+  select,
+  multiSelect,
+  boolean,
+  dateRange,
+  numberRange,
+} from '@filterbridge/core'
 import { toTanStackColumnFilters } from '@filterbridge/tanstack'
 
 const invoiceFilters = defineFilters({
@@ -115,14 +123,14 @@ const table = useReactTable({
 
 Available filter functions:
 
-| Key | Behavior |
-|-----|----------|
-| `text` | Case-insensitive string contains |
-| `select` | Strict equality |
-| `multiSelect` | Intersection (cell array or scalar) |
-| `boolean` | Boolean equality |
-| `dateRange` | ISO string comparison with `from`/`to` |
-| `numberRange` | Numeric comparison with `min`/`max` |
+| Key           | Behavior                               |
+| ------------- | -------------------------------------- |
+| `text`        | Case-insensitive string contains       |
+| `select`      | Strict equality                        |
+| `multiSelect` | Intersection (cell array or scalar)    |
+| `boolean`     | Boolean equality                       |
+| `dateRange`   | ISO string comparison with `from`/`to` |
+| `numberRange` | Numeric comparison with `min`/`max`    |
 
 These are utilities for demos and prototyping. Real applications may use server-side filtering and ignore `filterBridgeFilterFns` entirely.
 

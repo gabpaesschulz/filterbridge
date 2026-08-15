@@ -20,7 +20,7 @@ not. Here is how it failed.
 
 Sprint 0 added `useFilterBridge().syncState`, whose defining property is that it does **not** fire
 `onChange`. That property is load-bearing: `onChange` writes filter state to the URL, and
-`syncState` is called *because* the URL already changed. If it fired `onChange`, every Back press
+`syncState` is called _because_ the URL already changed. If it fired `onChange`, every Back press
 would immediately re-push the entry the user had just navigated away from, and the button would
 appear frozen.
 
@@ -71,9 +71,9 @@ everyone — and by CI — was the one that lied.
 
 The division of labour is the point:
 
-| Suite | Resolves to | Answers |
-|---|---|---|
-| vitest | `src/` | Does the code behave correctly? |
+| Suite     | Resolves to        | Answers                                                                     |
+| --------- | ------------------ | --------------------------------------------------------------------------- |
+| vitest    | `src/`             | Does the code behave correctly?                                             |
 | `.smoke/` | installed tarballs | Is the package consumable — export map, ESM and CJS, types, optional peers? |
 
 `.smoke/` covers the artifact **better** than a unit test importing `dist/` ever did: it runs

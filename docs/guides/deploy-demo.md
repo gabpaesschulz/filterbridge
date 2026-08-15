@@ -33,11 +33,11 @@ A `vercel.json` file is included in `apps/demo/` with the correct build settings
 2. Set **Root Directory** to `apps/demo` — this is required, not cosmetic. See below.
 3. Vercel reads `apps/demo/vercel.json` and uses these settings automatically:
 
-| Setting | Value |
-|---------|-------|
-| **Build Command** | `cd ../.. && pnpm install --frozen-lockfile && pnpm build && pnpm demo:build` |
-| **Output Directory** | `dist` |
-| **Framework** | Vite |
+| Setting              | Value                                                                         |
+| -------------------- | ----------------------------------------------------------------------------- |
+| **Build Command**    | `cd ../.. && pnpm install --frozen-lockfile && pnpm build && pnpm demo:build` |
+| **Output Directory** | `dist`                                                                        |
+| **Framework**        | Vite                                                                          |
 
 4. Deploy.
 5. After deploying, update the live demo URL in `README.md` and this file.
@@ -113,11 +113,11 @@ rather than by the deployment.
 1. Connect the GitHub repository at https://app.netlify.com
 2. Set build settings:
 
-| Setting | Value |
-|---------|-------|
-| **Base directory** | _(leave empty or set to repo root)_ |
-| **Build command** | `pnpm demo:build` |
-| **Publish directory** | `apps/demo/dist` |
+| Setting               | Value                               |
+| --------------------- | ----------------------------------- |
+| **Base directory**    | _(leave empty or set to repo root)_ |
+| **Build command**     | `pnpm demo:build`                   |
+| **Publish directory** | `apps/demo/dist`                    |
 
 3. Deploy.
 

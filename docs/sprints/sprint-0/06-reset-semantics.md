@@ -5,7 +5,7 @@
 **Status:** done — implemented as **B** (`reset()` unchanged + new `resetToInitial()`)
 
 > ⚠️ **Historical record.** See [the sprint README](./README.md#-historical-record). `reset()` still means "clear to the baseline" and
-> `resetToInitial()` shipped as described. What changed afterwards is what the baseline *is*:
+> `resetToInitial()` shipped as described. What changed afterwards is what the baseline _is_:
 > for a schema with defaults it is the defaults, not `{}`. The `resetToDefaults()` this file
 > anticipated was therefore never needed.
 
@@ -15,11 +15,11 @@
 
 Three sources of truth disagree about what `reset()` does.
 
-| Source | Says |
-|--------|------|
-| [`CLAUDE.md` §9](../../../CLAUDE.md) | "`reset()` — returns to initial/default state" |
-| [`docs/api/react.md:149`](../../api/react.md) | "`reset()` clears to an empty state, not to `initialState`" |
-| [`use-filter-bridge.ts:64-66`](../../../packages/react/src/use-filter-bridge.ts) | `updateState(() => ({} as State))` — clears to empty |
+| Source                                                                           | Says                                                        |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| [`CLAUDE.md` §9](../../../CLAUDE.md)                                             | "`reset()` — returns to initial/default state"              |
+| [`docs/api/react.md:149`](../../api/react.md)                                    | "`reset()` clears to an empty state, not to `initialState`" |
+| [`use-filter-bridge.ts:64-66`](../../../packages/react/src/use-filter-bridge.ts) | `updateState(() => ({} as State))` — clears to empty        |
 
 The implementation and the API docs agree with each other; the project spec does not. A test pins
 the current behavior explicitly — `'resets to empty state even if initialState was provided'`
@@ -41,11 +41,11 @@ Both are defensible. Shipping the spec saying one and the code doing the other i
 
 ## Decision needed before implementing
 
-| Option | Change | Trade-off |
-|--------|--------|-----------|
-| A — keep `reset()` empty, fix the spec | Amend CLAUDE.md §9 to match reality | Zero code risk; "reset to initial" stays unavailable without manual `setMany(initialState)` |
-| B — keep `reset()` empty, add `resetToInitial()` | Both behaviors, unambiguous names | One new method; two similarly-named methods to document and explain |
-| C — change `reset()` to restore `initialState` | Matches CLAUDE.md and the common reading of the word | **Breaking change on published code**; needs a `clearAll()` for the old behavior; existing test must be inverted |
+| Option                                           | Change                                               | Trade-off                                                                                                        |
+| ------------------------------------------------ | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| A — keep `reset()` empty, fix the spec           | Amend CLAUDE.md §9 to match reality                  | Zero code risk; "reset to initial" stays unavailable without manual `setMany(initialState)`                      |
+| B — keep `reset()` empty, add `resetToInitial()` | Both behaviors, unambiguous names                    | One new method; two similarly-named methods to document and explain                                              |
+| C — change `reset()` to restore `initialState`   | Matches CLAUDE.md and the common reading of the word | **Breaking change on published code**; needs a `clearAll()` for the old behavior; existing test must be inverted |
 
 **Recommendation: B.** `reset()` keeps its published meaning, so nothing breaks, and the missing
 capability gets an explicit name rather than the workaround currently suggested in
@@ -57,12 +57,12 @@ to justify breaking published behavior over.
 ## Implementation note
 
 Whichever option wins, `initialState` currently exists only inside a `useState` initializer and is
-not retained. `resetToInitial()` needs it captured in a ref at mount — deliberately *not* tracking
+not retained. `resetToInitial()` needs it captured in a ref at mount — deliberately _not_ tracking
 later changes to the prop, so the hook stays uncontrolled and consistent with how `initialState` is
 documented today.
 
 This interacts with [task 7](./07-filter-defaults.md): once filters can declare defaults, "reset"
-has a third possible meaning — back to *schema* defaults, which is not the same as back to
+has a third possible meaning — back to _schema_ defaults, which is not the same as back to
 `initialState`. Settle task 7's design first, or `resetToInitial()` will need renaming a sprint
 later.
 
@@ -86,7 +86,7 @@ On the task-7 ordering concern: the names do not collide with schema defaults. I
 equivalent) — `resetToInitial()` is unambiguous about which of the three it does and needs no
 rename.
 
-`initialState` is captured with `useRef(state)` on the first render, so the ref holds the *cleaned*
+`initialState` is captured with `useRef(state)` on the first render, so the ref holds the _cleaned_
 initial state and later changes to `options.initialState` are ignored by design (test:
 `'ignores later changes to options.initialState'`).
 

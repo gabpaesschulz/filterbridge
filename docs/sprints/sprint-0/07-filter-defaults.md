@@ -16,13 +16,13 @@
 
 CLAUDE.md describes default values in two places, and neither exists in the code.
 
-- §7, on `text()` parsing: *"Empty string should become `undefined` **unless a default value is
-  configured**"* — no filter builder accepts any configuration at all. Every builder is a
+- §7, on `text()` parsing: _"Empty string should become `undefined` **unless a default value is
+  configured**"_ — no filter builder accepts any configuration at all. Every builder is a
   zero-argument or options-only factory
   ([`packages/core/src/filter-builders.ts`](../../../packages/core/src/filter-builders.ts)), and
   every filter type is a bare `_kind` marker
   ([`packages/core/src/filter-types.ts`](../../../packages/core/src/filter-types.ts)).
-- §8: *"`getDefaultFilterState(schema)` — optional but useful. Can be implemented in a later wave"*
+- §8: _"`getDefaultFilterState(schema)` — optional but useful. Can be implemented in a later wave"_
   — never implemented, not exported from
   [`packages/core/src/index.ts`](../../../packages/core/src/index.ts).
 
@@ -59,10 +59,10 @@ tooling. Pick one and use it everywhere.
 
 This is the design decision that actually matters.
 
-| Option | Behavior | Trade-off |
-|--------|----------|-----------|
-| A — always serialize | A filter at its default still appears in the URL | URLs are explicit and self-describing, but every page starts with a cluttered query string |
-| B — omit when equal to default | Default values never appear in the URL | Clean URLs, and the common case has no query string — but a URL no longer fully describes the state, and changing a default in code silently changes the meaning of every old bookmark |
+| Option                         | Behavior                                         | Trade-off                                                                                                                                                                              |
+| ------------------------------ | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A — always serialize           | A filter at its default still appears in the URL | URLs are explicit and self-describing, but every page starts with a cluttered query string                                                                                             |
+| B — omit when equal to default | Default values never appear in the URL           | Clean URLs, and the common case has no query string — but a URL no longer fully describes the state, and changing a default in code silently changes the meaning of every old bookmark |
 
 **Recommendation: B**, because clean default URLs are the reason to want defaults at all, and
 option A makes `?archived=false&status=all` the landing state of every admin page. The bookmark
@@ -105,7 +105,7 @@ deserves its own release. Revisit for `v1.0`.
 ## Resolution
 
 Both decisions taken as recommended: `default` as the property name, and **option B** — a value
-equal to its default is omitted by `toSearchParams` *and* `toQueryDto`.
+equal to its default is omitted by `toSearchParams` _and_ `toQueryDto`.
 
 ### Design notes
 

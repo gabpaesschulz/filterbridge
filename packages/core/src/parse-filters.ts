@@ -76,10 +76,7 @@ function parseBoolean(raw: RawInput, key: string): boolean | undefined {
   return undefined
 }
 
-function parseDateRange(
-  raw: RawInput,
-  key: string
-): { from?: string; to?: string } | undefined {
+function parseDateRange(raw: RawInput, key: string): { from?: string; to?: string } | undefined {
   const from = scalar(raw[`${key}From`])
   const to = scalar(raw[`${key}To`])
   const range: { from?: string; to?: string } = {}
@@ -90,10 +87,7 @@ function parseDateRange(
   return range.from !== undefined || range.to !== undefined ? range : undefined
 }
 
-function parseNumberRange(
-  raw: RawInput,
-  key: string
-): { min?: number; max?: number } | undefined {
+function parseNumberRange(raw: RawInput, key: string): { min?: number; max?: number } | undefined {
   const minVal = scalar(raw[`${key}Min`])
   const maxVal = scalar(raw[`${key}Max`])
   const range: { min?: number; max?: number } = {}

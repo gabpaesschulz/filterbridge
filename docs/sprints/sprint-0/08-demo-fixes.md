@@ -28,6 +28,7 @@ package manifests and docs are consistent, but the demo proves the string leaked
 may have leaked more than once.
 
 **Acceptance:**
+
 - [x] Footer resolves to the real repository
 - [x] No occurrence of `gabrigomez` remains anywhere in the repo — the demo footer was the only one
 
@@ -68,6 +69,7 @@ state visible rather than implied, which is the point of showing it on the demo 
 demonstration that `false` is a real filter value, not an accident.
 
 **Acceptance:**
+
 - [x] The boolean filter can return to `undefined` through the UI
 - [x] `archived` disappears from the URL when unset
 - [x] `undefined` is visually distinct from `false`
@@ -77,7 +79,7 @@ demonstration that `false` is a real filter value, not an accident.
 
 ## 8c — Form labels are not associated with their inputs
 
-`FieldGroup` renders the label as a *sibling* of the control, with no `htmlFor` and without
+`FieldGroup` renders the label as a _sibling_ of the control, with no `htmlFor` and without
 wrapping it ([`apps/demo/src/components/FieldGroup.tsx:8-13`](../../../apps/demo/src/components/FieldGroup.tsx)):
 
 ```tsx
@@ -115,6 +117,7 @@ it, it was leaking into the accessible name ("Archived boolean").
 chip, so the ARIA group won.
 
 **Acceptance:**
+
 - [x] Every input has an accessible name
 - [x] Clicking a field label focuses its control — verified in Chromium
 - [x] Range inputs are distinguishable ("Issued at From" / "Issued at To")
@@ -131,7 +134,7 @@ covers the layout-dependent rules jsdom cannot evaluate.
 ## Risk
 
 None to the published packages — `apps/demo` is not published. 8b was worth a second look at the
-library itself: `clear(key)` *is* the intended way to express "not filtering", and
+library itself: `clear(key)` _is_ the intended way to express "not filtering", and
 [`docs/api/react.md`](../../api/react.md) now says so under `clear()`, with the three-state boolean
 table and the tri-state control pattern.
 

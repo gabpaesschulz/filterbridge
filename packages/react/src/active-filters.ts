@@ -14,10 +14,7 @@ import type { FilterSchema } from '@filterbridge/core'
  * comparison is `isAtDefault` rather than a local reimplementation so that
  * "active" and "appears in the URL" cannot drift apart.
  */
-export function countActiveFilters(
-  schema: FilterSchema,
-  state: Record<string, unknown>
-): number {
+export function countActiveFilters(schema: FilterSchema, state: Record<string, unknown>): number {
   let count = 0
 
   for (const key of Object.keys(state)) {

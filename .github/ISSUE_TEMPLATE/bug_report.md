@@ -7,6 +7,7 @@ labels: bug
 ## Package affected
 
 <!-- Which package(s) does this affect? -->
+
 - [ ] `@filterbridge/core`
 - [ ] `@filterbridge/react`
 - [ ] `@filterbridge/browser`

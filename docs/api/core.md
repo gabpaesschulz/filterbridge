@@ -84,14 +84,14 @@ parseFilters(schema, new URLSearchParams('search=a&search=b'))
 
 **Parsing rules by filter type:**
 
-| Type | Rules |
-|------|-------|
-| `text` | Trims whitespace; empty string → `undefined` |
-| `select` | Only values in options list are accepted; others → `undefined` |
+| Type          | Rules                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| `text`        | Trims whitespace; empty string → `undefined`                                               |
+| `select`      | Only values in options list are accepted; others → `undefined`                             |
 | `multiSelect` | Comma-separated string or `string[]`; invalid values discarded; empty result → `undefined` |
-| `boolean` | `"true"` / `"1"` → `true`; `"false"` / `"0"` → `false`; otherwise → `undefined` |
-| `dateRange` | Reads `<name>From` / `<name>To`; empty string ignored; both absent → `undefined` |
-| `numberRange` | Reads `<name>Min` / `<name>Max`; non-numeric → ignored; both absent → `undefined` |
+| `boolean`     | `"true"` / `"1"` → `true`; `"false"` / `"0"` → `false`; otherwise → `undefined`            |
+| `dateRange`   | Reads `<name>From` / `<name>To`; empty string ignored; both absent → `undefined`           |
+| `numberRange` | Reads `<name>Min` / `<name>Max`; non-numeric → ignored; both absent → `undefined`          |
 
 Keys not defined in the schema are ignored. Keys in the schema that produce `undefined` are omitted from the result — unless the filter declares a [default](#default-values), in which case the default takes their place.
 
@@ -100,8 +100,8 @@ const schema = defineFilters({
   status: select(['pending', 'paid', 'failed'], { default: 'paid' }),
 })
 
-parseFilters(schema, {})                   // { status: 'paid' } — absent
-parseFilters(schema, { status: 'bogus' })  // { status: 'paid' } — invalid
+parseFilters(schema, {}) // { status: 'paid' } — absent
+parseFilters(schema, { status: 'bogus' }) // { status: 'paid' } — invalid
 parseFilters(schema, { status: 'failed' }) // { status: 'failed' }
 ```
 
@@ -124,14 +124,14 @@ Serializes typed filter state to `URLSearchParams`.
 
 **Serialization rules by filter type:**
 
-| Type | Serialization |
-|------|---------------|
-| `text` | `search=value` (trimmed; omitted if empty or whitespace-only) |
-| `select` | `status=paid` (omitted unless the value is a string listed in `options`) |
+| Type          | Serialization                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `text`        | `search=value` (trimmed; omitted if empty or whitespace-only)                                                      |
+| `select`      | `status=paid` (omitted unless the value is a string listed in `options`)                                           |
 | `multiSelect` | `tags=urgent,review` (comma-joined; entries outside `options` are dropped, and the key is omitted if none survive) |
-| `boolean` | `active=true` or `active=false` |
-| `dateRange` | `<name>From=…` and/or `<name>To=…` (each side trimmed; omitted if absent or empty) |
-| `numberRange` | `<name>Min=…` and/or `<name>Max=…` (each side omitted if absent or non-finite) |
+| `boolean`     | `active=true` or `active=false`                                                                                    |
+| `dateRange`   | `<name>From=…` and/or `<name>To=…` (each side trimmed; omitted if absent or empty)                                 |
+| `numberRange` | `<name>Min=…` and/or `<name>Max=…` (each side omitted if absent or non-finite)                                     |
 
 Output is deterministic: the same state always produces the same params string, with keys in schema definition order.
 
@@ -202,14 +202,14 @@ Converts typed filter state into a clean object suitable for backend requests.
 
 **Cleanup rules:**
 
-| Type | Included when |
-|------|---------------|
-| `text` | Non-empty after trimming (the trimmed value is emitted) |
-| `select` | The value is a string listed in the filter's `options` |
-| `multiSelect` | Non-empty array, after dropping entries outside the filter's `options` |
-| `boolean` | Any defined value |
-| `dateRange` | At least one of `from` or `to` is a non-empty string; empty sides are dropped |
-| `numberRange` | At least one of `min` or `max` is finite; non-finite sides are dropped |
+| Type          | Included when                                                                 |
+| ------------- | ----------------------------------------------------------------------------- |
+| `text`        | Non-empty after trimming (the trimmed value is emitted)                       |
+| `select`      | The value is a string listed in the filter's `options`                        |
+| `multiSelect` | Non-empty array, after dropping entries outside the filter's `options`        |
+| `boolean`     | Any defined value                                                             |
+| `dateRange`   | At least one of `from` or `to` is a non-empty string; empty sides are dropped |
+| `numberRange` | At least one of `min` or `max` is finite; non-finite sides are dropped        |
 
 The DTO never contains an empty string. An absent key is what a backend can handle — `WHERE created_at >= ''` is not:
 
@@ -288,9 +288,7 @@ const data = await client.get('/api/orders', { params: dto })
 ### `getDefaultFilterState(schema)`
 
 ```ts
-function getDefaultFilterState<S extends Record<string, AnyFilter>>(
-  schema: S
-): InferFilterState<S>
+function getDefaultFilterState<S extends Record<string, AnyFilter>>(schema: S): InferFilterState<S>
 ```
 
 Returns the state a schema starts from: every filter that declares a [default](#default-values), at that default. Filters without one are absent.
@@ -429,6 +427,7 @@ function dateRange(config?: FilterConfig<DateRangeValue>): DateRangeFilter
 Creates a date range filter. State shape: `{ from?: string; to?: string }`.
 
 The URL keys are derived from the filter name:
+
 - `createdAt` → `createdAtFrom` / `createdAtTo`
 - `issuedAt` → `issuedAtFrom` / `issuedAtTo`
 
@@ -452,6 +451,7 @@ function numberRange(config?: FilterConfig<NumberRangeValue>): NumberRangeFilter
 Creates a number range filter. State shape: `{ min?: number; max?: number }`.
 
 The URL keys are derived from the filter name:
+
 - `amount` → `amountMin` / `amountMax`
 - `price` → `priceMin` / `priceMax`
 
@@ -493,7 +493,7 @@ The round trip is what makes this work: a default is omitted on the way out and 
 
 **A URL no longer fully describes the state.** `/invoices` and `/invoices?status=paid` are the same screen. Two consequences worth knowing before adding a default:
 
-- **Changing a default in code changes what old links mean.** A bookmark saved as `/invoices` shows whatever the default is *today*, not what it was when the link was saved. If a filter's meaning must be stable across deploys — a link pasted in a ticket, an email, a report — do not give it a default.
+- **Changing a default in code changes what old links mean.** A bookmark saved as `/invoices` shows whatever the default is _today_, not what it was when the link was saved. If a filter's meaning must be stable across deploys — a link pasted in a ticket, an email, a report — do not give it a default.
 - **"No value" becomes unreachable through the URL.** With `archived: boolean({ default: false })` there is no query string that means "show archived and unarchived". Model the third state explicitly instead:
 
   ```ts
@@ -512,14 +512,14 @@ Only the filters whose value space is a **fixed, enumerable set**: `select`, `mu
 
 The criterion is not the widget you bind to — the library cannot know that. It is whether the value can pass through "empty" as an intermediate step of a single editing gesture.
 
-| Filter | Default | Why |
-|---|---|---|
-| `select` | yes | A fixed set. Choosing another option is one discrete act. |
-| `boolean` | yes | Three states, all discrete. |
-| `multiSelect` | yes | Unchecking to `[]` is the destination of a click, not a step on the way somewhere. |
-| `text` | **no** | Free text is edited character by character and passes through `''`. A default would repopulate the input mid-backspace. |
-| `numberRange` | **no** | Same: changing `150` to `20` passes through `''`. |
-| `dateRange` | **no** | A literal date default is stale by construction — `'2026-01-01'` means something different every month. |
+| Filter        | Default | Why                                                                                                                     |
+| ------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `select`      | yes     | A fixed set. Choosing another option is one discrete act.                                                               |
+| `boolean`     | yes     | Three states, all discrete.                                                                                             |
+| `multiSelect` | yes     | Unchecking to `[]` is the destination of a click, not a step on the way somewhere.                                      |
+| `text`        | **no**  | Free text is edited character by character and passes through `''`. A default would repopulate the input mid-backspace. |
+| `numberRange` | **no**  | Same: changing `150` to `20` passes through `''`.                                                                       |
+| `dateRange`   | **no**  | A literal date default is stale by construction — `'2026-01-01'` means something different every month.                 |
 
 The cases those three would have served are better modelled discretely. "Last 30 days" is a choice, not a date:
 
@@ -537,11 +537,11 @@ period: select(['7d', '30d', '90d'], { default: '30d' })
 
 A value is considered "at its default" after the same normalization the serializers already apply:
 
-| Type | Equal to the default when |
-|------|---------------------------|
-| `select` | The value is identical |
+| Type          | Equal to the default when                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| `select`      | The value is identical                                                                           |
 | `multiSelect` | Same entries in the same order — a reordered selection is a different state and stays in the URL |
-| `boolean` | The value is identical |
+| `boolean`     | The value is identical                                                                           |
 
 `isAtDefault` answers `false` for every other filter kind, since they cannot carry a default.
 
@@ -556,7 +556,7 @@ Whether a value equals the filter's default, using the comparison table above. T
 ```ts
 const status = select(['pending', 'paid', 'failed'], { default: 'paid' })
 
-isAtDefault(status, 'paid')   // true  — emits no param
+isAtDefault(status, 'paid') // true  — emits no param
 isAtDefault(status, 'failed') // false
 ```
 
@@ -628,12 +628,12 @@ type State = InferFilterState<typeof schema>
 
 ```ts
 type FilterStateValue<F extends AnyFilter> =
-  | string           // text
-  | string           // select (literal union in practice)
-  | string[]         // multiSelect (literal array in practice)
-  | boolean          // boolean
-  | { from?: string; to?: string }    // dateRange
-  | { min?: number; max?: number }    // numberRange
+  | string // text
+  | string // select (literal union in practice)
+  | string[] // multiSelect (literal array in practice)
+  | boolean // boolean
+  | { from?: string; to?: string } // dateRange
+  | { min?: number; max?: number } // numberRange
 ```
 
 Infers the state type for a single filter.

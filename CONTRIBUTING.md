@@ -8,13 +8,13 @@ Thanks for your interest in contributing. FilterBridge is a small, focused libra
 
 FilterBridge is a TypeScript-first filter schema library for React admin screens. It consists of five publishable npm packages in a pnpm monorepo:
 
-| Package | Purpose |
-|---------|---------|
-| `@filterbridge/core` | Schema DSL, parsing, URL serialization, backend DTO |
-| `@filterbridge/react` | `useFilterBridge` React hook |
-| `@filterbridge/browser` | Browser URL sync helpers |
-| `@filterbridge/tanstack` | TanStack Table adapter |
-| `@filterbridge/next` | Next.js App Router adapter |
+| Package                  | Purpose                                             |
+| ------------------------ | --------------------------------------------------- |
+| `@filterbridge/core`     | Schema DSL, parsing, URL serialization, backend DTO |
+| `@filterbridge/react`    | `useFilterBridge` React hook                        |
+| `@filterbridge/browser`  | Browser URL sync helpers                            |
+| `@filterbridge/tanstack` | TanStack Table adapter                              |
+| `@filterbridge/next`     | Next.js App Router adapter                          |
 
 The project aims to be small, well-tested, and easy to explain. Contributions that add scope creep or unnecessary dependencies will be declined.
 
@@ -123,6 +123,7 @@ whichever the package you are touching already uses.
 Every behavior change should have a corresponding test. The project aims to keep core logic heavily tested.
 
 Guidelines:
+
 - Test parsing, serialization, and DTO generation for each filter type.
 - Test edge cases: empty input, invalid values, partial range objects.
 - For React hook tests, use `@testing-library/react`.
@@ -159,11 +160,13 @@ Propose new filter types via an issue first.
 New adapters belong in `packages/<name>/` as `@filterbridge/<name>`.
 
 Before starting:
+
 - Open an issue describing the use case.
 - Confirm there is no existing package or simple workaround.
 - Discuss the API shape before implementing.
 
 A new package needs:
+
 - `package.json` with correct metadata (`author`, `repository`, `bugs`, `homepage`, `sideEffects: false`, `files`, `exports`)
 - `tsup.config.ts` for ESM + CJS build
 - `tsconfig.json` extending `../../tsconfig.base.json`
@@ -186,6 +189,7 @@ A new package needs:
 ## Documenting API changes
 
 If you change or add a public API:
+
 - Update the relevant `packages/<name>/README.md`
 - Update `docs/api/<name>.md`
 - Update examples in the root `README.md` if affected
@@ -198,11 +202,11 @@ If you change or add a public API:
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push to `main` and on every
 pull request:
 
-| Job | What it runs |
-|-----|--------------|
-| `check` | `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test` |
-| `demo build` | `pnpm build` then `pnpm demo:build` |
-| `changeset` | `pnpm changeset status` — pull requests only |
+| Job          | What it runs                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------ |
+| `check`      | `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test` |
+| `demo build` | `pnpm build` then `pnpm demo:build`                                                        |
+| `changeset`  | `pnpm changeset status` — pull requests only                                               |
 
 The `check` job runs on Node 18, 20, and 22 on Linux, plus Node 20 on Windows.
 
@@ -244,6 +248,7 @@ PRs that break existing tests, skip type checking, or add undocumented API chang
 ## Issues
 
 Use the GitHub issue templates:
+
 - **Bug report** — something is broken
 - **Feature request** — new capability or API
 - **Documentation** — something is wrong or missing in docs
@@ -258,7 +263,7 @@ Check for existing issues before opening a new one.
 - No external runtime dependencies added to packages without discussion.
 - Keep functions pure where possible.
 - Prefer readable code over clever abstractions.
-- Default to no comments — code should be self-explanatory. Add a comment only when the *why* is non-obvious.
+- Default to no comments — code should be self-explanatory. Add a comment only when the _why_ is non-obvious.
 
 ---
 

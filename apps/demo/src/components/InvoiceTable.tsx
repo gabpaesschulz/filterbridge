@@ -24,9 +24,7 @@ const columns = [
   columnHelper.accessor('tags', {
     header: 'Tags',
     filterFn: 'multiSelect',
-    cell: (info) => (
-      <span>{info.getValue().length > 0 ? info.getValue().join(', ') : '—'}</span>
-    ),
+    cell: (info) => <span>{info.getValue().length > 0 ? info.getValue().join(', ') : '—'}</span>,
   }),
   columnHelper.accessor('archived', {
     header: 'Archived',

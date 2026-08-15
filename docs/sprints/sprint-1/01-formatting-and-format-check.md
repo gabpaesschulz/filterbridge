@@ -42,10 +42,10 @@ The reason it was deferred in Sprint 0 still holds and is the reason it goes fir
 characters and — the one that matters here — table column padding. The hand-aligned tables in
 [`docs/sprints/`](../) and the ADRs will be rewritten.
 
-| Option | Trade-off |
-|--------|-----------|
-| A — format Markdown too | One rule for the repository, no "which files does this apply to" question. Rewrites every table in `docs/`, and the diff is large enough to hide a content change |
-| B — add `*.md` to `.prettierignore` | Docs stay hand-formatted, and the code pass drops to 68 files. But "formatted" now means two things depending on the extension, and nothing checks the docs |
+| Option                              | Trade-off                                                                                                                                                         |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A — format Markdown too             | One rule for the repository, no "which files does this apply to" question. Rewrites every table in `docs/`, and the diff is large enough to hide a content change |
+| B — add `*.md` to `.prettierignore` | Docs stay hand-formatted, and the code pass drops to 68 files. But "formatted" now means two things depending on the extension, and nothing checks the docs       |
 
 **Recommendation: A.** The repository already treats docs as a first-class deliverable; excluding
 them from the only mechanical check it has is the wrong asymmetry. The "hides a content change"

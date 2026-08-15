@@ -16,10 +16,10 @@ pnpm add @filterbridge/browser @filterbridge/core
 
 ## Entry points
 
-| Import path | Contents | Requires React |
-|-------------|----------|----------------|
-| `@filterbridge/browser` | `getFilterParamKeys`, `parseFiltersFromUrl`, `createFilterUrl`, `replaceUrlFilters`, `pushUrlFilters` | No |
-| `@filterbridge/browser/react` | `usePopstateSync` | Yes |
+| Import path                   | Contents                                                                                              | Requires React |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- | -------------- |
+| `@filterbridge/browser`       | `getFilterParamKeys`, `parseFiltersFromUrl`, `createFilterUrl`, `replaceUrlFilters`, `pushUrlFilters` | No             |
+| `@filterbridge/browser/react` | `usePopstateSync`                                                                                     | Yes            |
 
 React is an **optional** peer dependency. The root entry never imports it, so the package stays usable in plain Node, a Vue app, or a vanilla script. Only `@filterbridge/browser/react` pulls React in.
 
@@ -46,14 +46,14 @@ getFilterParamKeys(filters)
 
 ### Key naming rules
 
-| Filter type  | URL keys                              |
-| ------------ | ------------------------------------- |
-| `text`       | `<name>`                              |
-| `select`     | `<name>`                              |
-| `multiSelect`| `<name>`                              |
-| `boolean`    | `<name>`                              |
-| `dateRange`  | `<name>From`, `<name>To`              |
-| `numberRange`| `<name>Min`, `<name>Max`              |
+| Filter type   | URL keys                 |
+| ------------- | ------------------------ |
+| `text`        | `<name>`                 |
+| `select`      | `<name>`                 |
+| `multiSelect` | `<name>`                 |
+| `boolean`     | `<name>`                 |
+| `dateRange`   | `<name>From`, `<name>To` |
+| `numberRange` | `<name>Min`, `<name>Max` |
 
 Keys are returned in schema definition order.
 
@@ -110,10 +110,10 @@ createFilterUrl(filters, {}, { pathname: '/invoices' })
 
 ```ts
 type CreateFilterUrlOptions = {
-  pathname?: string             // Default: window.location.pathname or "/"
-  currentSearch?: string | URLSearchParams  // Existing params to consider
-  hash?: string                 // Hash fragment without #
-  preserveExistingParams?: boolean  // Default: true
+  pathname?: string // Default: window.location.pathname or "/"
+  currentSearch?: string | URLSearchParams // Existing params to consider
+  hash?: string // Hash fragment without #
+  preserveExistingParams?: boolean // Default: true
 }
 ```
 
@@ -171,9 +171,9 @@ Automatically reads `window.location.search` to preserve non-filter params.
 
 ```ts
 type SyncUrlOptions = CreateFilterUrlOptions & {
-  history?: Pick<History, 'replaceState' | 'pushState'>  // Injectable for testing
-  state?: unknown   // History state object (defaults to window.history.state)
-  title?: string    // History title (defaults to "")
+  history?: Pick<History, 'replaceState' | 'pushState'> // Injectable for testing
+  state?: unknown // History state object (defaults to window.history.state)
+  title?: string // History title (defaults to "")
 }
 ```
 
@@ -218,11 +218,11 @@ function OrdersPage() {
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `schema` | `FilterSchema` | Used to parse the URL. Read at event time, so an inline schema will not re-subscribe. |
-| `onState` | `(state: InferFilterState<S>) => void` | Called on each `popstate` with the state parsed from the current URL. |
-| `options.enabled` | `boolean` | Defaults to `true`. Set to `false` to keep the listener detached. |
+| Parameter         | Type                                   | Description                                                                           |
+| ----------------- | -------------------------------------- | ------------------------------------------------------------------------------------- |
+| `schema`          | `FilterSchema`                         | Used to parse the URL. Read at event time, so an inline schema will not re-subscribe. |
+| `onState`         | `(state: InferFilterState<S>) => void` | Called on each `popstate` with the state parsed from the current URL.                 |
+| `options.enabled` | `boolean`                              | Defaults to `true`. Set to `false` to keep the listener detached.                     |
 
 ### Behaviour
 

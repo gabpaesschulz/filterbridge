@@ -116,6 +116,7 @@ pnpm changeset publish
 **Validated on: 2026-06-01**
 
 ### Infrastructure
+
 - [x] GitHub repository exists: `https://github.com/gabpaesschulz/filterbridge`
 - [x] All 5 npm package names verified available (404 on registry)
   - `@filterbridge/core` — available
@@ -128,6 +129,7 @@ pnpm changeset publish
 - [x] All `package.json` files include `CHANGELOG.md` in `files`
 
 ### Build validation
+
 - [x] `pnpm install` — clean
 - [x] `pnpm build` — 5 packages, all pass
 - [x] `pnpm typecheck` — 0 errors
@@ -135,16 +137,19 @@ pnpm changeset publish
 - [x] `pnpm demo:build` — Vite build success
 
 ### Package inspection
+
 - [x] `pnpm pack:all` — 5 tarballs in `.packs/`
 - [x] All tarballs contain: `dist/`, `README.md`, `CHANGELOG.md`, `package.json`
 - [x] `dist/index.js`, `dist/index.cjs`, `dist/index.d.ts`, `dist/index.d.cts` present in each
 - [x] `workspace:*` resolved to `0.1.0` in packed tarballs
 
 ### Smoke test
+
 - [x] ESM smoke test — 39 passed, 0 failed
 - [x] CJS smoke test — 29 passed, 0 failed
 
 ### Content review
+
 - [x] Root README updated: packages table, architecture, roadmap
 - [x] `packages/core/README.md` — updated status and installation
 - [x] `packages/react/README.md` — updated status, installation, and known limitations
@@ -153,6 +158,7 @@ pnpm changeset publish
 - [x] `packages/next/README.md` — fixed repository link
 
 ### Publish — done
+
 - [x] `npm whoami` — confirmed npm login as correct user
 - [x] Confirmed 2FA is configured on npm account
 - [x] `@filterbridge` organization scope created on npm
@@ -171,6 +177,7 @@ release had to go through; the live checklist is the `0.2.0` one below.
 draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
 
 ### Build validation
+
 - [x] `pnpm test` — 538 tests, 28 test files, all pass, with every `dist/` deleted
 - [x] `pnpm typecheck` — 0 errors
 - [x] `pnpm lint` — clean
@@ -181,9 +188,11 @@ draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
       changeset check
 
 ### Package inspection
+
 - [x] `pnpm pack:all` — 5 tarballs in `.packs/`
 
 ### Smoke test
+
 - [x] ESM smoke test — 54 passed, 0 failed
 - [x] CJS smoke test — 38 passed, 0 failed
 - [x] `@filterbridge/browser/react` subpath resolves in both module systems
@@ -193,8 +202,9 @@ draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
       unit suite
 
 ### Changesets
+
 - [x] 10 changesets, each owned by a single package so that every `CHANGELOG.md` opens with what
-      changed in *that* package. `external-state-sync` and `filter-defaults` were each split in two
+      changed in _that_ package. `external-state-sync` and `filter-defaults` were each split in two
       for this reason (`popstate-sync` for browser, `hook-schema-defaults` for react)
 - [x] Four are `minor` (core defaults, `syncState`, hook defaults, `resetToInitial`, plus
       `usePopstateSync` for browser) — the release is `0.2.0`
@@ -205,12 +215,13 @@ draft and [Sprint 0](./sprints/sprint-0/README.md) for the work itself.
       unpublished, its changeset is editable.
 
 ### Publish — done (2026-08-15)
+
 - [x] `pnpm changeset version` — all five at `0.2.0`, `CHANGELOG.md` generated, changesets consumed
 - [x] `.smoke/package.json` repinned to the `0.2.0` tarballs, `.packs/` cleared of `0.1.0` so a
       cached install could not substitute them, `node_modules` wiped — 54 ESM / 38 CJS pass
 - [x] Re-read the documentation pass — API reference, READMEs, roadmap and release notes all
       describe `0.2.0` rather than the path taken to it
-- [x] **`main` contains the release commit.** PR #1 merged at `70ac225`, *before* the documentation
+- [x] **`main` contains the release commit.** PR #1 merged at `70ac225`, _before_ the documentation
       pass and the version bump were pushed — so a second PR from `sprint-0` was needed. It merged
       at `8a07d2e`, which is the commit the release was built from. Worth remembering next sprint:
       a version bump that lands after its own PR needs a follow-up PR, and tagging the branch

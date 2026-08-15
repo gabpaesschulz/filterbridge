@@ -15,22 +15,22 @@ Two independent questions had to be answered: how does external state get in, an
 
 ## Decision 1 — `syncState(next)`, not a controlled mode
 
-| Option | Shape | Why not |
-|---|---|---|
-| **A — `syncState(next)`** ✅ | One method that replaces state | chosen |
-| B — controlled mode | Optional `state` + `onStateChange`, like a controlled input | Most flexible, but doubles the hook's surface and forks it into two modes that both need documenting and testing |
-| C — `key` remount | Document remounting on navigation | No new API, but loses focus and any unrelated local state on every back/forward |
+| Option                       | Shape                                                       | Why not                                                                                                          |
+| ---------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **A — `syncState(next)`** ✅ | One method that replaces state                              | chosen                                                                                                           |
+| B — controlled mode          | Optional `state` + `onStateChange`, like a controlled input | Most flexible, but doubles the hook's surface and forks it into two modes that both need documenting and testing |
+| C — `key` remount            | Document remounting on navigation                           | No new API, but loses focus and any unrelated local state on every back/forward                                  |
 
 **A**, because it solves the actual problem with one method, keeps the hook small (CLAUDE.md §9),
 and does not fork it. B remains addable later without breaking A; A does not foreclose it.
 
 ## Decision 2 — the listener lives in `@filterbridge/browser/react`
 
-| Option | Why not |
-|---|---|
-| **D — `usePopstateSync` in `@filterbridge/browser`** ✅ | chosen |
-| E — an option on `useFilterBridge` | Puts browser-specific behavior in the generic React hook, which CLAUDE.md §9 explicitly forbids |
-| F — document the pattern, ship nothing | Zero API cost, but every user writes the same ten lines and gets the `onChange` detail wrong |
+| Option                                                  | Why not                                                                                         |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **D — `usePopstateSync` in `@filterbridge/browser`** ✅ | chosen                                                                                          |
+| E — an option on `useFilterBridge`                      | Puts browser-specific behavior in the generic React hook, which CLAUDE.md §9 explicitly forbids |
+| F — document the pattern, ship nothing                  | Zero API cost, but every user writes the same ten lines and gets the `onChange` detail wrong    |
 
 **D**, with React as an **optional** peer dependency and the hook behind a separate entry point, so
 the root entry stays importable without React. That packaging is what makes D acceptable: the
@@ -45,7 +45,7 @@ additionally imported in a project with no React installed.
 This is the load-bearing part, and it reads like an implementation detail, which is why it is
 recorded here.
 
-`onChange` writes filter state to the URL. `syncState` is called *because* the URL already changed.
+`onChange` writes filter state to the URL. `syncState` is called _because_ the URL already changed.
 If `syncState` fired `onChange`, the pairing below would feed itself: every Back press would
 re-push the entry the user had just navigated away from, and the button would appear frozen.
 

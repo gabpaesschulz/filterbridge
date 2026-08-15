@@ -14,12 +14,12 @@ reference, and the Next.js example the guide promises but does not give.
 
 ## Baseline health
 
-| Check | Result |
-|-------|--------|
-| `pnpm test` | 538 passing / 28 files |
-| `pnpm lint` | clean |
-| `pnpm typecheck` | clean (5 packages, after `pnpm build`) |
-| `pnpm build` | dual ESM/CJS + `.d.ts` / `.d.cts` |
+| Check               | Result                                     |
+| ------------------- | ------------------------------------------ |
+| `pnpm test`         | 538 passing / 28 files                     |
+| `pnpm lint`         | clean                                      |
+| `pnpm typecheck`    | clean (5 packages, after `pnpm build`)     |
+| `pnpm build`        | dual ESM/CJS + `.d.ts` / `.d.cts`          |
 | `pnpm format:check` | **fails — 122 files**, 54 of them Markdown |
 
 Nothing here is a P0. Sprint 0 was about a published package being wrong; this one is about a
@@ -30,13 +30,13 @@ touches parsing or serialization is task 2, and it is additive.
 
 ## Tasks
 
-| # | Task | Priority | Area |
-|---|------|----------|------|
-| 1 | [Formatting pass and `format:check` in CI](./01-formatting-and-format-check.md) | P1 | infra |
-| 2 | [Custom URL keys for `dateRange` and `numberRange`](./02-custom-range-keys.md) | P1 | `core`, `browser`, `next` |
-| 3 | [The demo's 25 colour-contrast violations](./03-demo-contrast.md) | P2 | `demo` |
-| 4 | [Next.js App Router example that runs](./04-next-app-router-example.md) | P2 | docs, examples |
-| 5 | [`0.3.0` release](./05-release.md) | P2 | all |
+| #   | Task                                                                            | Priority | Area                      |
+| --- | ------------------------------------------------------------------------------- | -------- | ------------------------- |
+| 1   | [Formatting pass and `format:check` in CI](./01-formatting-and-format-check.md) | P1       | infra                     |
+| 2   | [Custom URL keys for `dateRange` and `numberRange`](./02-custom-range-keys.md)  | P1       | `core`, `browser`, `next` |
+| 3   | [The demo's 25 colour-contrast violations](./03-demo-contrast.md)               | P2       | `demo`                    |
+| 4   | [Next.js App Router example that runs](./04-next-app-router-example.md)         | P2       | docs, examples            |
+| 5   | [`0.3.0` release](./05-release.md)                                              | P2       | all                       |
 
 ---
 

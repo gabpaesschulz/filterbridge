@@ -31,7 +31,15 @@ which re-parses the URL params and passes new `initialState` down.
 
 ```ts
 // app/invoices/filters.ts
-import { defineFilters, text, select, multiSelect, boolean, dateRange, numberRange } from '@filterbridge/core'
+import {
+  defineFilters,
+  text,
+  select,
+  multiSelect,
+  boolean,
+  dateRange,
+  numberRange,
+} from '@filterbridge/core'
 
 export const invoiceFilters = defineFilters({
   search: text(),
@@ -178,7 +186,7 @@ This keeps `tab`, `page`, and similar UI params intact when filters change.
 // Current URL: /invoices?tab=open&page=2&status=paid
 const href = createNextFilterHref(
   invoiceFilters,
-  { search: 'acme' },         // new filter state
+  { search: 'acme' }, // new filter state
   {
     pathname: '/invoices',
     searchParams: currentSearchParams, // pass current URL params to preserve non-filter ones
@@ -201,12 +209,12 @@ const searchParams = useSearchParams() // ReadonlyURLSearchParams
 
 ## Difference between @filterbridge/browser and @filterbridge/next
 
-| | `@filterbridge/browser` | `@filterbridge/next` |
-|---|---|---|
-| Input | URL strings, `URLSearchParams`, `URL`, location-like | Next.js `searchParams` record, URLSearchParams |
-| Reads `window` | Yes (falls back gracefully) | Never |
-| Updates history | Yes (`pushUrlFilters`, `replaceUrlFilters`) | No — returns href only |
-| Best for | Generic browser URL sync | Next.js App Router server/client pattern |
+|                 | `@filterbridge/browser`                              | `@filterbridge/next`                           |
+| --------------- | ---------------------------------------------------- | ---------------------------------------------- |
+| Input           | URL strings, `URLSearchParams`, `URL`, location-like | Next.js `searchParams` record, URLSearchParams |
+| Reads `window`  | Yes (falls back gracefully)                          | Never                                          |
+| Updates history | Yes (`pushUrlFilters`, `replaceUrlFilters`)          | No — returns href only                         |
+| Best for        | Generic browser URL sync                             | Next.js App Router server/client pattern       |
 
 ---
 

@@ -15,13 +15,13 @@ fixing them means changing the palette, which is a visual decision rather than a
 
 Measured, with the offending values still in place:
 
-| Pair | Ratio | Where | Source |
-|------|-------|-------|--------|
-| `--color-muted` `#6b7280` on `--color-bg` `#f4f5f7` | **4.43:1** | column titles, hints, table headers, the active filter count | [`styles.css:9`](../../../apps/demo/src/styles.css) |
-| white on `#16a34a` | **3.29:1** | `paid` status pill | [`InvoiceTable.tsx:55`](../../../apps/demo/src/components/InvoiceTable.tsx) |
-| white on `#d97706` | **3.18:1** | `pending` status pill | [`InvoiceTable.tsx:54`](../../../apps/demo/src/components/InvoiceTable.tsx) |
-| white on `#9ca3af` | **2.53:1** | `cancelled` status pill | [`InvoiceTable.tsx:57`](../../../apps/demo/src/components/InvoiceTable.tsx) |
-| green URL-sync badge, `.url-path` | ~**3:1** | URL sync indicator | [`styles.css:92`](../../../apps/demo/src/styles.css) |
+| Pair                                                | Ratio      | Where                                                        | Source                                                                      |
+| --------------------------------------------------- | ---------- | ------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `--color-muted` `#6b7280` on `--color-bg` `#f4f5f7` | **4.43:1** | column titles, hints, table headers, the active filter count | [`styles.css:9`](../../../apps/demo/src/styles.css)                         |
+| white on `#16a34a`                                  | **3.29:1** | `paid` status pill                                           | [`InvoiceTable.tsx:55`](../../../apps/demo/src/components/InvoiceTable.tsx) |
+| white on `#d97706`                                  | **3.18:1** | `pending` status pill                                        | [`InvoiceTable.tsx:54`](../../../apps/demo/src/components/InvoiceTable.tsx) |
+| white on `#9ca3af`                                  | **2.53:1** | `cancelled` status pill                                      | [`InvoiceTable.tsx:57`](../../../apps/demo/src/components/InvoiceTable.tsx) |
+| green URL-sync badge, `.url-path`                   | ~**3:1**   | URL sync indicator                                           | [`styles.css:92`](../../../apps/demo/src/styles.css)                        |
 
 The AA threshold is 4.5:1 for normal text. `--color-muted` misses it by 0.07 — close enough that it
 was plainly never measured, which is the actual finding.
@@ -41,10 +41,10 @@ test that structurally cannot catch this class of bug, and nothing else does.
 
 ### 1. How far does the palette move?
 
-| Option | Trade-off |
-|--------|-----------|
-| A — minimum viable darkening | Nudge `--color-muted` to roughly `#5b6270`, darken the three pill backgrounds until white text clears 4.5:1. Smallest diff, and the demo looks the same | 
-| B — deliberate palette pass | Rebuild the neutral ramp and the status colours as a coherent set with stated contrast targets. Better result, much larger visual change to review |
+| Option                       | Trade-off                                                                                                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A — minimum viable darkening | Nudge `--color-muted` to roughly `#5b6270`, darken the three pill backgrounds until white text clears 4.5:1. Smallest diff, and the demo looks the same |
+| B — deliberate palette pass  | Rebuild the neutral ramp and the status colours as a coherent set with stated contrast targets. Better result, much larger visual change to review      |
 
 **Recommendation: A.** The demo's job is to demonstrate the library, and a palette redesign is
 scope this sprint did not ask for. Do B only if A produces colours that visibly clash.

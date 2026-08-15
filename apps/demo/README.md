@@ -52,14 +52,14 @@ All six MVP filter types are represented.
 
 ### Filter controls (left column)
 
-| Filter | Type | Notes |
-|--------|------|-------|
-| `search` | `text()` | Free-text input |
-| `status` | `select()` | Single value from a fixed list |
-| `tags` | `multiSelect()` | Multiple values from a fixed list |
-| `archived` | `boolean()` | Three-option select: Any / Yes / No |
-| `issuedAt` | `dateRange()` | From / To date inputs |
-| `amount` | `numberRange()` | Min / Max number inputs |
+| Filter     | Type            | Notes                               |
+| ---------- | --------------- | ----------------------------------- |
+| `search`   | `text()`        | Free-text input                     |
+| `status`   | `select()`      | Single value from a fixed list      |
+| `tags`     | `multiSelect()` | Multiple values from a fixed list   |
+| `archived` | `boolean()`     | Three-option select: Any / Yes / No |
+| `issuedAt` | `dateRange()`   | From / To date inputs               |
+| `amount`   | `numberRange()` | Min / Max number inputs             |
 
 ### Live output panel (right column)
 

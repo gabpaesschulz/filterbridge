@@ -81,10 +81,10 @@ type MaybePromise<T> = T | Promise<T>
 
 ```ts
 type CreateNextFilterHrefOptions = {
-  pathname?: string               // default: '/'
+  pathname?: string // default: '/'
   searchParams?: NextSearchParamsInput
   hash?: string
-  preserveExistingParams?: boolean  // default: true
+  preserveExistingParams?: boolean // default: true
 }
 ```
 
@@ -103,12 +103,12 @@ function normalizeNextSearchParams<S extends FilterSchema>(
 
 Schema-aware normalization:
 
-| Filter kind | `string` input | `string[]` input |
-|---|---|---|
-| `text`, `select`, `boolean` | kept as-is | first element used |
-| `multiSelect` | kept as-is (parsed as CSV by core) | array preserved |
-| `dateRange` | reads `<name>From`/`<name>To` | first element of each |
-| `numberRange` | reads `<name>Min`/`<name>Max` | first element of each |
+| Filter kind                 | `string` input                     | `string[]` input      |
+| --------------------------- | ---------------------------------- | --------------------- |
+| `text`, `select`, `boolean` | kept as-is                         | first element used    |
+| `multiSelect`               | kept as-is (parsed as CSV by core) | array preserved       |
+| `dateRange`                 | reads `<name>From`/`<name>To`      | first element of each |
+| `numberRange`               | reads `<name>Min`/`<name>Max`      | first element of each |
 
 Params outside the schema are ignored. Null/undefined input returns `{}`.
 
@@ -193,9 +193,13 @@ Does not access `window`. Safe for server components and client components alike
 **Example — basic:**
 
 ```ts
-const href = createNextFilterHref(invoiceFilters, { search: 'acme' }, {
-  pathname: '/invoices',
-})
+const href = createNextFilterHref(
+  invoiceFilters,
+  { search: 'acme' },
+  {
+    pathname: '/invoices',
+  }
+)
 // => '/invoices?search=acme'
 ```
 
@@ -233,10 +237,14 @@ const href = createNextFilterHref(
 **Example — with hash:**
 
 ```ts
-const href = createNextFilterHref(invoiceFilters, { search: 'acme' }, {
-  pathname: '/invoices',
-  hash: 'results',
-})
+const href = createNextFilterHref(
+  invoiceFilters,
+  { search: 'acme' },
+  {
+    pathname: '/invoices',
+    hash: 'results',
+  }
+)
 // => '/invoices?search=acme#results'
 ```
 
