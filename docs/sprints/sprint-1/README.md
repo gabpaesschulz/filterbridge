@@ -30,13 +30,31 @@ touches parsing or serialization is task 2, and it is additive.
 
 ## Tasks
 
-| #   | Task                                                                            | Priority | Area                      |
-| --- | ------------------------------------------------------------------------------- | -------- | ------------------------- |
-| 1   | [Formatting pass and `format:check` in CI](./01-formatting-and-format-check.md) | P1       | infra                     |
-| 2   | [Custom URL keys for `dateRange` and `numberRange`](./02-custom-range-keys.md)  | P1       | `core`, `browser`, `next` |
-| 3   | [The demo's 25 colour-contrast violations](./03-demo-contrast.md)               | P2       | `demo`                    |
-| 4   | [Next.js App Router example that runs](./04-next-app-router-example.md)         | P2       | docs, examples            |
-| 5   | [`0.3.0` release](./05-release.md)                                              | P2       | all                       |
+| #   | Task                                                                            | Priority | Area                      | Status              |
+| --- | ------------------------------------------------------------------------------- | -------- | ------------------------- | ------------------- |
+| 1   | [Formatting pass and `format:check` in CI](./01-formatting-and-format-check.md) | P1       | infra                     | done                |
+| 2   | [Custom URL keys for `dateRange` and `numberRange`](./02-custom-range-keys.md)  | P1       | `core`, `browser`, `next` | done                |
+| 3   | [The demo's 25 colour-contrast violations](./03-demo-contrast.md)               | P2       | `demo`                    | done                |
+| 4   | [Next.js App Router example that runs](./04-next-app-router-example.md)         | P2       | docs, examples            | done                |
+| 5   | [`0.3.0` release](./05-release.md)                                              | P2       | all                       | done                |
+| 6   | [`onChange` fires during render](./06-onchange-fires-during-render.md)          | P1       | `react`                   | **open** → Sprint 2 |
+
+### Task 6 was not planned
+
+[Task 4](./04-next-app-router-example.md) said building the example might surface a defect, and that
+finding one would be the point. It surfaced two.
+
+**In the guide, and fixed.** Back/forward did not work the way
+[`docs/guides/next-app-router.md`](../../guides/next-app-router.md) claimed, for two independent
+reasons: `router.replace` leaves no history entry to go back to, and a server re-render does not
+reach an uncontrolled hook's state. Both corrected in the guide, both demonstrated in the example.
+
+**In `@filterbridge/react`, and deferred.**
+[`useFilterBridge` fires `onChange` from inside its `setState` updater](./06-onchange-fires-during-render.md),
+which React runs during the render phase, so an `onChange` that navigates warns and is unsafe.
+Pre-existing since `0.1.0` and invisible until now, because `apps/demo` writes to `window.history`
+rather than to React state. It ships in `0.3.0` unfixed, with a one-line workaround documented in
+both the guide and the example.
 
 ---
 

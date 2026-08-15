@@ -2,3 +2,8 @@ packages:
   - 'packages/*'
   - 'apps/*'
   - 'examples/*'
+  # Deliberately outside the workspace. It is a real Next.js app, and pulling
+  # Next.js and React DOM into the root install would make every contributor —
+  # and every CI leg — pay for a framework they may not use. It installs on its
+  # own, against published FilterBridge versions. See its README.
+  - '!examples/next-app-router'

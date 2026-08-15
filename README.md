@@ -233,6 +233,20 @@ Open [http://localhost:5173](http://localhost:5173).
 
 [Open the live demo](https://filterbridge-demo.vercel.app) — or run it locally with `pnpm demo`.
 
+### Next.js App Router example
+
+The demo is a Vite SPA, so it cannot show the server/client boundary.
+[`examples/next-app-router`](./examples/next-app-router) is a small Next.js 15 app that does: a
+server component parsing `searchParams`, a client component holding the state, and back/forward
+working across both. It lives outside the pnpm workspace and installs on its own, so it costs
+nothing if you never touch it.
+
+```bash
+cd examples/next-app-router
+npm install
+npm run dev
+```
+
 ---
 
 ## Packages

@@ -2,3 +2,7 @@ dist/
 node_modules/
 *.cjs
 pnpm-lock.yaml
+
+# Next.js build output, from examples/next-app-router.
+.next/
+next-env.d.ts

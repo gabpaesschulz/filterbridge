@@ -37,6 +37,10 @@ Delivered by [Sprint 1](./sprints/sprint-1/README.md).
 - [x] The demo's colour-contrast violations — palette re-measured against WCAG AA, plus
       `pnpm demo:a11y`, a real-Chromium axe run that can check contrast where the jsdom suite
       structurally cannot
+- [x] Better examples for the Next.js App Router pattern —
+      [`examples/next-app-router`](../examples/next-app-router), a running Next.js 15 app outside
+      the pnpm workspace. Running it corrected two false claims in the guide about back/forward and
+      surfaced [one library defect](./sprints/sprint-1/06-onchange-fires-during-render.md)
 
 ---
 
@@ -47,7 +51,10 @@ Ongoing improvements to the existing packages. No new packages planned.
 Most of this section is now planned work: [Sprint 1](./sprints/sprint-1/README.md) covers the two
 housekeeping items, the custom key suffixes and the Next.js examples, and targets `0.3.0`.
 
-- [ ] Better examples for the Next.js App Router pattern (client + server components)
+- [ ] **`onChange` fires during the render phase.** `useFilterBridge` calls it from inside its
+      `setState` updater, so an `onChange` that navigates warns and is unsafe. Found by the Next.js
+      example, deferred to Sprint 2 with a documented workaround —
+      [task 6](./sprints/sprint-1/06-onchange-fires-during-render.md)
 - [ ] Custom URL key for the scalar filters — `text('search')` serializing to `q`. The range option
       is deliberately named `keys`, leaving `key: string` free for this
 - [ ] Fix the demo's colour-contrast violations. Tracked as [housekeeping](#housekeeping)

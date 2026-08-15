@@ -1,0 +1,112 @@
+/* The minimum that keeps the example readable. This is an example, not a demo —
+   apps/demo is the one with a design. */
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 2rem;
+  line-height: 1.5;
+  color: #1a1d23;
+}
+
+h1 {
+  font-size: 1.3rem;
+  margin: 0 0 0.25rem;
+}
+
+p.lede {
+  margin: 0 0 1.5rem;
+  color: #5b6270;
+}
+
+fieldset {
+  border: 1px solid #d4d8de;
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 0 0 1.5rem;
+  display: grid;
+  gap: 0.75rem;
+  max-width: 40rem;
+}
+
+label {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+input,
+select {
+  font: inherit;
+  font-weight: 400;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #d4d8de;
+  border-radius: 4px;
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.row > label {
+  flex: 1 1 10rem;
+}
+
+.checks {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.checks label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 400;
+}
+
+button {
+  font: inherit;
+  padding: 0.35rem 0.8rem;
+  border-radius: 4px;
+  border: 1px solid #d4d8de;
+  background: #fff;
+  cursor: pointer;
+}
+
+table {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.35rem 0.75rem;
+  border-bottom: 1px solid #e2e5ea;
+}
+
+code {
+  font-family: ui-monospace, monospace;
+  background: #f4f5f7;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+}
+
+pre {
+  font-family: ui-monospace, monospace;
+  background: #f4f5f7;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  overflow-x: auto;
+  max-width: 40rem;
+}
