@@ -55,9 +55,29 @@ export function filterParamKeys(name: string, filter: AnyFilter): string[] {
       const keys = numberRangeParamKeys(name, filter)
       return [keys.min, keys.max]
     }
-    default:
+    // Enumerated rather than left to a `default`, which is the whole point of
+    // this module. A `default: return [name]` answers a kind it has never seen
+    // with a guess, and the guess is wrong for exactly the shape most likely to
+    // be added next: a filter occupying two params. `getFilterParamKeys` is
+    // what `createFilterUrl` strips before writing the new state, so a key it
+    // failed to report would sit in the URL forever.
+    case 'text':
+    case 'select':
+    case 'multiSelect':
+    case 'boolean':
       return [name]
   }
+
+  // Unreachable through the type system — `filter` is `never` here, so adding a
+  // kind without adding it above fails to compile. The runtime half covers a
+  // schema built by hand or arriving across a JSON boundary: a wrong key is
+  // silent data loss, and static configuration is the one place this package
+  // already chooses to throw (see `filter-validation.ts`).
+  const unsupported: never = filter
+  throw new Error(
+    `[filterbridge] filterParamKeys(): unsupported filter kind ` +
+      `${JSON.stringify((unsupported as AnyFilter)._kind)} for filter ${JSON.stringify(name)}.`
+  )
 }
 
 /**

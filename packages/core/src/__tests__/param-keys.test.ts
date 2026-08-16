@@ -15,6 +15,7 @@ import {
   toQueryDto,
   toSearchParams,
 } from '../index'
+import type { AnyFilter } from '../index'
 
 describe('filterParamKeys', () => {
   it('gives a scalar filter its own name', () => {
@@ -40,6 +41,23 @@ describe('filterParamKeys', () => {
       'min_cents',
       'amountMax',
     ])
+  })
+
+  /**
+   * This module is the only place a filter name becomes a param key, so a kind
+   * it does not recognise must not be answered with a guess. Falling back to
+   * `[name]` would under-report the keys of a future range-shaped filter, and
+   * `getFilterParamKeys` is what `createFilterUrl` strips before writing the new
+   * state — an unreported key sits in the URL forever.
+   *
+   * The switch enumerates all six kinds, so TypeScript already refuses a new one
+   * at compile time. This covers the runtime half: a schema built by hand, or
+   * arriving across a JSON boundary, cannot silently get the wrong keys.
+   */
+  it('throws for a kind it does not know instead of guessing', () => {
+    expect(() => filterParamKeys('page', { _kind: 'pageRange' } as unknown as AnyFilter)).toThrow(
+      /unsupported filter kind "pageRange"/
+    )
   })
 })
 
