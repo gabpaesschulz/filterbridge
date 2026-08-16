@@ -36,6 +36,14 @@ If Playwright's Chromium browser is not installed, run:
 pnpm screenshot:install
 ```
 
+`pnpm install` brings in the `playwright` package but not the browser binary, so this is needed once per clone. The accessibility audit (`pnpm demo:a11y`, see `scripts/audit-demo-a11y.mjs`) drives the same Chromium and has its own alias for the same command:
+
+```bash
+pnpm demo:a11y:install
+```
+
+Running either one covers both.
+
 ### Manual capture
 
 If the script fails or you prefer manual capture:
