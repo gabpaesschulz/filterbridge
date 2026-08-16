@@ -253,10 +253,33 @@ describe('defineFilters rejects colliding param keys', () => {
     ).toThrow(/both use the URL param "createdAtFrom"/)
   })
 
-  it('throws when a range collides with itself', () => {
+  /**
+   * A range colliding with itself is not the same failure as two filters
+   * fighting over one param, and the generic message gave advice that cannot be
+   * followed: it named "createdAt" twice and suggested renaming one of them or
+   * adding the keys override that is already there. Asserted in full — the
+   * previous fragment match passed while the sentence was wrong.
+   */
+  it('throws when a range collides with itself, naming the two sides', () => {
     expect(() =>
       defineFilters({ createdAt: dateRange({ keys: { from: 'when', to: 'when' } }) })
-    ).toThrow(/both use the URL param "when"/)
+    ).toThrow(
+      new Error(
+        '[filterbridge] defineFilters(): filter "createdAt" uses the URL param "when" for ' +
+          'both sides of its range. Give keys.from and keys.to different names.'
+      )
+    )
+  })
+
+  it('names the sides a numberRange actually has', () => {
+    expect(() =>
+      defineFilters({ amount: numberRange({ keys: { min: 'cents', max: 'cents' } }) })
+    ).toThrow(
+      new Error(
+        '[filterbridge] defineFilters(): filter "amount" uses the URL param "cents" for both ' +
+          'sides of its range. Give keys.min and keys.max different names.'
+      )
+    )
   })
 
   it('names both filters, so the message says what to rename', () => {

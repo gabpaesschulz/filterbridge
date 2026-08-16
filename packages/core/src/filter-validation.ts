@@ -92,6 +92,20 @@ export function assertUniqueParamKeys(schema: FilterSchema): void {
   for (const [name, filter] of Object.entries(schema)) {
     for (const key of filterParamKeys(name, filter)) {
       const owner = owners.get(key)
+
+      // A filter colliding with itself is a different mistake, and only a range
+      // can reach it: both of its sides resolved to one key. The generic
+      // sentence named the same filter twice and told the caller to rename one
+      // of them or add the `keys` override they had just written.
+      if (owner === name) {
+        const sides =
+          filter._kind === 'numberRange' ? 'keys.min and keys.max' : 'keys.from and keys.to'
+        throw new Error(
+          `[filterbridge] defineFilters(): filter ${JSON.stringify(name)} uses the URL param ` +
+            `${JSON.stringify(key)} for both sides of its range. Give ${sides} different names.`
+        )
+      }
+
       if (owner !== undefined) {
         throw new Error(
           `[filterbridge] defineFilters(): filters ${JSON.stringify(owner)} and ` +
