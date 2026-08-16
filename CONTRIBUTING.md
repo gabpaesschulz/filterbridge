@@ -72,7 +72,19 @@ pnpm demo
 pnpm demo:build
 
 # Audit the running demo in real Chromium, including colour contrast
+# (needs `pnpm demo` running in another terminal)
 pnpm demo:a11y
+
+# Capture the demo screenshot used in the README
+# (also needs `pnpm demo` running)
+pnpm screenshot
+
+# Download Playwright's Chromium — once per clone, for the two scripts above.
+# `pnpm install` gets the playwright package but not the browser binary, so
+# without this they fail with "Executable doesn't exist". Same command behind
+# both names; running either one covers both.
+pnpm demo:a11y:install
+pnpm screenshot:install
 
 # Pack all packages to .packs/ (for local inspection)
 pnpm pack:all
