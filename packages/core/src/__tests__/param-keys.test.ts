@@ -342,6 +342,35 @@ describe('the builders reject an unusable key', () => {
     )
   })
 
+  /**
+   * A side the builder does not have was the one bad input it accepted in
+   * silence: `{ form: 'created_after' }` produced a filter with no override at
+   * all, still reading `createdAtFrom`, and the mistake surfaced later as an
+   * empty filter on a URL that looked correct. Every other malformed `keys`
+   * here throws, and this is static configuration like the rest of it.
+   *
+   * TypeScript's excess property check catches the typo in an object literal,
+   * but not behind a cast, not through a variable, and not for a JavaScript
+   * caller.
+   */
+  it('throws for a side the builder does not have', () => {
+    expect(() =>
+      dateRange({ keys: { form: 'created_after' } as unknown as { from?: string } })
+    ).toThrow(/dateRange\(\): keys has no side "form"\. Expected from, to\./)
+
+    expect(() =>
+      numberRange({ keys: { minimum: 'min_cents' } as unknown as { min?: string } })
+    ).toThrow(/numberRange\(\): keys has no side "minimum"\. Expected min, max\./)
+  })
+
+  it('names the unknown side even when a valid one is present', () => {
+    expect(() =>
+      dateRange({
+        keys: { from: 'created_after', untill: 'created_before' } as unknown as { from?: string },
+      })
+    ).toThrow(/keys has no side "untill"/)
+  })
+
   it('throws for a non-string, which only a JavaScript caller can reach', () => {
     expect(() => dateRange({ keys: { to: 42 as unknown as string } })).toThrow(
       /keys\.to must be a non-empty string, got 42/

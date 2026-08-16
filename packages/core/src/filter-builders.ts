@@ -111,6 +111,17 @@ function normalizeKeys<K extends string>(
 ): Partial<Record<K, string>> | undefined {
   if (keys === undefined) return undefined
 
+  // A side this builder does not have was the one malformed `keys` that used to
+  // pass in silence: `{ form: 'created_after' }` iterated over `sides`, matched
+  // nothing, and returned a filter still reading `createdAtFrom`. The typo then
+  // surfaced as an empty filter on a URL that looked right. Rejected for the
+  // same reason as every other check here — it is static configuration, so it
+  // fails identically on every run.
+  //
+  // TypeScript rejects it in an object literal, but not behind a cast, not
+  // through a variable typed more loosely, and not for a JavaScript caller.
+  assertKnownSides(builder, keys, sides)
+
   const result: Partial<Record<K, string>> = {}
   let any = false
 
@@ -123,4 +134,19 @@ function normalizeKeys<K extends string>(
   }
 
   return any ? result : undefined
+}
+
+function assertKnownSides<K extends string>(
+  builder: 'dateRange' | 'numberRange',
+  keys: Partial<Record<K, string>>,
+  sides: readonly K[]
+): void {
+  for (const side of Object.keys(keys)) {
+    if (!(sides as readonly string[]).includes(side)) {
+      throw new Error(
+        `[filterbridge] ${builder}(): keys has no side ${JSON.stringify(side)}. ` +
+          `Expected ${sides.join(', ')}.`
+      )
+    }
+  }
 }
