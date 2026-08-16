@@ -71,6 +71,19 @@ export function assertValidParamKeys(
         `${formatValue(key)}.`
     )
   }
+
+  // Padding is rejected rather than trimmed away. The point of `keys` is to
+  // match the param name a backend expects, and ' created_after' round-trips
+  // perfectly inside FilterBridge — parse and serialize agree on the same
+  // string — while the URL carries `+created_after+` and the backend matches
+  // nothing. Trimming silently would mean the schema does not say what it does;
+  // throwing puts the typo in front of the person who can fix it.
+  if (key !== key.trim()) {
+    throw new Error(
+      `[filterbridge] ${builder}(): keys.${side} must not have leading or trailing ` +
+        `whitespace, got ${formatValue(key)}.`
+    )
+  }
 }
 
 /**
