@@ -320,6 +320,28 @@ describe('the builders reject an unusable key', () => {
     expect(() => numberRange({ keys: { max: value } })).toThrow(/keys\.max must be a non-empty/)
   })
 
+  /**
+   * The entire reason to set `keys` is to match the param name a backend
+   * expects. A padded key round-trips inside FilterBridge — parse and serialize
+   * use the same string — so nothing here would have caught it, while the URL
+   * reads `+created_after+=2026-01-01` and the backend matches nothing. This is
+   * the one input the builder could accept and still be certain it does not do
+   * what the caller meant.
+   */
+  it.each([
+    ['a leading space', ' created_after'],
+    ['a trailing space', 'created_after '],
+    ['padding on both sides', '  created_after  '],
+    ['a trailing newline', 'created_after\n'],
+  ])('throws for %s', (_label, value) => {
+    expect(() => dateRange({ keys: { from: value } })).toThrow(
+      /keys\.from must not have leading or trailing whitespace/
+    )
+    expect(() => numberRange({ keys: { min: value } })).toThrow(
+      /keys\.min must not have leading or trailing whitespace/
+    )
+  })
+
   it('throws for a non-string, which only a JavaScript caller can reach', () => {
     expect(() => dateRange({ keys: { to: 42 as unknown as string } })).toThrow(
       /keys\.to must be a non-empty string, got 42/
