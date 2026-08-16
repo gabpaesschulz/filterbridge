@@ -109,11 +109,15 @@ async function main() {
 
     // The filled state renders the active-filter summary, the URL badge and a
     // filtered table — components the initial render does not exercise.
+    //
+    // No second addScriptTag: clicking is a React state update, not a
+    // navigation, so `window.axe` from the injection above is still the same
+    // object. Re-injecting re-evaluated ~500 KB of axe-core over a live page for
+    // no gain.
     const fillBtn = page.locator('button', { hasText: /fill example/i })
     if ((await fillBtn.count()) > 0) {
       await fillBtn.first().click()
       await page.waitForTimeout(300)
-      await page.addScriptTag({ content: axe })
       total += await auditPage(page, 'After "Fill example"')
     }
   } finally {
