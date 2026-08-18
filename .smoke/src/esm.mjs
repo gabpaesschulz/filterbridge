@@ -13,6 +13,7 @@ import {
   toSearchParams,
   toQueryDto,
   getDefaultFilterState,
+  scalarParamKey,
 } from '@filterbridge/core'
 
 import { createFilterUrl, parseFiltersFromUrl, getFilterParamKeys } from '@filterbridge/browser'
@@ -187,22 +188,25 @@ assert(
   'defaults: the DTO carries the default even from an empty state',
   toQueryDto(defaulted, {}).status === 'pending'
 )
-// Was an arity check until 0.3.0, when `dateRange` and `numberRange` gained a
-// `keys` option and stopped taking zero arguments. Arity was only ever a proxy
-// for the ADR-002 rule; this asserts the rule itself, which is that neither
-// builder produces a default no matter what it is handed.
+// Was an arity check until 0.3.1, when `dateRange` and `numberRange` gained a
+// `keys` option and stopped taking zero arguments. It was rewritten then to
+// assert the ADR-002 rule instead of the proxy — but kept `text.length === 0`
+// for `text`, which was the same proxy under a different name, and it broke
+// again in 0.4.0 when `text` gained `key`.
+//
+// So: no arity anywhere. The rule is that none of these three produces a
+// default no matter what it is handed, and that is now all this checks.
 assert(
   'defaults: builders without an enumerable value space produce no default',
-  text.length === 0 &&
-    Object.keys(
-      getDefaultFilterState(
-        defineFilters({
-          search: text(),
-          createdAt: dateRange({ default: { from: '2026-01-01' } }),
-          amount: numberRange({ default: { min: 1 } }),
-        })
-      )
-    ).length === 0
+  Object.keys(
+    getDefaultFilterState(
+      defineFilters({
+        search: text({ default: 'invoice' }),
+        createdAt: dateRange({ default: { from: '2026-01-01' } }),
+        amount: numberRange({ default: { min: 1 } }),
+      })
+    )
+  ).length === 0
 )
 
 const repeated = parseFilters(filters, new URLSearchParams('tags=urgent&tags=flagged'))
@@ -339,6 +343,86 @@ assert(
   throwsWith(
     () => getFilterParamKeys({ mystery: { _kind: 'somethingElse' } }),
     'unsupported filter kind'
+  )
+)
+
+// ──────────────────────────────────────────────
+// Custom URL param keys on the scalar filters (0.4.0)
+// ──────────────────────────────────────────────
+console.log('\n@filterbridge/core: scalar key overrides')
+
+const renamed = defineFilters({
+  search: text({ key: 'q' }),
+  status: select(['pending', 'paid'], { key: 'st', default: 'paid' }),
+  tags: multiSelect(['urgent', 'review'], { key: 'labels' }),
+  archived: boolean({ key: 'is_archived' }),
+  createdAt: dateRange({ keys: { from: 'created_after' } }),
+})
+
+assert('core: scalarParamKey exported', typeof scalarParamKey === 'function')
+assert(
+  'core: scalarParamKey honours the override',
+  scalarParamKey('search', text({ key: 'q' })) === 'q'
+)
+assert('core: scalarParamKey falls back to the name', scalarParamKey('search', text()) === 'search')
+
+const renamedState = parseFilters(renamed, {
+  q: 'invoice',
+  labels: 'urgent',
+  is_archived: 'true',
+  created_after: '2026-01-01',
+})
+assert('core: parseFilters reads the overridden key', renamedState.search === 'invoice')
+assert('core: parseFilters reads an overridden multiSelect', renamedState.tags?.[0] === 'urgent')
+assert('core: parseFilters reads an overridden boolean', renamedState.archived === true)
+assert(
+  'core: a default still applies under an overridden key',
+  parseFilters(renamed, {}).status === 'paid'
+)
+assert(
+  'core: the filter name is not an alias for the overridden key',
+  parseFilters(renamed, { search: 'invoice' }).search === undefined
+)
+
+const renamedParams = toSearchParams(renamed, { search: 'invoice', archived: false })
+assert('core: toSearchParams writes the overridden key', renamedParams.get('q') === 'invoice')
+assert('core: toSearchParams never writes the filter name', renamedParams.has('search') === false)
+assert(
+  'core: a value at its default is still omitted under an override',
+  toSearchParams(renamed, { status: 'paid' }).has('st') === false
+)
+
+assert(
+  'core: toQueryDto stays keyed by filter name',
+  toQueryDto(renamed, { search: 'invoice' }).search === 'invoice'
+)
+
+assert(
+  'browser: getFilterParamKeys reports the overrides',
+  getFilterParamKeys(renamed).join(',') === 'q,st,labels,is_archived,created_after,createdAtTo'
+)
+assert(
+  'browser: createFilterUrl strips a stale overridden key',
+  createFilterUrl(renamed, {}, { pathname: '/i', currentSearch: 'q=x&tab=open' }) === '/i?tab=open'
+)
+assert(
+  'next: normalizeNextSearchParams follows the override',
+  parseNextSearchParams(renamed, { q: 'invoice' }).search === 'invoice'
+)
+
+assert(
+  'validation: a padded scalar key is rejected rather than trimmed',
+  throwsWith(() => text({ key: ' q' }), 'leading or trailing whitespace')
+)
+assert(
+  'validation: an empty scalar key is rejected',
+  throwsWith(() => boolean({ key: '' }), 'non-empty string')
+)
+assert(
+  'validation: a scalar key colliding with another filter throws',
+  throwsWith(
+    () => defineFilters({ search: text({ key: 'q' }), q: text() }),
+    'both use the URL param'
   )
 )
 

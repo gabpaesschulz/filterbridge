@@ -2,7 +2,8 @@
 
 **Priority:** P2 — but it is the task that decides whether task 1 actually worked
 **Area:** `apps/demo`, `examples/next-app-router`, docs
-**Status:** planned
+**Status:** done — option A as recommended, plus one thing the plan did not know: the run has
+to be under `next dev`, because React strips the render-phase warning from production builds
 **Depends on:** [task 1](./01-onchange-fires-during-render.md) landing first
 
 ---

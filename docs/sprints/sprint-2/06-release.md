@@ -2,7 +2,8 @@
 
 **Priority:** P2 — closes the sprint
 **Area:** all packages
-**Status:** planned
+**Status:** done. `0.4.0` versioned and verified; `npm publish` and the GitHub Release are the
+maintainer's steps
 
 ---
 

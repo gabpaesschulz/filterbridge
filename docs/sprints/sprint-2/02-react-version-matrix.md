@@ -2,7 +2,10 @@
 
 **Priority:** P1 — `packages/react` claims a compatibility range the repository never exercises
 **Area:** infra, `@filterbridge/react`, `@filterbridge/browser`
-**Status:** planned
+**Status:** done — with decision 1 **changed** (aliased devDependencies do not work; the tree
+lives in `tools/react-19`) and decision 3 **moot** (the React 19 projects run inside
+`pnpm test`, so every existing CI leg already covers both majors). Decision 4 never fired:
+both packages passed on React 19 unmodified
 
 ---
 

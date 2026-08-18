@@ -1,5 +1,19 @@
 # @filterbridge/browser
 
+## 0.4.0
+
+### Patch Changes
+
+- f1d4667: Run the React test suites against React 19 as well as React 18.
+
+  No library code changed — both packages already worked on React 19, and now the
+  `react: >=18` peer range is checked rather than only declared. `@testing-library/react`
+  moved to v16, which supports both majors.
+
+- Updated dependencies [bdb8195]
+- Updated dependencies [0c7441b]
+  - @filterbridge/core@0.4.0
+
 ## 0.3.1
 
 ### Patch Changes

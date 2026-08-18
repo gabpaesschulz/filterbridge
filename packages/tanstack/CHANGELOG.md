@@ -1,5 +1,13 @@
 # @filterbridge/tanstack
 
+## 0.4.0
+
+### Patch Changes
+
+- Updated dependencies [bdb8195]
+- Updated dependencies [0c7441b]
+  - @filterbridge/core@0.4.0
+
 ## 0.3.1
 
 ### Patch Changes

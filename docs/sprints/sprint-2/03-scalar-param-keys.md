@@ -2,7 +2,7 @@
 
 **Priority:** P1 — the sprint's API change, and it closes a claim `core` already makes
 **Area:** `@filterbridge/core`, `@filterbridge/next`
-**Status:** planned
+**Status:** done. Every decision taken as recommended, in the two commits decision 3 asked for
 
 ---
 

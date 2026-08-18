@@ -2,7 +2,9 @@
 
 **Priority:** P3 — neither blocks anything, and both will keep being re-asked until they are decided
 **Area:** repository
-**Status:** planned
+**Status:** done, except the `v0.3.1` GitHub Release itself — `gh` is not installed and this
+session has no path to github.com. Handed to the maintainer, with the web-UI route written
+into the checklist
 
 ---
 

@@ -2,7 +2,8 @@
 
 **Priority:** P1 — a React rules violation on the hook's main integration path
 **Area:** `@filterbridge/react`
-**Status:** planned
+**Status:** done. Option B as recommended, with the mirror ref. Recorded in
+[ADR-006](../../decisions/006-onchange-timing.md)
 **Carried over from:** [Sprint 1 task 6](../sprint-1/06-onchange-fires-during-render.md), which has
 the discovery story and is left unedited as the record of what was believed then
 

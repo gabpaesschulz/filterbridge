@@ -150,20 +150,20 @@ assert(
   'defaults: the DTO carries the default even from an empty state',
   core.toQueryDto(defaulted, {}).status === 'pending'
 )
-// See the ESM file: arity stopped being a usable proxy in 0.3.0, so this
-// asserts the ADR-002 rule directly.
+// See the ESM file: arity was never a usable proxy, and the last trace of it
+// broke again in 0.4.0 when `text` gained `key`. This asserts the ADR-002 rule
+// and nothing else.
 assert(
   'defaults: builders without an enumerable value space produce no default',
-  core.text.length === 0 &&
-    Object.keys(
-      core.getDefaultFilterState(
-        core.defineFilters({
-          search: core.text(),
-          createdAt: core.dateRange({ default: { from: '2026-01-01' } }),
-          amount: core.numberRange({ default: { min: 1 } }),
-        })
-      )
-    ).length === 0
+  Object.keys(
+    core.getDefaultFilterState(
+      core.defineFilters({
+        search: core.text({ default: 'invoice' }),
+        createdAt: core.dateRange({ default: { from: '2026-01-01' } }),
+        amount: core.numberRange({ default: { min: 1 } }),
+      })
+    )
+  ).length === 0
 )
 
 const tagged = core.defineFilters({ tags: core.multiSelect(['urgent', 'flagged']) })
@@ -282,6 +282,58 @@ assert(
   throwsWith(
     () => browserCjs.getFilterParamKeys({ mystery: { _kind: 'somethingElse' } }),
     'unsupported filter kind'
+  )
+)
+
+// --------------------------------------------
+// Custom URL param keys on the scalar filters (0.4.0)
+// --------------------------------------------
+console.log('\n@filterbridge/core: scalar key overrides (CJS)')
+
+const renamedCjs = core.defineFilters({
+  search: core.text({ key: 'q' }),
+  status: core.select(['pending', 'paid'], { key: 'st', default: 'paid' }),
+  archived: core.boolean({ key: 'is_archived' }),
+})
+
+assert('core: scalarParamKey exported', typeof core.scalarParamKey === 'function')
+assert(
+  'core: scalarParamKey honours the override',
+  core.scalarParamKey('search', core.text({ key: 'q' })) === 'q'
+)
+assert(
+  'core: parseFilters reads the overridden key',
+  core.parseFilters(renamedCjs, { q: 'invoice', is_archived: 'true' }).search === 'invoice'
+)
+assert(
+  'core: the filter name is not an alias for the overridden key',
+  core.parseFilters(renamedCjs, { search: 'invoice' }).search === undefined
+)
+assert(
+  'core: toSearchParams writes the overridden key',
+  core.toSearchParams(renamedCjs, { search: 'invoice' }).get('q') === 'invoice'
+)
+assert(
+  'core: toQueryDto stays keyed by filter name',
+  core.toQueryDto(renamedCjs, { search: 'invoice' }).search === 'invoice'
+)
+assert(
+  'browser: getFilterParamKeys reports the overrides',
+  browserCjs.getFilterParamKeys(renamedCjs).join(',') === 'q,st,is_archived'
+)
+assert(
+  'next: normalizeNextSearchParams follows the override',
+  nextCjs.parseNextSearchParams(renamedCjs, { q: 'invoice' }).search === 'invoice'
+)
+assert(
+  'validation: a padded scalar key is rejected rather than trimmed',
+  throwsWith(() => core.text({ key: ' q' }), 'leading or trailing whitespace')
+)
+assert(
+  'validation: a scalar key colliding with another filter throws',
+  throwsWith(
+    () => core.defineFilters({ search: core.text({ key: 'q' }), q: core.text() }),
+    'both use the URL param'
   )
 )
 

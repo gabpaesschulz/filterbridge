@@ -5,11 +5,37 @@ things standing behind it: a React major we claim to support and never run, and 
 that `core` documents as holding when it holds for two filter kinds out of six.
 
 **Created:** 2026-08-18
-**Status:** planning — no code written
+**Closed:** 2026-08-18
+**Status:** closed. All six tasks done.
 **Baseline commit:** `200caf4`
 **Anchor:** [task 1](./01-onchange-fires-during-render.md), carried over from
 [Sprint 1 task 6](../sprint-1/06-onchange-fires-during-render.md)
-**Target release:** `0.4.0`
+**Release:** `0.4.0`, versioned and verified. `npm publish` and the GitHub Release are the
+maintainer's steps.
+
+---
+
+## Closing health
+
+| Check                      | Baseline               | Now                                                      |
+| -------------------------- | ---------------------- | -------------------------------------------------------- |
+| `pnpm test`                | 581 passing / 29 files | **849 passing / 45 files**, React 18 **and** React 19    |
+| `pnpm lint`                | clean                  | clean                                                    |
+| `pnpm format:check`        | clean                  | clean                                                    |
+| `pnpm build`               | clean                  | clean                                                    |
+| `pnpm typecheck`           | clean                  | clean                                                    |
+| `.smoke/`                  | 66 ESM / 50 CJS        | **84 ESM / 60 CJS**, against the `0.4.0` tarballs        |
+| `pnpm demo:a11y`           | zero violations        | zero violations                                          |
+| `pnpm verify:next-example` | did not exist          | **11/11**, against the `0.4.0` tarballs under `next dev` |
+
+And the four coverage figures the sprint was actually about:
+
+| Measurement                                          | Baseline | Now        |
+| ---------------------------------------------------- | -------- | ---------- |
+| Tests running under `<React.StrictMode>`             | 0        | **11**     |
+| React majors the suite runs against                  | 1        | **2**      |
+| Filter kinds whose URL key goes through `param-keys` | 2 of 6   | **6 of 6** |
+| Re-runnable checks on `examples/next-app-router`     | 0        | **11**     |
 
 ---
 
@@ -51,14 +77,52 @@ comment about Strict Mode — that nothing checks.
 
 ## Tasks
 
-| #   | Task                                                                             | Priority | Area                      | Status  |
-| --- | -------------------------------------------------------------------------------- | -------- | ------------------------- | ------- |
-| 1   | [`onChange` fires during the render phase](./01-onchange-fires-during-render.md) | P1       | `react`                   | planned |
-| 2   | [React 19 in the test matrix](./02-react-version-matrix.md)                      | P1       | infra, `react`, `browser` | planned |
-| 3   | [Custom URL key for the scalar filters](./03-scalar-param-keys.md)               | P1       | `core`, `next`            | planned |
-| 4   | [Re-run the live surfaces](./04-live-surfaces.md)                                | P2       | `demo`, examples, docs    | planned |
-| 5   | [Two open repository questions](./05-repository-housekeeping.md)                 | P3       | repo                      | planned |
-| 6   | [`0.4.0` release](./06-release.md)                                               | P2       | all                       | planned |
+| #   | Task                                                                             | Priority | Area                      | Status |
+| --- | -------------------------------------------------------------------------------- | -------- | ------------------------- | ------ |
+| 1   | [`onChange` fires during the render phase](./01-onchange-fires-during-render.md) | P1       | `react`                   | done   |
+| 2   | [React 19 in the test matrix](./02-react-version-matrix.md)                      | P1       | infra, `react`, `browser` | done   |
+| 3   | [Custom URL key for the scalar filters](./03-scalar-param-keys.md)               | P1       | `core`, `next`            | done   |
+| 4   | [Re-run the live surfaces](./04-live-surfaces.md)                                | P2       | `demo`, examples, docs    | done   |
+| 5   | [Two open repository questions](./05-repository-housekeeping.md)                 | P3       | repo                      | done\* |
+| 6   | [`0.4.0` release](./06-release.md)                                               | P2       | all                       | done   |
+
+### Outcomes
+
+\* Task 5 is done except for one step this session cannot take: creating the `v0.3.1` GitHub
+Release. `gh` is not installed and there is no path to github.com from here. The body is ready in
+[`docs/releases/v0.3.1.md`](../../releases/v0.3.1.md), the tag exists, and
+[the checklist](../../release-checklist.md) now writes out the web-UI route.
+
+Every recommendation was taken as written, except where running the thing said otherwise.
+
+| Task | Recommended                                 | Taken                                                                                                              |
+| ---- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| 1    | Option B, mirror ref, batching test first   | As recommended. [ADR-006](../../decisions/006-onchange-timing.md)                                                  |
+| 2    | Aliased devDependency + a vitest project    | **Changed.** Aliasing installs React DOM 19 against React 18; the tree moved to `tools/react-19`                   |
+| 2    | One added CI leg                            | **Not needed.** The React 19 projects run inside `pnpm test`, so all four existing legs cover both majors          |
+| 3    | `key` on `FilterConfig`, refactor first     | As recommended, in two commits, 798 tests unmodified across the refactor                                           |
+| 4    | Verify against the `.packs/` tarballs       | As recommended — and it has to run under `next dev`, which the plan did not know                                   |
+| 5    | Track `CLAUDE.md`, §21 to `docs/marketing/` | As recommended                                                                                                     |
+| 5    | Create the `v0.3.1` GitHub Release by hand  | **Handed off.** `gh` is not installed and this session cannot reach GitHub; the checklist now writes out the route |
+
+### The four things running it changed
+
+1. **The React 19 aliasing plan was wrong.** `"react-19": "npm:react@^19"` inside `packages/react`
+   installs cleanly and resolves `react-dom@19`'s peer to the React 18 already in that package — and
+   a vitest alias cannot rescue it, because vitest externalises `node_modules` and React DOM's own
+   `require('react')` never passes through Vite. `tools/react-19` exists so that exactly one React
+   is in scope. Its README records the version of the story that does not work.
+2. **The obvious way to write task 1's fix passes the whole suite and is broken.** Reading `state`
+   from the render closure loses the first of two writes in one handler, and all 80 hook tests wrap
+   a single mutator in its own `act()`. The batching assertions were written and run against the old
+   implementation before the fix, which is the only reason this is a footnote and not a defect.
+3. **The example must be verified under `next dev`, not a production build.** React strips the
+   render-phase warning from production builds. Measured rather than assumed: `0.3.1` passes all
+   eleven checks under `next start`, and fails the console check under `next dev`.
+   `pnpm verify:next-example` refuses a production build for this reason.
+4. **`.smoke/` was still asserting a proxy.** `0.3.1` rewrote an arity check to test the ADR-002
+   rule instead — and kept `text.length === 0`, the same proxy under another name. It broke when
+   `text` gained `key`. Neither smoke suite has an arity check left.
 
 ### Why these six
 
@@ -114,7 +178,8 @@ to say which change caused what.
 
 ## Release impact
 
-`0.4.0`, a minor. Argued in [task 6](./06-release.md); the short version:
+`0.4.0`, a minor — as argued, and task 1 took option B, so the timing clause was not needed. Argued
+in [task 6](./06-release.md); the short version:
 
 - Task 1 removes an observable behavior. `onChange` currently fires **twice** per change under
   `<React.StrictMode>` in development. Nobody wrote code depending on that on purpose, but it is a
