@@ -26,14 +26,22 @@ Then open [http://localhost:3000](http://localhost:3000).
 | ----------------------- | --------- |
 | `next`                  | `15.5.23` |
 | `react` / `react-dom`   | `19.2.8`  |
-| `@filterbridge/core`    | `0.3.1`   |
-| `@filterbridge/next`    | `0.3.1`   |
-| `@filterbridge/react`   | `0.3.1`   |
-| `@filterbridge/browser` | `0.3.1`   |
+| `@filterbridge/core`    | `0.4.0`   |
+| `@filterbridge/next`    | `0.4.0`   |
+| `@filterbridge/react`   | `0.4.0`   |
+| `@filterbridge/browser` | `0.4.0`   |
 
 The FilterBridge dependencies are pinned to published npm versions rather than `workspace:*`, so
 this example works from a plain clone with no local build. The consequence, accepted deliberately:
-CI does not build it, so it can rot. If you change the packages, re-run it by hand.
+CI does not build it, so it can rot.
+
+`pnpm verify:next-example`, from the repository root, drives this app in real Chromium and checks
+everything below — server parse, URL writes, preserved params, back/forward, and a clean console.
+Start it with `npm run dev` first; the script refuses to run against a production build, because
+React strips the render-phase warning there and the run would pass regardless.
+
+To check unreleased packages, `pnpm pack:all` at the root and install the tarballs here by
+`file:` reference, then restore this `package.json` before committing.
 
 Next.js **15+ specifically**, because that is where `searchParams` became a Promise and
 `parseNextSearchParamsAsync` is the function that matters.
@@ -104,22 +112,24 @@ filter params it owns.
 
 ---
 
-## Known rough edge
+## A rough edge this example closed
 
-`onChange` fires from inside `useFilterBridge`'s `setState` updater, and React runs updaters during
-the render phase — so calling `router.push` directly from `onChange` logs:
+This example is how the defect below was found, which is why it is recorded here rather than
+quietly deleted.
+
+Until `0.3.1`, `onChange` fired from inside `useFilterBridge`'s `setState` updater, and React runs
+updaters during the render phase — so calling `router.push` directly from `onChange` logged:
 
 ```txt
 Cannot update a component (Router) while rendering a different component (InvoicesClient)
 ```
 
-The example wraps the navigation in `queueMicrotask` to move it out of render. That is a workaround
-for a library defect, not a pattern worth copying on its own; it is written up in
-[Sprint 1 task 6](../../docs/sprints/sprint-1/06-onchange-fires-during-render.md). When the hook
-fires `onChange` outside render, the wrapper can go.
+The example carried a `queueMicrotask` wrapper to move the navigation out of render. `0.4.0` fixed
+the hook ([ADR-006](../../docs/decisions/006-onchange-timing.md)), so the wrapper is gone and
+`router.push(href)` is simply what the code says.
 
-It does not affect `apps/demo`, which writes to `window.history` rather than to React state, so
-nothing there is a React update.
+It never affected `apps/demo`, which writes to `window.history` rather than to React state, so
+nothing there was a React update — the impurity was identical and only the symptom was missing.
 
 ---
 

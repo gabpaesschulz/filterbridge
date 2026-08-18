@@ -21,6 +21,7 @@
     "pack:all": "node scripts/pack-all.mjs",
     "clean:packs": "node -e \"require('fs').rmSync('.packs', { recursive: true, force: true })\"",
     "screenshot": "node scripts/capture-demo-screenshot.mjs",
+    "verify:next-example": "node scripts/verify-next-example.mjs",
     "screenshot:install": "playwright install chromium"
   },
   "pnpm": {

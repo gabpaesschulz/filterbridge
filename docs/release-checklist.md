@@ -63,6 +63,36 @@ Use this checklist before publishing packages to npm.
       `@filterbridge/browser` and `@filterbridge/browser/react` in ESM and in CJS
 - [ ] Confirm no runtime errors or import resolution failures
 
+## The Next.js example, against the tarballs
+
+The third manual gate, alongside `.smoke/` and `pnpm demo:a11y`. It is the only check that puts the
+packages inside a real Next.js router, and the only one running React 19 outside the unit suite.
+
+Do it **before** publishing, against the packed tarballs. The example is pinned to a published
+range, so the obvious ordering — publish, then verify — makes the release the experiment.
+
+```bash
+pnpm pack:all
+
+cd examples/next-app-router
+rm -rf node_modules package-lock.json .next   # npm caches `file:` deps by name+version
+npm install ../../.packs/filterbridge-core-<version>.tgz             ../../.packs/filterbridge-react-<version>.tgz             ../../.packs/filterbridge-browser-<version>.tgz             ../../.packs/filterbridge-next-<version>.tgz
+npm run build     # catches type and server-component errors
+npm run dev       # leave running
+
+# in another terminal, from the repository root
+pnpm verify:next-example
+```
+
+- [ ] `npm run build` clean
+- [ ] `pnpm verify:next-example` — all checks pass
+- [ ] **Run it under `npm run dev`, never `npm start`.** React strips the render-phase warning from
+      production builds, so a `next start` run passes every check against a library that has the
+      defect. Measured on `0.3.1`: eleven green under `next start`, and the console check red under
+      `next dev`. The script refuses a production build for this reason
+- [ ] `git checkout examples/next-app-router/package.json` — restore the pinned range before
+      committing, and delete `node_modules` and `package-lock.json`
+
 ## Content review
 
 - [ ] README examples are accurate and match the published API
@@ -115,6 +145,18 @@ pnpm changeset publish
       `docs/releases/<version>.md`** — do not write a separate `<version>-github-release.md`. A
       second file describing the same release drifts from the first and duplicates the maintenance;
       the `v0.1.0` one was deleted for exactly that reason.
+
+  Two routes, and the second is written out because `v0.3.1`'s release was skipped for want of the
+  first — the tag was pushed, the note was written, and `gh` was not installed:
+
+  ```bash
+  gh release create v<version> --title "v<version>" --notes-file docs/releases/v<version>.md
+  ```
+
+  Without `gh`: **Releases → Draft a new release → Choose a tag →** pick the existing
+  `v<version>` (do not create a new one) → title `v<version>` → paste the file → **Publish
+  release**. Two minutes, no tooling.
+
 - [ ] Update `README.md` with installation instructions pointing to the published version
 - [ ] **Bump `examples/next-app-router` to the published version and re-run it.** It is pinned to a
       published range and is outside the workspace, so nothing else will catch it going stale:

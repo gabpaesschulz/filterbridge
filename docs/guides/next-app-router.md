@@ -118,8 +118,7 @@ export function InvoicesClient({ initialFilters }: Props) {
     initialState: initialFilters,
     onChange(nextState) {
       const href = createNextFilterHref(invoiceFilters, nextState, { pathname, searchParams })
-      // queueMicrotask is a workaround — see "onChange and the render phase" below
-      queueMicrotask(() => router.push(href, { scroll: false }))
+      router.push(href, { scroll: false })
     },
   })
 
@@ -203,23 +202,27 @@ navigation.
 
 ## `onChange` and the render phase
 
-`useFilterBridge` currently fires `onChange` from inside its `setState` updater, and React runs
-updaters during render. Calling `router.push` directly from `onChange` therefore logs:
+Navigating from `onChange` needs **`@filterbridge/react` 0.4.0 or later**.
+
+Before it, the hook fired `onChange` from inside its `setState` updater, and React runs updaters
+during the render phase, so calling `router.push` from `onChange` logged:
 
 ```txt
 Cannot update a component (`Router`) while rendering a different component
 ```
 
-Wrap the navigation in `queueMicrotask` until the hook is fixed:
+On `0.3.1` and earlier the workaround is to defer the navigation out of render:
 
 ```ts
+// only needed below 0.4.0
 queueMicrotask(() => router.push(href, { scroll: false }))
 ```
 
-Tracked in
-[Sprint 1 task 6](../sprints/sprint-1/06-onchange-fires-during-render.md). It does not affect
-`@filterbridge/browser`'s `pushUrlFilters` / `replaceUrlFilters`, which write to `window.history`
-rather than to React state.
+From `0.4.0` the hook computes the next state in the event handler and calls `onChange` there, so
+`router.push(href)` is simply correct — see
+[ADR-006](../decisions/006-onchange-timing.md). It never affected `@filterbridge/browser`'s
+`pushUrlFilters` / `replaceUrlFilters`, which write to `window.history` rather than to React
+state.
 
 ---
 

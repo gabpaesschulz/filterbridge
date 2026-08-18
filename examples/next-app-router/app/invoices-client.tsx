@@ -39,14 +39,13 @@ export function InvoicesClient({ initialFilters, invoices, dto }: Props) {
       // search box. A real app debounces the text input before calling `set`,
       // or uses `replace` for text and `push` for the discrete controls.
       //
-      // The queueMicrotask is a workaround, not a pattern to copy for its own
-      // sake. `useFilterBridge` fires `onChange` from inside its `setState`
-      // updater, and React runs updaters during the render phase — so calling
-      // `router.push` directly here logs "Cannot update a component (Router)
-      // while rendering a different component". Deferring by a microtask moves
-      // the navigation out of render. Tracked as Sprint 1 task 6; when the hook
-      // fires `onChange` outside render, this wrapper can go.
-      queueMicrotask(() => router.push(href, { scroll: false }))
+      // Navigating straight from `onChange` needs `@filterbridge/react` 0.4.0
+      // or later. Before it, the hook fired `onChange` from inside its
+      // `setState` updater — which React runs during the render phase — so this
+      // line logged "Cannot update a component (Router) while rendering a
+      // different component" and had to be wrapped in `queueMicrotask`. See
+      // ADR-006.
+      router.push(href, { scroll: false })
     },
   })
 
