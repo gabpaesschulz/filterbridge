@@ -39,13 +39,13 @@ Documentation index for the FilterBridge project.
 
 ## Release
 
-| Document                                     | Description                                                      |
-| -------------------------------------------- | ---------------------------------------------------------------- |
-| [v0.3.0 release notes](./releases/v0.3.0.md) | Current release — custom range keys, formatting in CI, demo a11y |
-| [v0.2.0 release notes](./releases/v0.2.0.md) | Hardening, per-filter defaults, CI (superseded)                  |
-| [v0.1.0 release notes](./releases/v0.1.0.md) | Initial experimental release (superseded)                        |
-| [Roadmap](./roadmap.md)                      | Planned and possible future work                                 |
-| [Release checklist](./release-checklist.md)  | Pre-publish validation steps                                     |
+| Document                                     | Description                                                                         |
+| -------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [v0.3.1 release notes](./releases/v0.3.1.md) | Current release — custom range keys, schema validation, formatting in CI, demo a11y |
+| [v0.2.0 release notes](./releases/v0.2.0.md) | Hardening, per-filter defaults, CI (superseded)                                     |
+| [v0.1.0 release notes](./releases/v0.1.0.md) | Initial experimental release (superseded)                                           |
+| [Roadmap](./roadmap.md)                      | Planned and possible future work                                                    |
+| [Release checklist](./release-checklist.md)  | Pre-publish validation steps                                                        |
 
 ---
 

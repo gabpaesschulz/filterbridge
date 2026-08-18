@@ -59,7 +59,7 @@ Keys are returned in schema definition order.
 
 ### Custom range keys
 
-Since `0.3.0`, `dateRange` and `numberRange` accept a `keys` override ([core reference](./core.md#custom-url-keys)), and this function reports whatever the filter actually uses:
+Since `0.3.1`, `dateRange` and `numberRange` accept a `keys` override ([core reference](./core.md#custom-url-keys)), and this function reports whatever the filter actually uses:
 
 ```ts
 getFilterParamKeys(
@@ -75,7 +75,7 @@ That matters most for `createFilterUrl`, which strips exactly these keys before 
 
 ### Where the implementation lives
 
-`getFilterParamKeys` moved into `@filterbridge/core` in `0.3.0` and is re-exported here unchanged — same name, same signature, same return type. Nothing about importing it from `@filterbridge/browser` changed.
+`getFilterParamKeys` moved into `@filterbridge/core` in `0.3.1` and is re-exported here unchanged — same name, same signature, same return type. Nothing about importing it from `@filterbridge/browser` changed.
 
 The move was the point of the change rather than a side effect. Until then, four packages spelled out the `From` / `To` / `Min` / `Max` rule independently, which is the same duplicated-knowledge shape that let `core` and `next` disagree about repeated query params in `0.1.0`. Adding a `keys` option to four copies would have made that worse, so the option and the collapse landed together.
 

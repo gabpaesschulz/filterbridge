@@ -5,7 +5,7 @@ React hook for managing filter state defined with `@filterbridge/core`.
 [![npm](https://img.shields.io/npm/v/@filterbridge/react)](https://www.npmjs.com/package/@filterbridge/react)
 [![license](https://img.shields.io/npm/l/@filterbridge/react)](../../LICENSE)
 
-**Status: experimental — `v0.2.0`. API may change before `v1.0`.**
+**Status: experimental — `v0.3.1`. API may change before `v1.0`.**
 
 ---
 

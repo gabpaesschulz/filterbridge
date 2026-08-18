@@ -5,7 +5,7 @@ Schema-first filter definitions for admin interfaces.
 [![npm](https://img.shields.io/npm/v/@filterbridge/core)](https://www.npmjs.com/package/@filterbridge/core)
 [![license](https://img.shields.io/npm/l/@filterbridge/core)](../../LICENSE)
 
-**Status: experimental — `v0.2.0`. API may change before `v1.0`.**
+**Status: experimental — `v0.3.1`. API may change before `v1.0`.**
 
 ---
 
@@ -217,7 +217,7 @@ toSearchParams(schema, { status: 'failed' }).toString() // status=failed
 toQueryDto(schema, { status: 'paid' }) // { status: 'paid' } — kept
 ```
 
-**Only filters whose value space is a fixed, enumerable set accept a default.** `text()`, `dateRange()` and `numberRange()` take no configuration at all, and passing one is a type error. Clearing a filter returns it to its default, which is coherent for a discrete choice and hostile for continuous editing — a text or number input would repopulate itself mid-backspace. A literal date default is stale by construction. Express those as discrete choices: `select(['7d', '30d', '90d'], { default: '30d' })`.
+**Only filters whose value space is a fixed, enumerable set accept a default.** `text()` takes no configuration at all, and the config `dateRange()` and `numberRange()` accept carries only [`keys`](#custom-url-keys) — so a default on any of the three is a type error. Clearing a filter returns it to its default, which is coherent for a discrete choice and hostile for continuous editing — a text or number input would repopulate itself mid-backspace. A literal date default is stale by construction. Express those as discrete choices: `select(['7d', '30d', '90d'], { default: '30d' })`.
 
 The trade-off: a URL no longer fully describes the state, so changing a default in code changes what old bookmarks mean, and "no value" becomes unreachable through the URL for a filter that has one. See [Default values](../../docs/api/core.md#default-values) for the full rules, and [ADR-002](../../docs/decisions/002-default-values.md) for the reasoning.
 
@@ -357,7 +357,7 @@ defineFilters({ amount: numberRange() })
 
 ## Custom URL keys
 
-_Added in `0.3.0`._
+_Added in `0.3.1`._
 
 The `From` / `To` / `Min` / `Max` names above are defaults. When the query string is read by an API that already has an opinion about its parameter names, `keys` renames them:
 

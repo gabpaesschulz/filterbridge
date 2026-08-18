@@ -1,5 +1,12 @@
 # @filterbridge/tanstack
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [dc3d01f]
+  - @filterbridge/core@0.3.1
+
 ## 0.3.0
 
 ### Patch Changes
