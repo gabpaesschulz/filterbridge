@@ -231,6 +231,47 @@ describe('core and next agree on custom range keys', () => {
   })
 })
 
+const renamedScalars = defineFilters({
+  search: text({ key: 'q' }),
+  status: select(['pending', 'paid'] as const, { key: 'st' }),
+  tags: multiSelect(['urgent', 'review'] as const, { key: 'labels' }),
+  archived: boolean({ key: 'is_archived' }),
+})
+
+const scalarKeyUrls = [
+  '',
+  'q=invoice',
+  'q=invoice&st=paid',
+  'labels=urgent,review',
+  'labels=urgent&labels=review',
+  'is_archived=true',
+  'q=invoice&st=paid&labels=urgent&is_archived=false&page=2',
+  // The names the schema would have used without the override. Both packages
+  // have to ignore them, and ignore them the same way.
+  'search=invoice&status=paid&tags=urgent&archived=true',
+]
+
+describe('core and next agree on custom scalar keys', () => {
+  it.each(scalarKeyUrls)('%s', (query) => {
+    const params = new URLSearchParams(query)
+    const fromCore = parseFilters(renamedScalars, params)
+    expect(parseNextSearchParams(renamedScalars, params)).toEqual(fromCore)
+    expect(parseNextSearchParams(renamedScalars, recordFrom(params))).toEqual(fromCore)
+  })
+
+  it('both read the override rather than the filter name', () => {
+    const params = new URLSearchParams('q=invoice&search=stale')
+    expect(parseNextSearchParams(renamedScalars, params)).toEqual({ search: 'invoice' })
+  })
+
+  it('agree when a scalar arrives repeated', () => {
+    // Next.js hands a server component string[] for a repeated param; a scalar
+    // filter takes the first, and it has to take it from the overridden key.
+    const record = { q: ['invoice', 'acme'] }
+    expect(parseNextSearchParams(renamedScalars, record)).toEqual({ search: 'invoice' })
+  })
+})
+
 /** The `searchParams` record shape Next.js passes to a server component. */
 function recordFrom(params: URLSearchParams): Record<string, string | string[]> {
   const record: Record<string, string | string[]> = {}

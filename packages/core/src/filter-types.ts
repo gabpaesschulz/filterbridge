@@ -10,25 +10,36 @@ export interface NumberRangeValue {
   max?: number
 }
 
+/**
+ * The URL param key override for a filter occupying a single param.
+ *
+ * `key` and not `keys`: the range builders took the plural in `0.3.1`
+ * specifically to leave this name free, so the two spellings say how many
+ * params a filter owns.
+ */
 export interface TextFilter {
   readonly _kind: 'text'
+  readonly key?: string
 }
 
 export interface SelectFilter<T extends readonly string[]> {
   readonly _kind: 'select'
   readonly options: T
   readonly default?: T[number]
+  readonly key?: string
 }
 
 export interface MultiSelectFilter<T extends readonly string[]> {
   readonly _kind: 'multiSelect'
   readonly options: T
   readonly default?: ReadonlyArray<T[number]>
+  readonly key?: string
 }
 
 export interface BooleanFilter {
   readonly _kind: 'boolean'
   readonly default?: boolean
+  readonly key?: string
 }
 
 /**
@@ -39,8 +50,9 @@ export interface BooleanFilter {
  * and not the other), and a mixed URL is a better outcome than a builder that
  * throws for not having been told something it could derive.
  *
- * Named `keys` and not `key` deliberately: `key: string` stays free for a
- * future scalar override, so adding one will not rename this.
+ * Named `keys` and not `key` deliberately, and `0.4.0` spent the reservation:
+ * the scalar builders take `key: string`, so the two spellings tell you how
+ * many params a filter owns.
  */
 export interface DateRangeKeys {
   readonly from?: string

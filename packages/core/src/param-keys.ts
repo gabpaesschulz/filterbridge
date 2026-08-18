@@ -33,17 +33,11 @@ type ScalarFilter =
  */
 
 /**
- * The single param key a `text`, `select`, `multiSelect` or `boolean` occupies.
- *
- * The derivation is the identity today, and this function exists anyway. The
- * ranges got their own accessor when `keys` landed in `0.3.1`; the scalars kept
- * indexing by filter name directly in `parse-filters.ts`, `search-params.ts` and
- * `@filterbridge/next`, which left the claim at the top of this module true for
- * two filter kinds out of six. Routing them through here first means the
- * override that follows changes one line rather than three files.
+ * The single param key a `text`, `select`, `multiSelect` or `boolean` occupies,
+ * after any `key` override.
  */
-export function scalarParamKey(name: string, _filter: ScalarFilter): string {
-  return name
+export function scalarParamKey(name: string, filter: ScalarFilter): string {
+  return filter.key ?? name
 }
 
 /** The two param keys a `dateRange` occupies, after any `keys` override. */

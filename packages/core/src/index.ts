@@ -12,7 +12,13 @@ export { parseFilters } from './parse-filters'
 export { toSearchParams } from './search-params'
 export { toQueryDto } from './query-dto'
 
-export type { DateRangeConfig, FilterConfig, NumberRangeConfig } from './filter-builders'
+export type {
+  DateRangeConfig,
+  FilterConfig,
+  NumberRangeConfig,
+  ParamKeyConfig,
+  TextConfig,
+} from './filter-builders'
 export type {
   AnyFilter,
   FilterSchema,

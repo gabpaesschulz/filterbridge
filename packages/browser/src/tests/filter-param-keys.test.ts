@@ -89,3 +89,44 @@ describe('getFilterParamKeys', () => {
     expect(url).toBe('/invoices?tab=open')
   })
 })
+
+describe('custom scalar keys', () => {
+  const renamed = defineFilters({
+    search: text({ key: 'q' }),
+    status: select(['pending', 'paid'] as const, { key: 'st' }),
+    tags: multiSelect(['urgent', 'review'] as const, { key: 'labels' }),
+    archived: boolean({ key: 'is_archived' }),
+  })
+
+  it('reports them', () => {
+    expect(getFilterParamKeys(renamed)).toEqual(['q', 'st', 'labels', 'is_archived'])
+  })
+
+  it('strips a stale one from the URL', () => {
+    // The reason getFilterParamKeys has to know about the override: it is what
+    // createFilterUrl removes before writing the new state. A key it failed to
+    // report would sit in the URL forever, and the next parse would read back a
+    // value the user had cleared.
+    const url = createFilterUrl(
+      renamed,
+      {},
+      { pathname: '/invoices', currentSearch: 'q=invoice&is_archived=true&tab=open' }
+    )
+    expect(url).toBe('/invoices?tab=open')
+  })
+
+  it('writes state to the overridden key', () => {
+    const url = createFilterUrl(renamed, { search: 'invoice', archived: true }, { pathname: '/i' })
+    expect(url).toBe('/i?q=invoice&is_archived=true')
+  })
+
+  it('leaves a param matching the filter name alone', () => {
+    // `search` is not this schema's param any more, so it is somebody else's.
+    const url = createFilterUrl(
+      renamed,
+      { search: 'invoice' },
+      { pathname: '/i', currentSearch: 'search=stale' }
+    )
+    expect(url).toBe('/i?search=stale&q=invoice')
+  })
+})
