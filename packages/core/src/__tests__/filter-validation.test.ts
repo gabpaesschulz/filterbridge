@@ -93,7 +93,11 @@ describe('dev warning on dropped values', () => {
     vi.stubEnv('NODE_ENV', 'development')
     vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    expect(() => toSearchParams(schema, loose({ status: { nested: true }, tags: [null] }))).not.toThrow()
-    expect(() => toQueryDto(schema, loose({ status: { nested: true }, tags: [null] }))).not.toThrow()
+    expect(() =>
+      toSearchParams(schema, loose({ status: { nested: true }, tags: [null] }))
+    ).not.toThrow()
+    expect(() =>
+      toQueryDto(schema, loose({ status: { nested: true }, tags: [null] }))
+    ).not.toThrow()
   })
 })

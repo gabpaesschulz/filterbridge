@@ -1,7 +1,4 @@
-export type NextSearchParamsRecord = Record<
-  string,
-  string | string[] | undefined
->
+export type NextSearchParamsRecord = Record<string, string | string[] | undefined>
 
 export type ReadonlyURLSearchParamsLike = {
   get?: (name: string) => string | null

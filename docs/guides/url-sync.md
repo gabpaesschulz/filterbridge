@@ -106,7 +106,7 @@ Back and Forward now restore the filter UI without a page reload.
 
 Two reasons, and both matter:
 
-- **`syncState` replaces; `setMany` merges.** Going back to a URL without `status` must *remove* `status` from the UI. A merge would leave it there.
+- **`syncState` replaces; `setMany` merges.** Going back to a URL without `status` must _remove_ `status` from the UI. A merge would leave it there.
 - **`syncState` does not fire `onChange`.** This is what stops the loop. `onChange` writes the state to the URL; `usePopstateSync` writes the URL to the state. If the sync path fired `onChange`, every Back press would immediately push the state you just navigated away from, and the Back button would appear frozen.
 
 ### Choosing push vs. replace
@@ -142,11 +142,8 @@ If you only need a URL string (for a share button, for a link, etc.) without nav
 ```ts
 import { createFilterUrl } from '@filterbridge/browser'
 
-const shareUrl = window.location.origin + createFilterUrl(
-  orderFilters,
-  bridge.state,
-  { pathname: '/orders' }
-)
+const shareUrl =
+  window.location.origin + createFilterUrl(orderFilters, bridge.state, { pathname: '/orders' })
 ```
 
 ---

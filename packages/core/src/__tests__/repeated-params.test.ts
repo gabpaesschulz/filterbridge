@@ -39,13 +39,15 @@ describe('parseFilters — repeated params, multiSelect', () => {
   })
 
   it('omits the filter when every repeated value is invalid', () => {
-    expect(parseFilters(schema, new URLSearchParams('tags=nope&tags=alsonope')).tags).toBeUndefined()
+    expect(
+      parseFilters(schema, new URLSearchParams('tags=nope&tags=alsonope')).tags
+    ).toBeUndefined()
   })
 
   it('ignores empty repeated values', () => {
-    expect(parseFilters(schema, new URLSearchParams('tags=urgent&tags=&tags=review'))).toMatchObject(
-      { tags: ['urgent', 'review'] }
-    )
+    expect(
+      parseFilters(schema, new URLSearchParams('tags=urgent&tags=&tags=review'))
+    ).toMatchObject({ tags: ['urgent', 'review'] })
   })
 
   it('accepts a repeated param passed as a plain-record array', () => {
@@ -77,7 +79,9 @@ describe('parseFilters — repeated params, scalar filters', () => {
   })
 
   it('select still rejects an invalid first value', () => {
-    expect(parseFilters(schema, new URLSearchParams('status=bogus&status=paid')).status).toBeUndefined()
+    expect(
+      parseFilters(schema, new URLSearchParams('status=bogus&status=paid')).status
+    ).toBeUndefined()
   })
 
   it('boolean takes the first value', () => {
@@ -89,13 +93,18 @@ describe('parseFilters — repeated params, scalar filters', () => {
   it('dateRange takes the first value on each side', () => {
     const state = parseFilters(
       schema,
-      new URLSearchParams('createdAtFrom=2026-01-01&createdAtFrom=2026-02-01&createdAtTo=2026-03-01')
+      new URLSearchParams(
+        'createdAtFrom=2026-01-01&createdAtFrom=2026-02-01&createdAtTo=2026-03-01'
+      )
     )
     expect(state).toMatchObject({ createdAt: { from: '2026-01-01', to: '2026-03-01' } })
   })
 
   it('numberRange takes the first value on each side', () => {
-    const state = parseFilters(schema, new URLSearchParams('amountMin=100&amountMin=200&amountMax=500'))
+    const state = parseFilters(
+      schema,
+      new URLSearchParams('amountMin=100&amountMin=200&amountMax=500')
+    )
     expect(state).toMatchObject({ amount: { min: 100, max: 500 } })
   })
 })

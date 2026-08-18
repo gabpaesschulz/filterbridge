@@ -14,7 +14,7 @@ async function findAxeViolations(container: HTMLElement): Promise<string[]> {
     (violation) =>
       `${violation.id}: ${violation.help}\n    ${violation.nodes
         .map((node) => node.html)
-        .join('\n    ')}`,
+        .join('\n    ')}`
   )
 }
 

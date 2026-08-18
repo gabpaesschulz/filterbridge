@@ -26,11 +26,7 @@ const booleanFilterFn: FilterFnLike = (row, columnId, filterValue) => {
 }
 
 const dateRangeFilterFn: FilterFnLike = (row, columnId, filterValue) => {
-  if (
-    typeof filterValue !== 'object' ||
-    filterValue === null ||
-    Array.isArray(filterValue)
-  )
+  if (typeof filterValue !== 'object' || filterValue === null || Array.isArray(filterValue))
     return true
 
   const range = filterValue as { from?: string; to?: string }
@@ -45,11 +41,7 @@ const dateRangeFilterFn: FilterFnLike = (row, columnId, filterValue) => {
 }
 
 const numberRangeFilterFn: FilterFnLike = (row, columnId, filterValue) => {
-  if (
-    typeof filterValue !== 'object' ||
-    filterValue === null ||
-    Array.isArray(filterValue)
-  )
+  if (typeof filterValue !== 'object' || filterValue === null || Array.isArray(filterValue))
     return true
 
   const range = filterValue as { min?: number; max?: number }

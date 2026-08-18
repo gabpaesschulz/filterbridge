@@ -28,10 +28,7 @@ export function useFilterBridge<TSchema extends FilterSchema>(
   //
   // getDefaultFilterState returns {} for a schema without defaults, so this is
   // the identity there and nothing changes.
-  const defaults = useMemo(
-    () => getDefaultFilterState(schema) as Record<string, unknown>,
-    [schema]
-  )
+  const defaults = useMemo(() => getDefaultFilterState(schema) as Record<string, unknown>, [schema])
 
   const withDefaults = useCallback(
     (next: Record<string, unknown>) => ({ ...defaults, ...next }) as State,
@@ -53,13 +50,16 @@ export function useFilterBridge<TSchema extends FilterSchema>(
   // and notifies the caller. Calling onChange inside the setState callback
   // means it fires synchronously during each action (not via useEffect),
   // which avoids the Strict Mode double-fire that effects would cause.
-  const updateState = useCallback((updater: (current: State) => State) => {
-    setState((current) => {
-      const next = withDefaults(cleanFilterState(updater(current) as Record<string, unknown>))
-      onChangeRef.current?.(next)
-      return next
-    })
-  }, [withDefaults])
+  const updateState = useCallback(
+    (updater: (current: State) => State) => {
+      setState((current) => {
+        const next = withDefaults(cleanFilterState(updater(current) as Record<string, unknown>))
+        onChangeRef.current?.(next)
+        return next
+      })
+    },
+    [withDefaults]
+  )
 
   const set = useCallback(
     <TKey extends keyof State>(key: TKey, value: State[TKey]) => {
@@ -87,7 +87,7 @@ export function useFilterBridge<TSchema extends FilterSchema>(
   )
 
   const reset = useCallback(() => {
-    updateState(() => ({} as State))
+    updateState(() => ({}) as State)
   }, [updateState])
 
   // Goes through updateState like every other mutator, so the restored state is
@@ -114,15 +114,9 @@ export function useFilterBridge<TSchema extends FilterSchema>(
     [schema, state]
   )
 
-  const toQueryDto = useCallback(
-    () => coreToQueryDto(schema, state),
-    [schema, state]
-  )
+  const toQueryDto = useCallback(() => coreToQueryDto(schema, state), [schema, state])
 
-  const toSearchParams = useCallback(
-    () => coreToSearchParams(schema, state),
-    [schema, state]
-  )
+  const toSearchParams = useCallback(() => coreToSearchParams(schema, state), [schema, state])
 
   return {
     state,

@@ -212,9 +212,7 @@ describe('setMany()', () => {
   })
 
   it('preserves filters not included in the update', () => {
-    const { result } = renderHook(() =>
-      useFilterBridge(schema, { initialState: { active: true } })
-    )
+    const { result } = renderHook(() => useFilterBridge(schema, { initialState: { active: true } }))
     act(() => {
       result.current.setMany({ search: 'invoice' })
     })
@@ -1005,8 +1003,7 @@ describe('resetToInitial() under the defaults rule', () => {
   it('still ignores later changes to options.initialState', () => {
     type Initial = Partial<InferFilterState<typeof defaulted>>
     const { result, rerender } = renderHook(
-      ({ initial }: { initial: Initial }) =>
-        useFilterBridge(defaulted, { initialState: initial }),
+      ({ initial }: { initial: Initial }) => useFilterBridge(defaulted, { initialState: initial }),
       { initialProps: { initial: { search: 'acme' } as Initial } }
     )
 

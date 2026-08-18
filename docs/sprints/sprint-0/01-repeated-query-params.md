@@ -31,9 +31,9 @@ contained.
 This is not only an unimplemented format. `@filterbridge/next` already handles repeated params
 correctly, so the same URL parsed by two FilterBridge packages produces two different results:
 
-| Input | `parseFilters` (core) | `parseNextSearchParams` (next) |
-|-------|----------------------|-------------------------------|
-| `tags=a&tags=b` | `{ tags: ['b'] }` | `{ tags: ['a', 'b'] }` |
+| Input           | `parseFilters` (core) | `parseNextSearchParams` (next) |
+| --------------- | --------------------- | ------------------------------ |
+| `tags=a&tags=b` | `{ tags: ['b'] }`     | `{ tags: ['a', 'b'] }`         |
 
 A Next.js app that parses on the server with `@filterbridge/next` and re-parses on the client with
 `@filterbridge/core` gets a state mismatch on hydration.
@@ -46,7 +46,7 @@ repeated key overwrites the previous value:
 
 ```ts
 input.forEach((value, key) => {
-  result[key] = value   // last one wins
+  result[key] = value // last one wins
 })
 ```
 

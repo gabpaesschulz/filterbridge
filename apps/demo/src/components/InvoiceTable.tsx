@@ -24,9 +24,7 @@ const columns = [
   columnHelper.accessor('tags', {
     header: 'Tags',
     filterFn: 'multiSelect',
-    cell: (info) => (
-      <span>{info.getValue().length > 0 ? info.getValue().join(', ') : '—'}</span>
-    ),
+    cell: (info) => <span>{info.getValue().length > 0 ? info.getValue().join(', ') : '—'}</span>,
   }),
   columnHelper.accessor('archived', {
     header: 'Archived',
@@ -49,30 +47,14 @@ const columns = [
 
 type StatusBadgeProps = { status: Invoice['status'] }
 
-const STATUS_COLORS: Record<Invoice['status'], string> = {
-  draft: '#6b7280',
-  pending: '#d97706',
-  paid: '#16a34a',
-  failed: '#dc2626',
-  cancelled: '#9ca3af',
-}
-
+/**
+ * Dark text on a light tint, defined in styles.css rather than inline. White on
+ * the saturated fills these used before was 2.54–3.30:1, and no hue at this
+ * lightness reaches AA against white without going dark enough to stop reading
+ * as a status colour.
+ */
 function StatusBadge({ status }: StatusBadgeProps) {
-  return (
-    <span
-      style={{
-        display: 'inline-block',
-        padding: '0.1rem 0.5rem',
-        borderRadius: '999px',
-        fontSize: '0.75rem',
-        fontWeight: 600,
-        color: '#fff',
-        background: STATUS_COLORS[status],
-      }}
-    >
-      {status}
-    </span>
-  )
+  return <span className={`status-pill status-pill-${status}`}>{status}</span>
 }
 
 type InvoiceTableProps = {

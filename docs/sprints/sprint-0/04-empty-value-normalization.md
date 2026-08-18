@@ -11,7 +11,7 @@
 ## Problem
 
 `parseFilters` trims strings and discards empty ones. The serializers do neither, so values that
-could never come *out* of a parse can still go *into* a URL or a DTO.
+could never come _out_ of a parse can still go _into_ a URL or a DTO.
 
 Verified against the current code:
 
@@ -49,7 +49,7 @@ Not an exotic input — it is the default shape of a cleared field. `<input type
 `''` when emptied, and the demo writes exactly that shape into state before its `|| undefined`
 guard runs
 ([`apps/demo/src/components/FilterCard.tsx:33-39`](../../../apps/demo/src/components/FilterCard.tsx)).
-The React layer does not catch it either: `cleanFilterState` only removes an object when *every*
+The React layer does not catch it either: `cleanFilterState` only removes an object when _every_
 value is nullish, so `{ from: '', to: 'x' }` is kept whole
 ([`packages/react/src/clean-state.ts:5-7`](../../../packages/react/src/clean-state.ts)).
 
@@ -61,7 +61,7 @@ Three places, all missing the normalization that `parse-filters.ts` performs:
   truthiness but never trims, so `'   '` passes.
 - [`query-dto.ts:16-20`](../../../packages/core/src/query-dto.ts) — same.
 - [`query-dto.ts:36-42`](../../../packages/core/src/query-dto.ts) — `dateRange` assigns the whole
-  `range` object when *either* side is truthy, copying the empty side along with it.
+  `range` object when _either_ side is truthy, copying the empty side along with it.
 
 `toSearchParams`'s `dateRange` case is already correct — it writes each side independently behind a
 truthiness check ([`search-params.ts:40-45`](../../../packages/core/src/search-params.ts)). The DTO
@@ -71,8 +71,8 @@ path is the outlier.
 
 Apply the same normalization on the way out as on the way in.
 
-1. **Text:** trim before the emptiness check in both serializers. Decide whether the *trimmed* or
-   the *original* string is emitted — recommendation: emit the trimmed value, so
+1. **Text:** trim before the emptiness check in both serializers. Decide whether the _trimmed_ or
+   the _original_ string is emitted — recommendation: emit the trimmed value, so
    `search=' foo '` and `search='foo'` produce identical URLs and the round-trip is stable.
 2. **Ranges:** rebuild the object from surviving sides instead of passing it through, exactly as in
    [task 2](./02-non-finite-numbers.md):

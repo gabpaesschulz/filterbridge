@@ -1,7 +1,14 @@
 import { filterDefault } from './defaults'
-import type { AnyFilter, MultiSelectFilter, SelectFilter } from './filter-types'
+import type {
+  AnyFilter,
+  DateRangeFilter,
+  MultiSelectFilter,
+  NumberRangeFilter,
+  SelectFilter,
+} from './filter-types'
 import { isValidOption, validOptions } from './filter-validation'
 import type { InferFilterState } from './infer'
+import { dateRangeParamKeys, numberRangeParamKeys } from './param-keys'
 
 type RawInput = Record<string, unknown>
 
@@ -78,10 +85,12 @@ function parseBoolean(raw: RawInput, key: string): boolean | undefined {
 
 function parseDateRange(
   raw: RawInput,
-  key: string
+  key: string,
+  filter: DateRangeFilter
 ): { from?: string; to?: string } | undefined {
-  const from = scalar(raw[`${key}From`])
-  const to = scalar(raw[`${key}To`])
+  const keys = dateRangeParamKeys(key, filter)
+  const from = scalar(raw[keys.from])
+  const to = scalar(raw[keys.to])
   const range: { from?: string; to?: string } = {}
 
   if (typeof from === 'string' && from.trim()) range.from = from.trim()
@@ -92,10 +101,12 @@ function parseDateRange(
 
 function parseNumberRange(
   raw: RawInput,
-  key: string
+  key: string,
+  filter: NumberRangeFilter
 ): { min?: number; max?: number } | undefined {
-  const minVal = scalar(raw[`${key}Min`])
-  const maxVal = scalar(raw[`${key}Max`])
+  const keys = numberRangeParamKeys(key, filter)
+  const minVal = scalar(raw[keys.min])
+  const maxVal = scalar(raw[keys.max])
   const range: { min?: number; max?: number } = {}
 
   // `Number.isFinite`, not `!isNaN`: parseFloat('Infinity') is Infinity, and so
@@ -142,10 +153,10 @@ export function parseFilters<S extends Record<string, AnyFilter>>(
         value = parseBoolean(raw, key)
         break
       case 'dateRange':
-        value = parseDateRange(raw, key)
+        value = parseDateRange(raw, key, filter)
         break
       case 'numberRange':
-        value = parseNumberRange(raw, key)
+        value = parseNumberRange(raw, key, filter)
         break
     }
 

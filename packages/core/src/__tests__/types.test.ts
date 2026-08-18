@@ -39,15 +39,11 @@ describe('InferFilterState type inference', () => {
   })
 
   it('infers dateRange filter as range object | undefined', () => {
-    expectTypeOf<State['createdAt']>().toEqualTypeOf<
-      { from?: string; to?: string } | undefined
-    >()
+    expectTypeOf<State['createdAt']>().toEqualTypeOf<{ from?: string; to?: string } | undefined>()
   })
 
   it('infers numberRange filter as range object | undefined', () => {
-    expectTypeOf<State['amount']>().toEqualTypeOf<
-      { min?: number; max?: number } | undefined
-    >()
+    expectTypeOf<State['amount']>().toEqualTypeOf<{ min?: number; max?: number } | undefined>()
   })
 
   it('select infers literal types without as const', () => {

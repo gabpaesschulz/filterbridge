@@ -1,0 +1,20 @@
+{
+  "name": "filterbridge-smoke",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Smoke test for FilterBridge packages — validates external consumption of packed tarballs",
+  "type": "module",
+  "dependencies": {
+    "@filterbridge/core": "file:../.packs/filterbridge-core-0.3.1.tgz",
+    "@filterbridge/react": "file:../.packs/filterbridge-react-0.3.1.tgz",
+    "@filterbridge/browser": "file:../.packs/filterbridge-browser-0.3.1.tgz",
+    "@filterbridge/tanstack": "file:../.packs/filterbridge-tanstack-0.3.1.tgz",
+    "@filterbridge/next": "file:../.packs/filterbridge-next-0.3.1.tgz",
+    "react": "^18.3.0"
+  },
+  "scripts": {
+    "test:esm": "node src/esm.mjs",
+    "test:cjs": "node src/cjs.cjs",
+    "test": "node src/esm.mjs && node src/cjs.cjs"
+  }
+}

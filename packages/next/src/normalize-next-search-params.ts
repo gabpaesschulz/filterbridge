@@ -1,4 +1,4 @@
-import type { FilterSchema } from '@filterbridge/core'
+import { type FilterSchema, dateRangeParamKeys, numberRangeParamKeys } from '@filterbridge/core'
 import type { NextSearchParamsInput } from './types'
 
 type RawRecord = Record<string, string | string[] | undefined>
@@ -47,8 +47,9 @@ export function inputToRawRecord(input: NextSearchParamsInput): RawRecord {
  *
  * - For text, select, boolean: string[] input picks the first element
  * - For multiSelect: string[] input is preserved as-is
- * - For dateRange: reads <name>From and <name>To keys
- * - For numberRange: reads <name>Min and <name>Max keys
+ * - For dateRange and numberRange: reads whichever param keys core derives for
+ *   the filter — `<name>From` / `<name>To` and `<name>Min` / `<name>Max` by
+ *   default, or the filter's `keys` override
  * - Params outside the schema are ignored
  */
 export function normalizeNextSearchParams<S extends FilterSchema>(
@@ -80,26 +81,31 @@ export function normalizeNextSearchParams<S extends FilterSchema>(
         break
       }
 
+      // Both range branches read their param names from core rather than
+      // rebuilding them. This package spelling out its own `From`/`To` is how
+      // it drifted from core over repeated query params in 0.1.0.
       case 'dateRange': {
-        const fromVal = raw[`${key}From`]
-        const toVal = raw[`${key}To`]
+        const keys = dateRangeParamKeys(key, filter)
+        const fromVal = raw[keys.from]
+        const toVal = raw[keys.to]
         if (fromVal !== undefined) {
-          result[`${key}From`] = Array.isArray(fromVal) ? fromVal[0] : fromVal
+          result[keys.from] = Array.isArray(fromVal) ? fromVal[0] : fromVal
         }
         if (toVal !== undefined) {
-          result[`${key}To`] = Array.isArray(toVal) ? toVal[0] : toVal
+          result[keys.to] = Array.isArray(toVal) ? toVal[0] : toVal
         }
         break
       }
 
       case 'numberRange': {
-        const minVal = raw[`${key}Min`]
-        const maxVal = raw[`${key}Max`]
+        const keys = numberRangeParamKeys(key, filter)
+        const minVal = raw[keys.min]
+        const maxVal = raw[keys.max]
         if (minVal !== undefined) {
-          result[`${key}Min`] = Array.isArray(minVal) ? minVal[0] : minVal
+          result[keys.min] = Array.isArray(minVal) ? minVal[0] : minVal
         }
         if (maxVal !== undefined) {
-          result[`${key}Max`] = Array.isArray(maxVal) ? maxVal[0] : maxVal
+          result[keys.max] = Array.isArray(maxVal) ? maxVal[0] : maxVal
         }
         break
       }

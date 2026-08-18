@@ -8,13 +8,13 @@ Thanks for your interest in contributing. FilterBridge is a small, focused libra
 
 FilterBridge is a TypeScript-first filter schema library for React admin screens. It consists of five publishable npm packages in a pnpm monorepo:
 
-| Package | Purpose |
-|---------|---------|
-| `@filterbridge/core` | Schema DSL, parsing, URL serialization, backend DTO |
-| `@filterbridge/react` | `useFilterBridge` React hook |
-| `@filterbridge/browser` | Browser URL sync helpers |
-| `@filterbridge/tanstack` | TanStack Table adapter |
-| `@filterbridge/next` | Next.js App Router adapter |
+| Package                  | Purpose                                             |
+| ------------------------ | --------------------------------------------------- |
+| `@filterbridge/core`     | Schema DSL, parsing, URL serialization, backend DTO |
+| `@filterbridge/react`    | `useFilterBridge` React hook                        |
+| `@filterbridge/browser`  | Browser URL sync helpers                            |
+| `@filterbridge/tanstack` | TanStack Table adapter                              |
+| `@filterbridge/next`     | Next.js App Router adapter                          |
 
 The project aims to be small, well-tested, and easy to explain. Contributions that add scope creep or unnecessary dependencies will be declined.
 
@@ -34,7 +34,15 @@ The project aims to be small, well-tested, and easy to explain. Contributions th
 git clone https://github.com/gabpaesschulz/filterbridge.git
 cd filterbridge
 pnpm install
+
+# One-time, per clone: teach `git blame` to skip the formatting pass.
+git config blame.ignoreRevsFile .git-blame-ignore-revs
 ```
+
+That last line is optional but recommended. [`.git-blame-ignore-revs`](.git-blame-ignore-revs) lists
+the commits that changed whitespace and nothing else; without the config, `git blame` on most files
+in `docs/` and `packages/` points at the Sprint 1 formatting pass instead of at the commit that
+wrote the line. GitHub applies the file automatically — only local git needs telling.
 
 ---
 
@@ -53,14 +61,30 @@ pnpm typecheck
 # Lint
 pnpm lint
 
-# Format
+# Format, and the check CI runs
 pnpm format
+pnpm format:check
 
 # Run the demo app at http://localhost:5173
 pnpm demo
 
 # Build the demo for static hosting
 pnpm demo:build
+
+# Audit the running demo in real Chromium, including colour contrast
+# (needs `pnpm demo` running in another terminal)
+pnpm demo:a11y
+
+# Capture the demo screenshot used in the README
+# (also needs `pnpm demo` running)
+pnpm screenshot
+
+# Download Playwright's Chromium — once per clone, for the two scripts above.
+# `pnpm install` gets the playwright package but not the browser binary, so
+# without this they fail with "Executable doesn't exist". Same command behind
+# both names; running either one covers both.
+pnpm demo:a11y:install
+pnpm screenshot:install
 
 # Pack all packages to .packs/ (for local inspection)
 pnpm pack:all
@@ -123,10 +147,15 @@ whichever the package you are touching already uses.
 Every behavior change should have a corresponding test. The project aims to keep core logic heavily tested.
 
 Guidelines:
+
 - Test parsing, serialization, and DTO generation for each filter type.
 - Test edge cases: empty input, invalid values, partial range objects.
 - For React hook tests, use `@testing-library/react`.
 - Avoid testing internal implementation details — test observable behavior.
+- **If you change a colour in `apps/demo`, run `pnpm demo:a11y`.** The axe suite that runs under
+  `pnpm test` cannot check contrast — jsdom has no layout engine — so `pnpm demo:a11y` drives real
+  Chromium against the running demo and is the only thing that will catch it. See
+  [`apps/demo/README.md`](apps/demo/README.md#accessibility).
 
 ---
 
@@ -159,11 +188,13 @@ Propose new filter types via an issue first.
 New adapters belong in `packages/<name>/` as `@filterbridge/<name>`.
 
 Before starting:
+
 - Open an issue describing the use case.
 - Confirm there is no existing package or simple workaround.
 - Discuss the API shape before implementing.
 
 A new package needs:
+
 - `package.json` with correct metadata (`author`, `repository`, `bugs`, `homepage`, `sideEffects: false`, `files`, `exports`)
 - `tsup.config.ts` for ESM + CJS build
 - `tsconfig.json` extending `../../tsconfig.base.json`
@@ -186,6 +217,7 @@ A new package needs:
 ## Documenting API changes
 
 If you change or add a public API:
+
 - Update the relevant `packages/<name>/README.md`
 - Update `docs/api/<name>.md`
 - Update examples in the root `README.md` if affected
@@ -198,15 +230,17 @@ If you change or add a public API:
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push to `main` and on every
 pull request:
 
-| Job | What it runs |
-|-----|--------------|
-| `check` | `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test` |
-| `demo build` | `pnpm build` then `pnpm demo:build` |
-| `changeset` | `pnpm changeset status` — pull requests only |
+| Job          | What it runs                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------ |
+| `format`     | `pnpm format:check`                                                                        |
+| `check`      | `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test` |
+| `demo build` | `pnpm build` then `pnpm demo:build`                                                        |
+| `changeset`  | `pnpm changeset status` — pull requests only                                               |
 
-The `check` job runs on Node 18, 20, and 22 on Linux, plus Node 20 on Windows.
+The `check` job runs on Node 18, 20, and 22 on Linux, plus Node 20 on Windows. `format` runs once,
+on Linux only — Prettier's output does not vary by platform.
 
-Three things worth knowing before you push:
+Four things worth knowing before you push:
 
 - **`pnpm build` runs before `pnpm typecheck`, and has to.** `tsc` resolves `@filterbridge/*`
   through each sibling's emitted `.d.ts`, and `dist/` is gitignored — so on a fresh clone
@@ -215,6 +249,11 @@ Three things worth knowing before you push:
   ([`vitest.aliases.ts`](vitest.aliases.ts)), so the suite runs on a clean clone with no build and
   never reports on stale `dist` output. Before changing that, read
   [ADR-003](docs/decisions/003-test-resolution.md) — it records the bug that made it necessary.
+- **`pnpm format:check` is enforced.** Run `pnpm format` before pushing, or let your editor do it.
+  Every text file is checked out as LF ([`.gitattributes`](.gitattributes)); Prettier's `endOfLine`
+  default is `lf`, so a clone that converts to CRLF fails the check on every file at once. If that
+  happens to you, your git predates the `.gitattributes` — `git rm -r --cached . && git reset --hard`
+  re-checks-out the tree with the right endings.
 - **The install uses `--frozen-lockfile`.** If you add or change a dependency, commit the updated
   `pnpm-lock.yaml` or CI will fail on the install step.
 - **Changes to any workspace package need a changeset** — that means `apps/demo` too, not only
@@ -244,6 +283,7 @@ PRs that break existing tests, skip type checking, or add undocumented API chang
 ## Issues
 
 Use the GitHub issue templates:
+
 - **Bug report** — something is broken
 - **Feature request** — new capability or API
 - **Documentation** — something is wrong or missing in docs
@@ -258,7 +298,7 @@ Check for existing issues before opening a new one.
 - No external runtime dependencies added to packages without discussion.
 - Keep functions pure where possible.
 - Prefer readable code over clever abstractions.
-- Default to no comments — code should be self-explanatory. Add a comment only when the *why* is non-obvious.
+- Default to no comments — code should be self-explanatory. Add a comment only when the _why_ is non-obvious.
 
 ---
 

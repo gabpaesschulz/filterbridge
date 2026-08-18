@@ -1,8 +1,5 @@
 import type { FilterSchema, InferFilterState } from '@filterbridge/core'
-import type {
-  TanStackColumnFiltersState,
-  ToTanStackColumnFiltersOptions,
-} from './types'
+import type { TanStackColumnFiltersState, ToTanStackColumnFiltersOptions } from './types'
 import { isEmpty } from './utils'
 
 export function toTanStackColumnFilters<S extends FilterSchema>(

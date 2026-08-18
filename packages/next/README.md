@@ -126,6 +126,7 @@ const state = parseNextSearchParams(invoiceFilters, {
 ```
 
 Accepts:
+
 - `Record<string, string | string[] | undefined>` — server component searchParams
 - `URLSearchParams`
 - `ReadonlyURLSearchParams`-like object
@@ -163,10 +164,14 @@ const normalized = normalizeNextSearchParams(invoiceFilters, {
 ```
 
 Schema-aware normalization rules:
+
 - `text`, `select`, `boolean`: if `string[]` is received, first element is used
 - `multiSelect`: `string[]` is preserved as-is
 - `dateRange`: reads `<name>From` and `<name>To` keys
 - `numberRange`: reads `<name>Min` and `<name>Max` keys
+- Both range key sets come from `@filterbridge/core`, so a filter with a `keys` override is read
+  under its custom names — identically here and in a client-side `parseFilters`, which is what keeps
+  a server parse and a client parse from disagreeing
 - Params outside the schema are ignored
 
 ---
@@ -186,14 +191,15 @@ const href = createNextFilterHref(invoiceFilters, bridge.state, {
 
 Options:
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `pathname` | `string` | `'/'` | URL path prefix |
-| `searchParams` | `NextSearchParamsInput` | — | Existing params to preserve |
-| `hash` | `string` | — | Fragment identifier |
-| `preserveExistingParams` | `boolean` | `true` | Keep non-filter params from searchParams |
+| Option                   | Type                    | Default | Description                              |
+| ------------------------ | ----------------------- | ------- | ---------------------------------------- |
+| `pathname`               | `string`                | `'/'`   | URL path prefix                          |
+| `searchParams`           | `NextSearchParamsInput` | —       | Existing params to preserve              |
+| `hash`                   | `string`                | —       | Fragment identifier                      |
+| `preserveExistingParams` | `boolean`               | `true`  | Keep non-filter params from searchParams |
 
 When `preserveExistingParams` is `true` (the default):
+
 - Non-filter params from `searchParams` are preserved
 - Old filter params from `searchParams` are removed
 - New filter params from `state` are applied

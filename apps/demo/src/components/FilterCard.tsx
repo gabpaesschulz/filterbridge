@@ -24,9 +24,7 @@ export function FilterCard({ bridge }: FilterCardProps) {
 
   function handleTagToggle(tag: Tag) {
     const current = state.tags ?? []
-    const next = current.includes(tag)
-      ? current.filter((t) => t !== tag)
-      : [...current, tag]
+    const next = current.includes(tag) ? current.filter((t) => t !== tag) : [...current, tag]
     set('tags', next as FilterState['tags'])
   }
 

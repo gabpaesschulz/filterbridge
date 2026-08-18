@@ -59,7 +59,7 @@ async function main() {
     await page.goto(DEMO_URL, { waitUntil: 'networkidle' })
 
     const fillBtn = page.locator('button', { hasText: /fill example/i })
-    if (await fillBtn.count() > 0) {
+    if ((await fillBtn.count()) > 0) {
       console.log('Clicking "Fill example"...')
       await fillBtn.first().click()
       await page.waitForTimeout(300)

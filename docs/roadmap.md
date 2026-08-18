@@ -4,7 +4,10 @@ This roadmap describes planned and possible future work. No dates are promised.
 
 FilterBridge stays narrow by design. Items here are candidates, not commitments.
 
-**Current version:** `0.2.0`. See [the release notes](./releases/v0.2.0.md) for what shipped.
+**Current version:** `0.3.1`. See [the release notes](./releases/v0.3.1.md) for what shipped.
+
+`0.3.0` was cut and never published — a schema-validation pass landed before the publish and took the
+number to `0.3.1`.
 
 ---
 
@@ -25,15 +28,40 @@ Moved here from the sections below rather than deleted, so the roadmap shows wha
 
 ---
 
+## Shipped in `0.3.1`
+
+Delivered by [Sprint 1](./sprints/sprint-1/README.md).
+
+- [x] `pnpm format:check` in CI — one mechanical Prettier pass over the repository, then a `format`
+      job that fails a pull request introducing unformatted files
+- [x] Optional custom URL keys for `dateRange` and `numberRange` — `keys: { from, to }` /
+      `keys: { min, max }`, with key derivation collapsed from four copies into one in
+      `@filterbridge/core`. `defineFilters` now throws on a duplicate param key
+- [x] The demo's colour-contrast violations — palette re-measured against WCAG AA, plus
+      `pnpm demo:a11y`, a real-Chromium axe run that can check contrast where the jsdom suite
+      structurally cannot
+- [x] Better examples for the Next.js App Router pattern —
+      [`examples/next-app-router`](../examples/next-app-router), a running Next.js 15 app outside
+      the pnpm workspace. Running it corrected two false claims in the guide about back/forward and
+      surfaced [one library defect](./sprints/sprint-1/06-onchange-fires-during-render.md)
+- [x] Schema mistakes fail at definition time — a `keys` side that does not exist, a padded or empty
+      key, a range colliding with itself, and an unrecognised filter kind all throw instead of
+      passing in silence and surfacing later as a filter that did nothing
+
+---
+
 ## `0.2.x` — Stability and ergonomics
 
-Ongoing improvements to the existing packages. No new packages planned.
+Ongoing improvements to the existing packages. No new packages planned. Everything
+[Sprint 1](./sprints/sprint-1/README.md) took from this list shipped in `0.3.1` above; the heading
+keeps its original name so that the sprint records linking to it still resolve.
 
-- [ ] Optional custom key suffixes for `dateRange` and `numberRange`
-- [ ] Better examples for the Next.js App Router pattern (client + server components)
-- [ ] `pnpm format:check` in CI — currently fails on 69 files, so the repository needs one
-      formatting pass first. Tracked as [housekeeping](#housekeeping)
-- [ ] Fix the demo's colour-contrast violations. Tracked as [housekeeping](#housekeeping)
+- [ ] **`onChange` fires during the render phase.** `useFilterBridge` calls it from inside its
+      `setState` updater, so an `onChange` that navigates warns and is unsafe. Found by the Next.js
+      example, deferred to Sprint 2 with a documented workaround —
+      [task 6](./sprints/sprint-1/06-onchange-fires-during-render.md)
+- [ ] Custom URL key for the scalar filters — `text('search')` serializing to `q`. The range option
+      is deliberately named `keys`, leaving `key: string` free for this
 - [ ] Bug fixes as they are reported
 
 ---
@@ -71,30 +99,8 @@ Prerequisites before marking the API stable:
 
 Known, deliberately deferred, and easy to lose track of once a sprint closes.
 
-### `pnpm format:check` is not a CI step
-
-Prettier currently reports 69 files that do not match its configuration. Wiring `format:check` into
-CI before reformatting would make every run red for formatting rather than for correctness, so it
-was left out.
-
-The fix is a single mechanical commit — `pnpm format` across the repository — landed on its own so
-that it does not bury a behavior change in a whitespace diff. Add the CI step in the same change.
-
-### The demo has 25 colour-contrast violations
-
-Found by an axe-core audit in real Chromium during Sprint 0. All pre-existing, none related to the
-label fixes that sprint made:
-
-- `--color-muted` (`#6b7280`) on `--color-bg` (`#f4f5f7`) is **4.43:1**, just under the 4.5:1 AA
-  threshold. This accounts for most of them: column titles, hints, table headers, the active filter
-  count.
-- Status pills use white text on `#16a34a` / `#d97706` / `#9ca3af` — **3.29:1**, **3.18:1**,
-  **2.53:1**.
-- The green URL-sync badge and `.url-path` are around **3:1**.
-
-Fixing them means changing the palette, which is a visual decision rather than a correctness one.
-The committed jsdom suite disables the `color-contrast` rule because jsdom has no layout engine and
-cannot measure it, so re-running the audit in a real browser is the only way to verify a fix.
+_Nothing is outstanding._ Sprint 1 closed both entries that lived here — `pnpm format:check` is a CI
+job, and the demo's palette clears WCAG AA with `pnpm demo:a11y` to keep it that way.
 
 ---
 

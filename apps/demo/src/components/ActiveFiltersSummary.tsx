@@ -3,7 +3,10 @@ type ActiveFiltersSummaryProps = {
   activeFilterCount: number
 }
 
-export function ActiveFiltersSummary({ hasActiveFilters, activeFilterCount }: ActiveFiltersSummaryProps) {
+export function ActiveFiltersSummary({
+  hasActiveFilters,
+  activeFilterCount,
+}: ActiveFiltersSummaryProps) {
   return (
     <div className={`active-filters-summary ${hasActiveFilters ? 'has-filters' : 'no-filters'}`}>
       <span className="active-filters-dot" />

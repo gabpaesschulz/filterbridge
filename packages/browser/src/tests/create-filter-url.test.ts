@@ -148,11 +148,7 @@ describe('createFilterUrl', () => {
   })
 
   it('serializes multiSelect with comma', () => {
-    const url = createFilterUrl(
-      schema,
-      { tags: ['urgent', 'review'] },
-      { pathname: '/invoices' }
-    )
+    const url = createFilterUrl(schema, { tags: ['urgent', 'review'] }, { pathname: '/invoices' })
     expect(url).toContain('tags=urgent%2Creview')
   })
 

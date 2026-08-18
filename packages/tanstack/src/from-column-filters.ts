@@ -5,10 +5,7 @@ import type {
   MultiSelectFilter,
   SelectFilter,
 } from '@filterbridge/core'
-import type {
-  TanStackColumnFiltersState,
-  FromTanStackColumnFiltersOptions,
-} from './types'
+import type { TanStackColumnFiltersState, FromTanStackColumnFiltersOptions } from './types'
 import { buildReverseColumnIdMap, isEmpty } from './utils'
 
 function coerceText(value: unknown): string | undefined {
@@ -17,10 +14,7 @@ function coerceText(value: unknown): string | undefined {
   return trimmed || undefined
 }
 
-function coerceSelect(
-  value: unknown,
-  filter: SelectFilter<readonly string[]>
-): string | undefined {
+function coerceSelect(value: unknown, filter: SelectFilter<readonly string[]>): string | undefined {
   if (typeof value !== 'string') return undefined
   return filter.options.includes(value) ? value : undefined
 }
@@ -52,9 +46,7 @@ function coerceBoolean(value: unknown): boolean | undefined {
   return undefined
 }
 
-function coerceDateRange(
-  value: unknown
-): { from?: string; to?: string } | undefined {
+function coerceDateRange(value: unknown): { from?: string; to?: string } | undefined {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined
   const obj = value as Record<string, unknown>
   const range: { from?: string; to?: string } = {}
@@ -63,9 +55,7 @@ function coerceDateRange(
   return range.from !== undefined || range.to !== undefined ? range : undefined
 }
 
-function coerceNumberRange(
-  value: unknown
-): { min?: number; max?: number } | undefined {
+function coerceNumberRange(value: unknown): { min?: number; max?: number } | undefined {
   // Accept { min, max } object
   if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
     const obj = value as Record<string, unknown>

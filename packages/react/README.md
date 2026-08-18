@@ -5,7 +5,7 @@ React hook for managing filter state defined with `@filterbridge/core`.
 [![npm](https://img.shields.io/npm/v/@filterbridge/react)](https://www.npmjs.com/package/@filterbridge/react)
 [![license](https://img.shields.io/npm/l/@filterbridge/react)](../../LICENSE)
 
-**Status: experimental — `v0.2.0`. API may change before `v1.0`.**
+**Status: experimental — `v0.3.1`. API may change before `v1.0`.**
 
 ---
 
@@ -58,9 +58,7 @@ export function OrdersFilters() {
       <button onClick={() => bridge.clear('status')}>Clear status</button>
       <button onClick={() => bridge.reset()}>Reset all</button>
 
-      {bridge.hasActiveFilters && (
-        <span>{bridge.activeFilterCount} active filters</span>
-      )}
+      {bridge.hasActiveFilters && <span>{bridge.activeFilterCount} active filters</span>}
 
       <pre>{JSON.stringify(bridge.toQueryDto(), null, 2)}</pre>
     </div>
@@ -87,26 +85,26 @@ const bridge = useFilterBridge(schema, {
 
 #### Options
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `initialState` | `Partial<InferFilterState<TSchema>>` | Initial filter values. Empty values are cleaned on initialization. |
-| `onChange` | `(state: InferFilterState<TSchema>) => void` | Called after every state change except `syncState`. Not called on first render. |
+| Option         | Type                                         | Description                                                                     |
+| -------------- | -------------------------------------------- | ------------------------------------------------------------------------------- |
+| `initialState` | `Partial<InferFilterState<TSchema>>`         | Initial filter values. Empty values are cleaned on initialization.              |
+| `onChange`     | `(state: InferFilterState<TSchema>) => void` | Called after every state change except `syncState`. Not called on first render. |
 
 #### Return value
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `state` | `InferFilterState<TSchema>` | Current filter state. Empty values are never present. |
-| `set(key, value)` | `void` | Update a single filter. Empty values are removed automatically. |
-| `setMany(values)` | `void` | Update multiple filters at once. `onChange` is called once. |
-| `clear(key)` | `void` | Remove a single filter. |
-| `reset()` | `void` | Back to the baseline: `{}`, or the schema defaults if any are declared. |
-| `resetToInitial()` | `void` | Restore the `initialState` passed at mount. |
-| `syncState(state)` | `void` | Replace the whole state with externally-provided state. Does **not** call `onChange`. |
-| `hasActiveFilters` | `boolean` | `true` when at least one filter is active. |
-| `activeFilterCount` | `number` | Count of active filters. Ranges count as 1. |
-| `toQueryDto()` | `InferFilterState<TSchema>` | Current state as a backend-ready DTO. |
-| `toSearchParams()` | `URLSearchParams` | Current state as URL search params. |
+| Property            | Type                        | Description                                                                           |
+| ------------------- | --------------------------- | ------------------------------------------------------------------------------------- |
+| `state`             | `InferFilterState<TSchema>` | Current filter state. Empty values are never present.                                 |
+| `set(key, value)`   | `void`                      | Update a single filter. Empty values are removed automatically.                       |
+| `setMany(values)`   | `void`                      | Update multiple filters at once. `onChange` is called once.                           |
+| `clear(key)`        | `void`                      | Remove a single filter.                                                               |
+| `reset()`           | `void`                      | Back to the baseline: `{}`, or the schema defaults if any are declared.               |
+| `resetToInitial()`  | `void`                      | Restore the `initialState` passed at mount.                                           |
+| `syncState(state)`  | `void`                      | Replace the whole state with externally-provided state. Does **not** call `onChange`. |
+| `hasActiveFilters`  | `boolean`                   | `true` when at least one filter is active.                                            |
+| `activeFilterCount` | `number`                    | Count of active filters. Ranges count as 1.                                           |
+| `toQueryDto()`      | `InferFilterState<TSchema>` | Current state as a backend-ready DTO.                                                 |
+| `toSearchParams()`  | `URLSearchParams`           | Current state as URL search params.                                                   |
 
 ---
 
@@ -117,9 +115,9 @@ const bridge = useFilterBridge(schema, {
 Setting a filter to an empty value removes it from state:
 
 ```ts
-bridge.set('search', '')       // search is removed
-bridge.set('tags', [])         // tags is removed
-bridge.set('amount', {})       // amount is removed
+bridge.set('search', '') // search is removed
+bridge.set('tags', []) // tags is removed
+bridge.set('amount', {}) // amount is removed
 bridge.set('createdAt', { from: undefined, to: undefined }) // removed
 ```
 
@@ -218,7 +216,7 @@ Derived from current state. A `dateRange` or `numberRange` with any value set co
 ```ts
 // state = { search: 'invoice', status: 'paid', createdAt: { from: '...', to: '...' } }
 bridge.activeFilterCount // 3
-bridge.hasActiveFilters  // true
+bridge.hasActiveFilters // true
 ```
 
 ### `toQueryDto()` and `toSearchParams()`

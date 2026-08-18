@@ -2,6 +2,7 @@ import { isAtDefault } from './defaults'
 import type { AnyFilter, DateRangeValue, NumberRangeValue } from './filter-types'
 import { isValidOption, validOptions, warnDroppedValue } from './filter-validation'
 import type { InferFilterState } from './infer'
+import { dateRangeParamKeys, numberRangeParamKeys } from './param-keys'
 
 export function toSearchParams<S extends Record<string, AnyFilter>>(
   schema: S,
@@ -60,8 +61,9 @@ export function toSearchParams<S extends Record<string, AnyFilter>>(
         const next: DateRangeValue = {}
         if (typeof range.from === 'string' && range.from.trim()) next.from = range.from.trim()
         if (typeof range.to === 'string' && range.to.trim()) next.to = range.to.trim()
-        if (next.from !== undefined) params.set(`${key}From`, next.from)
-        if (next.to !== undefined) params.set(`${key}To`, next.to)
+        const keys = dateRangeParamKeys(key, filter)
+        if (next.from !== undefined) params.set(keys.from, next.from)
+        if (next.to !== undefined) params.set(keys.to, next.to)
         break
       }
 
@@ -70,8 +72,9 @@ export function toSearchParams<S extends Record<string, AnyFilter>>(
         const next: NumberRangeValue = {}
         if (Number.isFinite(range.min)) next.min = range.min
         if (Number.isFinite(range.max)) next.max = range.max
-        if (next.min !== undefined) params.set(`${key}Min`, String(next.min))
-        if (next.max !== undefined) params.set(`${key}Max`, String(next.max))
+        const keys = numberRangeParamKeys(key, filter)
+        if (next.min !== undefined) params.set(keys.min, String(next.min))
+        if (next.max !== undefined) params.set(keys.max, String(next.max))
         break
       }
     }

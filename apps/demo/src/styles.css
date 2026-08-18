@@ -1,28 +1,62 @@
 /* ── Reset & base ─────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
+/* Every foreground/background pair below clears WCAG AA (4.5:1) for normal
+   text, measured against the surface it actually sits on. The palette used to
+   miss in five places — `--color-muted` at 4.43:1 and white-on-colour status
+   pills at 2.54–3.30:1 — which `pnpm demo:a11y` now catches. The ratios in the
+   comments are the reason each value is what it is; re-measure before changing
+   one. */
 :root {
-  --color-bg:        #f4f5f7;
-  --color-surface:   #ffffff;
-  --color-border:    #e2e5ea;
-  --color-text:      #1a1d23;
-  --color-muted:     #6b7280;
-  --color-primary:   #4f46e5;
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-border: #e2e5ea;
+  --color-text: #1a1d23;
+  /* 5.62:1 on --color-bg, 6.13:1 on --color-surface. Was #6b7280, which is
+     4.43:1 on --color-bg — under AA by 0.07, the margin that proves it was
+     never measured. */
+  --color-muted: #5b6270;
+  --color-primary: #4f46e5;
   --color-primary-h: #4338ca;
-  --color-green:     #16a34a;
-  --color-green-bg:  #dcfce7;
-  --color-red:       #dc2626;
-  --color-badge-bg:  #ede9fe;
-  --color-badge:     #6d28d9;
-  --color-code-bg:   #f8f9fa;
-  --color-url-bg:    #f0fdf4;
-  --color-url-border:#bbf7d0;
-  --radius:          8px;
-  --radius-sm:       4px;
-  --shadow-sm:       0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
-  --shadow:          0 4px 6px rgba(0,0,0,.06), 0 2px 4px rgba(0,0,0,.04);
-  --font-sans:       -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono:       'SF Mono', 'Fira Code', 'Consolas', monospace;
+  /* Text green. 6.49:1 on --color-green-bg, 6.81:1 on --color-url-bg. Was
+     #16a34a: 3.00:1 and 3.15:1. */
+  --color-green: #166534;
+  --color-green-bg: #dcfce7;
+  --color-red: #dc2626;
+  --color-red-h: #b91c1c; /* 5.60:1 on the #fef2f2 hover tint; #dc2626 is 4.41 */
+  --color-badge-bg: #ede9fe;
+  --color-badge: #6d28d9;
+  --color-code-bg: #f8f9fa;
+  --color-url-bg: #f0fdf4;
+  --color-url-border: #bbf7d0;
+
+  /* Status pills: dark text on a light tint, not white on a saturated fill.
+     White on these hues cannot reach 4.5:1 without going so dark the pill stops
+     reading as a status colour, so the pills follow the convention
+     --color-green / --color-green-bg already set. Ratios: 9.37, 6.37, 6.49,
+     6.80, 6.10. */
+  --status-draft: #374151;
+  --status-draft-bg: #f3f4f6;
+  --status-pending: #92400e;
+  --status-pending-bg: #fef3c7;
+  --status-paid: #166534;
+  --status-paid-bg: #dcfce7;
+  --status-failed: #991b1b;
+  --status-failed-bg: #fee2e2;
+  --status-cancelled: #4b5563;
+  --status-cancelled-bg: #e5e7eb;
+  --radius: 8px;
+  --radius-sm: 4px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
   font-size: 15px;
 }
 
@@ -264,7 +298,7 @@ label.field-label {
 }
 
 .clear-btn:hover {
-  color: var(--color-red);
+  color: var(--color-red-h);
   background: #fef2f2;
 }
 
@@ -297,7 +331,9 @@ label.field-label {
   background: var(--color-surface);
   color: var(--color-text);
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
   appearance: auto;
 }
 
@@ -325,7 +361,7 @@ label.field-label {
   color: var(--color-text);
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   width: 15px;
   height: 15px;
   cursor: pointer;
@@ -341,7 +377,7 @@ label.field-label {
   color: var(--color-text);
 }
 
-.toggle-label input[type="checkbox"] {
+.toggle-label input[type='checkbox'] {
   width: 15px;
   height: 15px;
   cursor: pointer;
@@ -400,7 +436,9 @@ label.field-label {
   border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
 }
 
 .btn:disabled {
@@ -596,6 +634,40 @@ label.field-label {
 
 .invoice-table tbody tr:hover td {
   background: var(--color-bg);
+}
+
+/* ── Status pills ─────────────────────────────────────────── */
+.status-pill {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-pill-draft {
+  color: var(--status-draft);
+  background: var(--status-draft-bg);
+}
+
+.status-pill-pending {
+  color: var(--status-pending);
+  background: var(--status-pending-bg);
+}
+
+.status-pill-paid {
+  color: var(--status-paid);
+  background: var(--status-paid-bg);
+}
+
+.status-pill-failed {
+  color: var(--status-failed);
+  background: var(--status-failed-bg);
+}
+
+.status-pill-cancelled {
+  color: var(--status-cancelled);
+  background: var(--status-cancelled-bg);
 }
 
 .invoice-table-empty {

@@ -23,6 +23,7 @@ labels: enhancement
 ## Affected package(s)
 
 <!-- Which package(s) would this change? -->
+
 - [ ] `@filterbridge/core`
 - [ ] `@filterbridge/react`
 - [ ] `@filterbridge/browser`
