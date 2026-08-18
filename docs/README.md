@@ -61,6 +61,7 @@ separately from the API reference so that "what it does" and "why it does that" 
 | [ADR-003](./decisions/003-test-resolution.md)          | Unit tests resolve to source; `.smoke/` covers the published artifact       |
 | [ADR-004](./decisions/004-external-state-sync.md)      | `syncState` over a controlled mode, and where the `popstate` listener lives |
 | [ADR-005](./decisions/005-serialization-validation.md) | Serialization validates against the schema and never throws                 |
+| [ADR-006](./decisions/006-onchange-timing.md)          | `onChange` fires from the event handler, not from the `setState` updater    |
 
 ---
 

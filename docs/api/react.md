@@ -438,7 +438,9 @@ type UseFilterBridgeReturn<TSchema extends FilterSchema> = {
 
 **State cleaning:** Empty values are removed from state on every update via `cleanFilterState`. This runs on initialization, on every `set`, `setMany`, `clear`, `reset`, `resetToInitial`, and `syncState` call.
 
-**`onChange` timing:** `onChange` is called synchronously inside the `setState` callback. This avoids the double-fire that `useEffect` would cause in React Strict Mode. It fires on every update except `syncState`, and not on first render.
+**`onChange` timing:** `onChange` is called synchronously from the event handler that triggered the update, immediately after the state update is queued and before the re-render. It fires on every update except `syncState`, and not on first render.
+
+Two mutators in one handler are two changes and produce two calls — use `setMany` when you want one. Nothing runs during the render phase, so an `onChange` that navigates (`router.push`, `router.replace`) is safe. Until `0.3.1` it fired from inside the `setState` updater, which React runs while rendering; see [ADR-006](../decisions/006-onchange-timing.md).
 
 **`initialState` capture:** The cleaned `initialState` is stored in a ref on the first render and never updated. Both initialization and `resetToInitial()` read that single value.
 
