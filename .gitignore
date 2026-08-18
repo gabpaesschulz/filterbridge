@@ -5,7 +5,10 @@ dist/
 .env
 coverage/
 .packs/
-.smoke/
+# .smoke/ is NOT ignored: its src/ and package.json are the published-artifact
+# test the release checklist tells you to run, and they were unreachable from a
+# fresh clone while this line was here. .smoke/.gitignore already excludes the
+# parts that must not be tracked — node_modules/ and package-lock.json.
 *.tgz
 .claude/
 CLAUDE.md
