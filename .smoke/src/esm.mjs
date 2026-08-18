@@ -218,8 +218,7 @@ assert(
 )
 assert(
   'non-finite: the DTO always survives JSON.stringify',
-  JSON.stringify(toQueryDto(filters, { amount: { min: NaN, max: 10 } })) ===
-    '{"amount":{"max":10}}'
+  JSON.stringify(toQueryDto(filters, { amount: { min: NaN, max: 10 } })) === '{"amount":{"max":10}}'
 )
 
 const warn = console.warn
@@ -269,8 +268,7 @@ assert(
 )
 assert(
   'keys: browser getFilterParamKeys reports the override',
-  getFilterParamKeys(customKeyed).join(',') ===
-    'created_after,created_before,min_cents,amountMax'
+  getFilterParamKeys(customKeyed).join(',') === 'created_after,created_before,min_cents,amountMax'
 )
 assert(
   'keys: next parses the override identically to core',

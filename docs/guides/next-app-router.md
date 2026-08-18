@@ -10,7 +10,7 @@ This guide shows a complete pattern for a filters page.
 > this exact pattern, kept outside the pnpm workspace so it costs nothing to install. Read it, or
 > run it: `cd examples/next-app-router && npm install && npm run dev`.
 >
-> Until `0.3.0` this guide was 220 lines of snippets that had never been executed, and two of its
+> Until `0.3.1` this guide was 220 lines of snippets that had never been executed, and two of its
 > claims were wrong — see [back/forward](#back-and-forward-need-two-things), which is why the
 > example exists.
 
@@ -154,7 +154,7 @@ export function InvoicesClient({ initialFilters }: Props) {
 
 ## Back and forward need two things
 
-_Corrected in `0.3.0`, after the pattern above was executed for the first time._
+_Corrected in `0.3.1`, after the pattern above was executed for the first time._
 
 This guide previously used `router.replace` and stated that back/forward "triggers a full server
 component re-render, which re-parses and re-initializes state correctly". Both halves were wrong.

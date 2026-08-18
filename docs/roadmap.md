@@ -4,7 +4,10 @@ This roadmap describes planned and possible future work. No dates are promised.
 
 FilterBridge stays narrow by design. Items here are candidates, not commitments.
 
-**Current version:** `0.3.0`. See [the release notes](./releases/v0.3.0.md) for what shipped.
+**Current version:** `0.3.1`. See [the release notes](./releases/v0.3.1.md) for what shipped.
+
+`0.3.0` was cut and never published — a schema-validation pass landed before the publish and took the
+number to `0.3.1`.
 
 ---
 
@@ -25,7 +28,7 @@ Moved here from the sections below rather than deleted, so the roadmap shows wha
 
 ---
 
-## Shipped in `0.3.0`
+## Shipped in `0.3.1`
 
 Delivered by [Sprint 1](./sprints/sprint-1/README.md).
 
@@ -41,13 +44,16 @@ Delivered by [Sprint 1](./sprints/sprint-1/README.md).
       [`examples/next-app-router`](../examples/next-app-router), a running Next.js 15 app outside
       the pnpm workspace. Running it corrected two false claims in the guide about back/forward and
       surfaced [one library defect](./sprints/sprint-1/06-onchange-fires-during-render.md)
+- [x] Schema mistakes fail at definition time — a `keys` side that does not exist, a padded or empty
+      key, a range colliding with itself, and an unrecognised filter kind all throw instead of
+      passing in silence and surfacing later as a filter that did nothing
 
 ---
 
 ## `0.2.x` — Stability and ergonomics
 
 Ongoing improvements to the existing packages. No new packages planned. Everything
-[Sprint 1](./sprints/sprint-1/README.md) took from this list shipped in `0.3.0` above; the heading
+[Sprint 1](./sprints/sprint-1/README.md) took from this list shipped in `0.3.1` above; the heading
 keeps its original name so that the sprint records linking to it still resolve.
 
 - [ ] **`onChange` fires during the render phase.** `useFilterBridge` calls it from inside its

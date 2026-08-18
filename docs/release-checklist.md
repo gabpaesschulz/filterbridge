@@ -19,7 +19,7 @@ Use this checklist before publishing packages to npm.
 - [ ] `pnpm build` — all 5 packages build without errors
 - [ ] `pnpm typecheck` — no TypeScript errors
 - [ ] `pnpm test` — all tests pass
-- [ ] `pnpm format:check` — clean. Enforced in CI since `0.3.0`
+- [ ] `pnpm format:check` — clean. Enforced in CI since `0.3.1`
 - [ ] `pnpm demo:build` — demo app builds without errors
 - [ ] `pnpm demo` then `pnpm demo:a11y` — zero violations. Not in CI, so a release is the moment it
       gets run. If it reports zero, sanity-check it against a known-bad value first; a rule that
@@ -57,7 +57,7 @@ Use this checklist before publishing packages to npm.
       next)
 - [ ] Extend the `.smoke/` assertions to cover whatever public API the release adds, in **both**
       `src/esm.mjs` and `src/cjs.cjs`. An assertion that encodes a proxy rather than a rule will
-      break when the rule stays true: `0.3.0` had to replace `dateRange.length === 0` — arity
+      break when the rule stays true: `0.3.1` had to replace `dateRange.length === 0` — arity
       standing in for "takes no configuration" — because the builder gained a `keys` option
 - [ ] Confirm both entry points of `@filterbridge/browser` resolve — the smoke suite imports
       `@filterbridge/browser` and `@filterbridge/browser/react` in ESM and in CJS

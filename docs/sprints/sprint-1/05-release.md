@@ -1,16 +1,23 @@
-# Task 5 — `0.3.0` release
+# Task 5 — `0.3.0` release (shipped as `0.3.1`)
 
 **Priority:** P2 — closes the sprint
 **Area:** all packages
-**Status:** done — prepared and verified. **Not published**; the `npm publish` step is the
-maintainer's to run.
+**Status:** done. Released as **`0.3.1`** — see the note below. **Not published**; the `npm publish`
+step is the maintainer's to run.
 
 ---
 
 ## Outcome
 
-`0.3.0`, as recommended — task 2 landed, so the argument for a minor held: new API surface in two
-builders, four new exports in `core`, and one behavior change.
+A minor, as recommended — task 2 landed, so the argument held: new API surface in two builders, four
+new exports in `core`, and behavior changes.
+
+**The published number is `0.3.1`, not `0.3.0`.** `0.3.0` was cut, and then a schema-validation pass
+landed before anything reached npm: four more definition-time throws, plus a clearer message for a
+range colliding with itself. That arrived as a `patch` changeset on top of an unpublished version,
+so `changeset version` produced `0.3.1`. Each package's `CHANGELOG.md` has two sections where the
+registry will show one release; `docs/releases/v0.3.1.md` is the whole delta from `0.2.0`, so nobody
+upgrading reads two documents.
 
 All five packages moved `0.2.0` → `0.3.0` via `pnpm changeset version`. Two changesets went in: the
 non-empty one for custom range keys, which spells out the collision throw as a behavior change
@@ -27,7 +34,7 @@ example together — grouped rather than filed as three, following the existing
 | `pnpm typecheck`        | clean, 5 packages, after `pnpm build`                                 |
 | `pnpm format:check`     | clean — new to this release                                           |
 | `pnpm build`            | dual ESM/CJS + `.d.ts` / `.d.cts`, all five                           |
-| `pnpm pack:all`         | five tarballs; `workspace:*` resolved to `0.3.0`; no `src/`, no tests |
+| `pnpm pack:all`         | five tarballs; `workspace:*` resolved to `0.3.1`; no `src/`, no tests |
 | `@filterbridge/browser` | both entry points in the tarball — `dist/index.*` and `dist/react.*`  |
 | `.smoke/` ESM           | 66 assertions passing against the packed tarballs                     |
 | `.smoke/` CJS           | 50 assertions passing                                                 |
@@ -57,11 +64,11 @@ public registry is not a step to take unasked. To publish:
 ```bash
 npm whoami                # confirm the account
 pnpm changeset publish    # or the per-package commands in the checklist
-git tag v0.3.0 && git push --tags
+git tag v0.3.1 && git push --tags
 ```
 
 Then work the post-publish section of the checklist — GitHub Release body from
-[`docs/releases/v0.3.0.md`](../../releases/v0.3.0.md), and the example bump.
+[`docs/releases/v0.3.1.md`](../../releases/v0.3.1.md), and the example bump.
 
 ### Regression check
 
@@ -118,7 +125,7 @@ this file does not restate it. The items worth flagging for **this** release spe
       [ADR-003](../../decisions/003-test-resolution.md)
 - [x] `pnpm format:check` green — new to this release, and the reason task 1 exists
 - [x] `pnpm pack:all` then the `.smoke/` ESM and CJS assertions, extended for the `keys` option
-- [x] Release notes drafted in `docs/releases/v0.3.0.md`, following
+- [x] Release notes drafted in `docs/releases/v0.3.1.md`, following
       [`v0.2.0.md`](../../releases/v0.2.0.md)
 - [x] Roadmap updated: the two housekeeping entries deleted, the custom-keys item moved into a
       "Shipped in `0.3.0`" section

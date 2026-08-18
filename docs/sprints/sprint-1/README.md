@@ -9,8 +9,8 @@ reference, and the Next.js example the guide promises but does not give.
 **Closed:** 2026-08-15
 **Status:** closed. Five planned tasks done, one found and deferred to Sprint 2.
 **Baseline commit:** `d50c984`
-**Release:** `0.3.0` — prepared and verified, **not published**. See
-[task 5](./05-release.md) for why a minor and not a patch, and for the publish steps left to run.
+**Release:** `0.3.1`. `0.3.0` was cut, then a schema-validation pass landed before the publish and
+took the number to `0.3.1`. See [task 5](./05-release.md) for why a minor and not a patch.
 
 ## Closing health
 
@@ -76,7 +76,7 @@ reach an uncontrolled hook's state. Both corrected in the guide, both demonstrat
 [`useFilterBridge` fires `onChange` from inside its `setState` updater](./06-onchange-fires-during-render.md),
 which React runs during the render phase, so an `onChange` that navigates warns and is unsafe.
 Pre-existing since `0.1.0` and invisible until now, because `apps/demo` writes to `window.history`
-rather than to React state. It ships in `0.3.0` unfixed, with a one-line workaround documented in
+rather than to React state. It ships in `0.3.1` unfixed, with a one-line workaround documented in
 both the guide and the example.
 
 ---
@@ -109,9 +109,9 @@ task 1 is whitespace, task 3 is demo CSS, task 4 is documentation.
 The version bump is therefore a judgement call rather than a forced one. [Task 5](./05-release.md)
 argues for `0.3.0`.
 
-**Settled: `0.3.0`.** Task 2 landed with the collision throw, so the release carries new API surface
-plus one behavior change. Everything up to `npm publish` is done and verified; the publish itself is
-left for the maintainer, with the commands in [task 5](./05-release.md#deliberately-not-done).
+**Settled: `0.3.1`.** Task 2 landed with the collision throw, so the release carries new API surface
+plus behavior changes. `0.3.0` was versioned and then superseded before publishing by a
+schema-validation pass; the delta a user sees is still `0.2.0 → 0.3.1`, and it is a minor.
 
 ---
 

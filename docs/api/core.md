@@ -30,7 +30,7 @@ const orderFilters = defineFilters({
 
 The returned schema is passed to `parseFilters`, `toSearchParams`, and `toQueryDto`. It serves as the single source of truth for filter structure and type information.
 
-**It throws when two filters resolve to the same URL param key** (`0.3.0`):
+**It throws when two filters resolve to the same URL param key** (`0.3.1`):
 
 ```ts
 defineFilters({
@@ -42,7 +42,7 @@ defineFilters({
 // keys override.
 ```
 
-This is possible without any [custom key](#custom-url-keys) and was possible before `0.3.0`, where `toSearchParams` silently let the last writer win — so one of the two filters round-tripped to a value it never held. The fix is to rename a filter, or to give one of them a `keys` override.
+This is possible without any [custom key](#custom-url-keys) and was possible before `0.3.1`, where `toSearchParams` silently let the last writer win — so one of the two filters round-tripped to a value it never held. The fix is to rename a filter, or to give one of them a `keys` override.
 
 Throwing, rather than warning, follows the rule [ADR-002](../decisions/002-default-values.md) sets for `assertValidDefaults`: a schema is static configuration evaluated once at module load, so a collision is a source-level mistake that fails identically on every run, not untrusted input arriving in a render path.
 
@@ -500,7 +500,7 @@ defineFilters({ amount: numberRange() })
 
 ## Custom URL keys
 
-_Added in `0.3.0`._
+_Added in `0.3.1`._
 
 A range filter writes two params, named after the filter by default. When the query string is consumed by something that already has an opinion about its parameter names — an existing REST endpoint, a URL scheme that predates the library, a backend shared with a non-JavaScript client — `keys` renames them:
 
@@ -551,7 +551,7 @@ getFilterParamKeys(filters)
 // ['created_after', 'created_before', 'min_cents', 'max_cents']
 ```
 
-`getFilterParamKeys` is also re-exported from `@filterbridge/browser`, where it has been public since `0.1.0` — the implementation moved into core in `0.3.0`, the export did not move.
+`getFilterParamKeys` is also re-exported from `@filterbridge/browser`, where it has been public since `0.1.0` — the implementation moved into core in `0.3.1`, the export did not move.
 
 ---
 
