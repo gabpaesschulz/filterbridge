@@ -26,10 +26,10 @@ Then open [http://localhost:3000](http://localhost:3000).
 | ----------------------- | --------- |
 | `next`                  | `15.5.23` |
 | `react` / `react-dom`   | `19.2.8`  |
-| `@filterbridge/core`    | `0.2.0`   |
-| `@filterbridge/next`    | `0.2.0`   |
-| `@filterbridge/react`   | `0.2.0`   |
-| `@filterbridge/browser` | `0.2.0`   |
+| `@filterbridge/core`    | `0.3.1`   |
+| `@filterbridge/next`    | `0.3.1`   |
+| `@filterbridge/react`   | `0.3.1`   |
+| `@filterbridge/browser` | `0.3.1`   |
 
 The FilterBridge dependencies are pinned to published npm versions rather than `workspace:*`, so
 this example works from a plain clone with no local build. The consequence, accepted deliberately:

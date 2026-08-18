@@ -9,10 +9,10 @@
     "start": "next start"
   },
   "dependencies": {
-    "@filterbridge/browser": "^0.2.0",
-    "@filterbridge/core": "^0.2.0",
-    "@filterbridge/next": "^0.2.0",
-    "@filterbridge/react": "^0.2.0",
+    "@filterbridge/browser": "^0.3.1",
+    "@filterbridge/core": "^0.3.1",
+    "@filterbridge/next": "^0.3.1",
+    "@filterbridge/react": "^0.3.1",
     "next": "^15.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

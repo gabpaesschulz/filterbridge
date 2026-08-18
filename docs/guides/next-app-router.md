@@ -334,4 +334,4 @@ const searchParams = useSearchParams() // ReadonlyURLSearchParams
 [`examples/next-app-router`](../../examples/next-app-router) is this guide as an application:
 server parse, client state, back/forward, a filter with a `default` so the URL-omits-but-DTO-carries
 rule is visible, and a non-filter param that survives. Verified against Next.js `15.5.23`, React
-`19.2.8` and FilterBridge `0.2.0`.
+`19.2.8` and FilterBridge `0.3.1`.
