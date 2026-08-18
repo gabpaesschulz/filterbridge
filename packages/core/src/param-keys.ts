@@ -1,4 +1,20 @@
-import type { AnyFilter, DateRangeFilter, FilterSchema, NumberRangeFilter } from './filter-types'
+import type {
+  AnyFilter,
+  BooleanFilter,
+  DateRangeFilter,
+  FilterSchema,
+  MultiSelectFilter,
+  NumberRangeFilter,
+  SelectFilter,
+  TextFilter,
+} from './filter-types'
+
+/** A filter occupying a single URL param: everything that is not a range. */
+type ScalarFilter =
+  | TextFilter
+  | SelectFilter<readonly string[]>
+  | MultiSelectFilter<readonly string[]>
+  | BooleanFilter
 
 /**
  * The one place in the repository that knows how a filter name becomes a URL
@@ -15,6 +31,20 @@ import type { AnyFilter, DateRangeFilter, FilterSchema, NumberRangeFilter } from
  * Everything downstream reads keys from here. Nothing else concatenates a
  * suffix onto a filter name.
  */
+
+/**
+ * The single param key a `text`, `select`, `multiSelect` or `boolean` occupies.
+ *
+ * The derivation is the identity today, and this function exists anyway. The
+ * ranges got their own accessor when `keys` landed in `0.3.1`; the scalars kept
+ * indexing by filter name directly in `parse-filters.ts`, `search-params.ts` and
+ * `@filterbridge/next`, which left the claim at the top of this module true for
+ * two filter kinds out of six. Routing them through here first means the
+ * override that follows changes one line rather than three files.
+ */
+export function scalarParamKey(name: string, _filter: ScalarFilter): string {
+  return name
+}
 
 /** The two param keys a `dateRange` occupies, after any `keys` override. */
 export function dateRangeParamKeys(
@@ -65,7 +95,7 @@ export function filterParamKeys(name: string, filter: AnyFilter): string[] {
     case 'select':
     case 'multiSelect':
     case 'boolean':
-      return [name]
+      return [scalarParamKey(name, filter)]
   }
 
   // Unreachable through the type system — `filter` is `never` here, so adding a

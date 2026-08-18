@@ -12,6 +12,11 @@ module.exports = {
     node: true,
     es2020: true,
   },
+  rules: {
+    // A leading underscore marks an argument that is deliberately unused —
+    // usually one kept for a signature's shape rather than for its value.
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+  },
   ignorePatterns: [
     '**/dist/**',
     '**/node_modules/**',

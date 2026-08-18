@@ -6,6 +6,7 @@ export {
   filterParamKeys,
   getFilterParamKeys,
   numberRangeParamKeys,
+  scalarParamKey,
 } from './param-keys'
 export { parseFilters } from './parse-filters'
 export { toSearchParams } from './search-params'

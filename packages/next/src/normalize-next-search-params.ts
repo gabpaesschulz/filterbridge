@@ -1,4 +1,9 @@
-import { type FilterSchema, dateRangeParamKeys, numberRangeParamKeys } from '@filterbridge/core'
+import {
+  type FilterSchema,
+  dateRangeParamKeys,
+  numberRangeParamKeys,
+  scalarParamKey,
+} from '@filterbridge/core'
 import type { NextSearchParamsInput } from './types'
 
 type RawRecord = Record<string, string | string[] | undefined>
@@ -47,9 +52,9 @@ export function inputToRawRecord(input: NextSearchParamsInput): RawRecord {
  *
  * - For text, select, boolean: string[] input picks the first element
  * - For multiSelect: string[] input is preserved as-is
- * - For dateRange and numberRange: reads whichever param keys core derives for
- *   the filter — `<name>From` / `<name>To` and `<name>Min` / `<name>Max` by
- *   default, or the filter's `keys` override
+ * - Every filter reads whichever param key core derives for it, never its name
+ *   directly. Ranges are `<name>From` / `<name>To` and `<name>Min` / `<name>Max`
+ *   by default, or the filter's `keys` override; scalars are `<name>` by default
  * - Params outside the schema are ignored
  */
 export function normalizeNextSearchParams<S extends FilterSchema>(
@@ -61,31 +66,35 @@ export function normalizeNextSearchParams<S extends FilterSchema>(
   const raw = inputToRawRecord(searchParams)
   const result: Record<string, unknown> = {}
 
-  for (const [key, filter] of Object.entries(schema)) {
+  // The output is keyed by *param key*, not by filter name — parseFilters reads
+  // it back through the same derivation.
+  for (const [name, filter] of Object.entries(schema)) {
     switch (filter._kind) {
       case 'text':
       case 'select':
       case 'boolean': {
-        const val = raw[key]
+        const paramKey = scalarParamKey(name, filter)
+        const val = raw[paramKey]
         if (val === undefined) break
         // If Next provided string[] for a scalar field, take the first value
-        result[key] = Array.isArray(val) ? val[0] : val
+        result[paramKey] = Array.isArray(val) ? val[0] : val
         break
       }
 
       case 'multiSelect': {
-        const val = raw[key]
+        const paramKey = scalarParamKey(name, filter)
+        const val = raw[paramKey]
         if (val !== undefined) {
-          result[key] = val
+          result[paramKey] = val
         }
         break
       }
 
-      // Both range branches read their param names from core rather than
-      // rebuilding them. This package spelling out its own `From`/`To` is how
-      // it drifted from core over repeated query params in 0.1.0.
+      // Every branch reads its param names from core rather than rebuilding
+      // them. This package spelling out its own `From`/`To` is how it drifted
+      // from core over repeated query params in 0.1.0.
       case 'dateRange': {
-        const keys = dateRangeParamKeys(key, filter)
+        const keys = dateRangeParamKeys(name, filter)
         const fromVal = raw[keys.from]
         const toVal = raw[keys.to]
         if (fromVal !== undefined) {
@@ -98,7 +107,7 @@ export function normalizeNextSearchParams<S extends FilterSchema>(
       }
 
       case 'numberRange': {
-        const keys = numberRangeParamKeys(key, filter)
+        const keys = numberRangeParamKeys(name, filter)
         const minVal = raw[keys.min]
         const maxVal = raw[keys.max]
         if (minVal !== undefined) {
