@@ -11,5 +11,11 @@ coverage/
 # parts that must not be tracked — node_modules/ and package-lock.json.
 *.tgz
 .claude/
-CLAUDE.md
+# CLAUDE.md is TRACKED. It is the project's own reference — the export list, the
+# filter semantics, the wave and sprint history, the behaviour rules — and three
+# sprints of tracked documents link to it by relative path, so ignoring it left
+# every one of those links broken on GitHub and every edit invisible to a fresh
+# clone. Decided in docs/sprints/sprint-2/05-repository-housekeeping.md.
+#
+# The self-presentation half moved to docs/marketing/, which stays ignored.
 docs/marketing/
