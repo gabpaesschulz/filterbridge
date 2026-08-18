@@ -23,7 +23,8 @@ It does **not** handle URL synchronization or routing — those are intentionall
 npm install @filterbridge/react @filterbridge/core
 ```
 
-React 18+ is required as a peer dependency.
+React 18+ is required as a peer dependency. The test suite runs against React 18 and React 19,
+so the range is checked rather than only declared.
 
 ---
 

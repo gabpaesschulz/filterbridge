@@ -14,4 +14,9 @@ export default defineWorkspace([
   './packages/tanstack',
   './packages/next',
   './apps/demo',
+  // The same files as the two entries above, run against React 19. Both
+  // packages declare react: >=18 as a peer; without these, half of that range
+  // is a claim nothing checks. See vitest.react-19.ts.
+  './packages/react/vitest.react-19.config.ts',
+  './packages/browser/vitest.react-19.config.ts',
 ])
