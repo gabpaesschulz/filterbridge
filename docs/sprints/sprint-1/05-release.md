@@ -22,15 +22,15 @@ example together — grouped rather than filed as three, following the existing
 
 | Check                   | Result                                                                |
 | ----------------------- | --------------------------------------------------------------------- |
-| `pnpm test`             | 573 passing / 29 files, clean clone, no build                         |
+| `pnpm test`             | 581 passing / 29 files, clean clone, no build                         |
 | `pnpm lint`             | clean                                                                 |
 | `pnpm typecheck`        | clean, 5 packages, after `pnpm build`                                 |
 | `pnpm format:check`     | clean — new to this release                                           |
 | `pnpm build`            | dual ESM/CJS + `.d.ts` / `.d.cts`, all five                           |
 | `pnpm pack:all`         | five tarballs; `workspace:*` resolved to `0.3.0`; no `src/`, no tests |
 | `@filterbridge/browser` | both entry points in the tarball — `dist/index.*` and `dist/react.*`  |
-| `.smoke/` ESM           | 60 assertions passing against the packed tarballs                     |
-| `.smoke/` CJS           | 44 assertions passing                                                 |
+| `.smoke/` ESM           | 66 assertions passing against the packed tarballs                     |
+| `.smoke/` CJS           | 50 assertions passing                                                 |
 | `pnpm demo:a11y`        | zero violations, real Chromium                                        |
 | Next.js example         | 26 Playwright assertions, `npm run build` clean                       |
 
