@@ -14,15 +14,15 @@ reference, and the Next.js example the guide promises but does not give.
 
 ## Closing health
 
-| Check               | Baseline               | Now                                       |
-| ------------------- | ---------------------- | ----------------------------------------- |
-| `pnpm test`         | 538 passing / 28 files | **573 passing / 29 files**                |
-| `pnpm lint`         | clean                  | clean                                     |
-| `pnpm typecheck`    | clean                  | clean                                     |
-| `pnpm build`        | clean                  | clean                                     |
-| `pnpm format:check` | **fails — 122 files**  | **clean, and enforced in CI**             |
-| `pnpm demo:a11y`    | did not exist          | **zero violations**                       |
-| `.smoke/`           | 39 ESM / 29 CJS        | 60 ESM / 44 CJS, against `0.3.0` tarballs |
+| Check               | Baseline               | Now                                           |
+| ------------------- | ---------------------- | --------------------------------------------- |
+| `pnpm test`         | 538 passing / 28 files | **581 passing / 29 files**                    |
+| `pnpm lint`         | clean                  | clean                                         |
+| `pnpm typecheck`    | clean                  | clean                                         |
+| `pnpm build`        | clean                  | clean                                         |
+| `pnpm format:check` | **fails — 122 files**  | **clean, and enforced in CI**                 |
+| `pnpm demo:a11y`    | did not exist          | **zero violations**                           |
+| `.smoke/`           | 39 ESM / 29 CJS        | 66 ESM / 50 CJS, against the release tarballs |
 
 The 538 baseline tests pass **unmodified**, which was the acceptance criterion guarding task 2's
 refactor of the parse and serialize paths.
