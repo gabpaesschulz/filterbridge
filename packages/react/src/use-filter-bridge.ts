@@ -40,23 +40,49 @@ export function useFilterBridge<TSchema extends FilterSchema>(
     return { ...getDefaultFilterState(schema), ...cleanFilterState(initial) } as State
   })
 
+  // Mirrors `state` for the updaters below, which need the current value
+  // *before* the commit that will carry it.
+  //
+  // It is written in exactly two places — updateState and syncState — and both
+  // write it immediately beside their setState call. Nothing reads or writes it
+  // during render. Adding a third writer without updating it here would let
+  // onChange report a state the hook never held, so if this hook ever grows one,
+  // move the notification into an effect instead (see the ADR).
+  const stateRef = useRef(state)
+
   // The cleaned initialState, captured once. useRef only uses its argument on
   // the first render, so this holds the mount value and deliberately ignores
   // later changes to options.initialState — the hook stays uncontrolled, and
   // resetToInitial() always means "back to how this component was mounted".
   const initialStateRef = useRef(state)
 
-  // Central updater: applies a pure transformation, cleans empty values,
-  // and notifies the caller. Calling onChange inside the setState callback
-  // means it fires synchronously during each action (not via useEffect),
-  // which avoids the Strict Mode double-fire that effects would cause.
+  // Central updater: applies a pure transformation, cleans empty values, and
+  // notifies the caller.
+  //
+  // The next state is computed here, in the caller's event handler, and handed
+  // to setState as a plain value. It used to be computed inside a setState
+  // updater with onChange called from in there — which React runs during the
+  // render phase, and requires to be pure. That cost three things: an onChange
+  // that updated React state (router.push, which the Next.js guide recommends)
+  // warned and was unsafe; Strict Mode double-invoked the updater, so onChange
+  // fired twice; and a render React discarded had already notified for state
+  // the user never saw.
+  //
+  // Reading stateRef rather than the render's `state` is what keeps two
+  // mutators in one handler composing — `set(a); set(b)` must not lose `a`,
+  // which is what a closure over `state` would do.
+  //
+  // onChange fires after setState is queued: if it throws, the local update is
+  // already scheduled, so the component and the URL disagree by one change
+  // rather than the change being lost outright.
   const updateState = useCallback(
     (updater: (current: State) => State) => {
-      setState((current) => {
-        const next = withDefaults(cleanFilterState(updater(current) as Record<string, unknown>))
-        onChangeRef.current?.(next)
-        return next
-      })
+      const next = withDefaults(
+        cleanFilterState(updater(stateRef.current) as Record<string, unknown>)
+      )
+      stateRef.current = next
+      setState(next)
+      onChangeRef.current?.(next)
     },
     [withDefaults]
   )
@@ -104,7 +130,9 @@ export function useFilterBridge<TSchema extends FilterSchema>(
   // adopt it" into "adopt it, then write it back", which loops.
   const syncState = useCallback(
     (next: Partial<State>) => {
-      setState(withDefaults(cleanFilterState((next ?? {}) as Record<string, unknown>)))
+      const adopted = withDefaults(cleanFilterState((next ?? {}) as Record<string, unknown>))
+      stateRef.current = adopted
+      setState(adopted)
     },
     [withDefaults]
   )

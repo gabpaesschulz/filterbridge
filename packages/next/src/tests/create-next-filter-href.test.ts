@@ -214,3 +214,30 @@ describe('createNextFilterHref', () => {
     })
   })
 })
+
+describe('custom scalar keys', () => {
+  const renamed = defineFilters({
+    search: text({ key: 'q' }),
+    archived: boolean({ key: 'is_archived' }),
+  })
+
+  it('writes state to the overridden key', () => {
+    expect(
+      createNextFilterHref(
+        renamed,
+        { search: 'invoice', archived: true },
+        { pathname: '/invoices' }
+      )
+    ).toBe('/invoices?q=invoice&is_archived=true')
+  })
+
+  it('strips a stale overridden key while preserving other params', () => {
+    expect(
+      createNextFilterHref(
+        renamed,
+        {},
+        { pathname: '/invoices', searchParams: { q: 'invoice', is_archived: 'true', tab: 'open' } }
+      )
+    ).toBe('/invoices?tab=open')
+  })
+})

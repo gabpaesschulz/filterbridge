@@ -8,7 +8,7 @@ import type {
 } from './filter-types'
 import { isValidOption, validOptions } from './filter-validation'
 import type { InferFilterState } from './infer'
-import { dateRangeParamKeys, numberRangeParamKeys } from './param-keys'
+import { dateRangeParamKeys, numberRangeParamKeys, scalarParamKey } from './param-keys'
 
 type RawInput = Record<string, unknown>
 
@@ -85,10 +85,10 @@ function parseBoolean(raw: RawInput, key: string): boolean | undefined {
 
 function parseDateRange(
   raw: RawInput,
-  key: string,
+  name: string,
   filter: DateRangeFilter
 ): { from?: string; to?: string } | undefined {
-  const keys = dateRangeParamKeys(key, filter)
+  const keys = dateRangeParamKeys(name, filter)
   const from = scalar(raw[keys.from])
   const to = scalar(raw[keys.to])
   const range: { from?: string; to?: string } = {}
@@ -101,10 +101,10 @@ function parseDateRange(
 
 function parseNumberRange(
   raw: RawInput,
-  key: string,
+  name: string,
   filter: NumberRangeFilter
 ): { min?: number; max?: number } | undefined {
-  const keys = numberRangeParamKeys(key, filter)
+  const keys = numberRangeParamKeys(name, filter)
   const minVal = scalar(raw[keys.min])
   const maxVal = scalar(raw[keys.max])
   const range: { min?: number; max?: number } = {}
@@ -136,27 +136,29 @@ export function parseFilters<S extends Record<string, AnyFilter>>(
   const raw = normalizeInput(input)
   const result: Record<string, unknown> = {}
 
-  for (const [key, filter] of Object.entries(schema)) {
+  // `name` is the key in the schema; the URL param it reads is derived from it
+  // by param-keys.ts and is not necessarily the same string.
+  for (const [name, filter] of Object.entries(schema)) {
     let value: unknown
 
     switch (filter._kind) {
       case 'text':
-        value = parseText(raw, key)
+        value = parseText(raw, scalarParamKey(name, filter))
         break
       case 'select':
-        value = parseSelect(raw, key, filter)
+        value = parseSelect(raw, scalarParamKey(name, filter), filter)
         break
       case 'multiSelect':
-        value = parseMultiSelect(raw, key, filter)
+        value = parseMultiSelect(raw, scalarParamKey(name, filter), filter)
         break
       case 'boolean':
-        value = parseBoolean(raw, key)
+        value = parseBoolean(raw, scalarParamKey(name, filter))
         break
       case 'dateRange':
-        value = parseDateRange(raw, key, filter)
+        value = parseDateRange(raw, name, filter)
         break
       case 'numberRange':
-        value = parseNumberRange(raw, key, filter)
+        value = parseNumberRange(raw, name, filter)
         break
     }
 
@@ -167,7 +169,7 @@ export function parseFilters<S extends Record<string, AnyFilter>>(
     }
 
     if (value !== undefined) {
-      result[key] = value
+      result[name] = value
     }
   }
 

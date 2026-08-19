@@ -61,15 +61,17 @@ separately from the API reference so that "what it does" and "why it does that" 
 | [ADR-003](./decisions/003-test-resolution.md)          | Unit tests resolve to source; `.smoke/` covers the published artifact       |
 | [ADR-004](./decisions/004-external-state-sync.md)      | `syncState` over a controlled mode, and where the `popstate` listener lives |
 | [ADR-005](./decisions/005-serialization-validation.md) | Serialization validates against the schema and never throws                 |
+| [ADR-006](./decisions/006-onchange-timing.md)          | `onChange` fires from the event handler, not from the `setState` updater    |
 
 ---
 
 ## Sprints
 
-| Sprint                                   | Description                                                                                 |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------- |
-| [Sprint 0](./sprints/sprint-0/README.md) | Post-release hardening — correctness fixes, API gaps, CI                                    |
-| [Sprint 1](./sprints/sprint-1/README.md) | Ergonomics and debt — formatting in CI, custom range keys, demo contrast, a Next.js example |
+| Sprint                                   | Description                                                                                                         |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| [Sprint 0](./sprints/sprint-0/README.md) | Post-release hardening — correctness fixes, API gaps, CI                                                            |
+| [Sprint 1](./sprints/sprint-1/README.md) | Ergonomics and debt — formatting in CI, custom range keys, demo contrast, a Next.js example                         |
+| [Sprint 2](./sprints/sprint-2/README.md) | The hook's contract with React — `onChange` out of the render phase, React 19 under test, scalar URL keys (`0.4.0`) |
 
 ---
 

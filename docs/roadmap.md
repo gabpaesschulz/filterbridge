@@ -4,7 +4,7 @@ This roadmap describes planned and possible future work. No dates are promised.
 
 FilterBridge stays narrow by design. Items here are candidates, not commitments.
 
-**Current version:** `0.3.1`. See [the release notes](./releases/v0.3.1.md) for what shipped.
+**Current version:** `0.4.0`. See [the release notes](./releases/v0.4.0.md) for what shipped.
 
 `0.3.0` was cut and never published — a schema-validation pass landed before the publish and took the
 number to `0.3.1`.
@@ -50,18 +50,32 @@ Delivered by [Sprint 1](./sprints/sprint-1/README.md).
 
 ---
 
+## Shipped in `0.4.0`
+
+Delivered by [Sprint 2](./sprints/sprint-2/README.md).
+
+- [x] `onChange` no longer fires during the render phase — navigating from it (`router.push`) is
+      safe, the `queueMicrotask` workaround is gone from the guide and the example, and it fires
+      once rather than twice under `<React.StrictMode>`.
+      [ADR-006](./decisions/006-onchange-timing.md)
+- [x] Custom URL key for the scalar filters — `text({ key: 'q' })`, and the same on `select`,
+      `multiSelect` and `boolean`. Key derivation now runs through one module for all six filter
+      kinds, not just the two ranges
+- [x] React 19 in the test matrix — `@filterbridge/react` and `@filterbridge/browser` run their
+      suites against React 18 and React 19, so `react: >=18` is checked rather than declared. Strict
+      Mode is in the suite for the first time
+- [x] `pnpm verify:next-example` — the example's back/forward and clean-console claims are
+      re-runnable instead of a sentence in a sprint document
+- [x] `CLAUDE.md` is tracked
+
+---
+
 ## `0.2.x` — Stability and ergonomics
 
 Ongoing improvements to the existing packages. No new packages planned. Everything
 [Sprint 1](./sprints/sprint-1/README.md) took from this list shipped in `0.3.1` above; the heading
 keeps its original name so that the sprint records linking to it still resolve.
 
-- [ ] **`onChange` fires during the render phase.** `useFilterBridge` calls it from inside its
-      `setState` updater, so an `onChange` that navigates warns and is unsafe. Found by the Next.js
-      example, deferred to Sprint 2 with a documented workaround —
-      [task 6](./sprints/sprint-1/06-onchange-fires-during-render.md)
-- [ ] Custom URL key for the scalar filters — `text('search')` serializing to `q`. The range option
-      is deliberately named `keys`, leaving `key: string` free for this
 - [ ] Bug fixes as they are reported
 
 ---
@@ -99,8 +113,15 @@ Prerequisites before marking the API stable:
 
 Known, deliberately deferred, and easy to lose track of once a sprint closes.
 
-_Nothing is outstanding._ Sprint 1 closed both entries that lived here — `pnpm format:check` is a CI
-job, and the demo's palette clears WCAG AA with `pnpm demo:a11y` to keep it that way.
+- [ ] **Automate the GitHub Release.** A workflow on tag push, reading
+      `docs/releases/v<version>.md`. `v0.3.1`'s release was skipped because `gh` was not installed
+      and the checklist offered no alternative; the checklist now writes out the web-UI route, and
+      `0.4.0` is the second time it has been done by hand. Let the third repetition justify the
+      workflow — permissions, changelog source and a dry run are real work.
+
+Closed: Sprint 1's two entries — `pnpm format:check` is a CI job, and the demo's palette clears
+WCAG AA with `pnpm demo:a11y` to keep it that way. Sprint 2's two — `CLAUDE.md` is tracked, and the
+`v0.3.1` GitHub Release is created.
 
 ---
 

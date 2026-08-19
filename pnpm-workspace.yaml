@@ -1,6 +1,10 @@
 packages:
   - 'packages/*'
   - 'apps/*'
+  # No source, no build, never imported by name: it exists to own a React 19
+  # dependency tree for the second vitest project. See its README for why an
+  # aliased devDependency inside packages/react does not work.
+  - 'tools/*'
   - 'examples/*'
   # Deliberately outside the workspace. It is a real Next.js app, and pulling
   # Next.js and React DOM into the root install would make every contributor —

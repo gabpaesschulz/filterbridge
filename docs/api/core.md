@@ -336,11 +336,23 @@ See [Defaults and `useFilterBridge`](#defaults-and-usefilterbridge) for the Reac
 
 ## Filter factories
 
-`select`, `multiSelect` and `boolean` take an optional configuration object as their last argument. `dateRange` and `numberRange` take one too, but it carries only [`keys`](#custom-url-keys); `text` takes none. No filter but the first three accepts a `default` — see [which filters accept a default](#which-filters-accept-a-default):
+Every filter factory takes an optional configuration object as its last argument.
+
+All six accept a [URL param key override](#custom-url-keys) — `key` for the four that occupy one param, `keys` for the two ranges. Only `select`, `multiSelect` and `boolean` accept a `default`; see [which filters accept a default](#which-filters-accept-a-default):
 
 ```ts
-interface FilterConfig<TValue> {
+interface ParamKeyConfig {
+  readonly key?: string
+}
+
+// select, multiSelect, boolean
+interface FilterConfig<TValue> extends ParamKeyConfig {
   readonly default?: TValue
+}
+
+// text — the same, minus the default, which is a type error here
+interface TextConfig extends ParamKeyConfig {
+  readonly default?: never
 }
 ```
 
@@ -349,7 +361,7 @@ See [Default values](#default-values) for what `default` does across the three c
 ### `text(config?)`
 
 ```ts
-function text(config?: FilterConfig<string>): TextFilter
+function text(config?: TextConfig): TextFilter
 ```
 
 Creates a text filter definition.
@@ -500,9 +512,25 @@ defineFilters({ amount: numberRange() })
 
 ## Custom URL keys
 
-_Added in `0.3.1`._
+_Ranges added in `0.3.1`; the scalar filters in `0.4.0`._
 
-A range filter writes two params, named after the filter by default. When the query string is consumed by something that already has an opinion about its parameter names — an existing REST endpoint, a URL scheme that predates the library, a backend shared with a non-JavaScript client — `keys` renames them:
+Every filter names its params after itself by default. When the query string is consumed by something that already has an opinion about its parameter names — an existing REST endpoint, a URL scheme that predates the library, a backend shared with a non-JavaScript client — the builders take an override.
+
+**`key` for a filter that occupies one param**, which is `text`, `select`, `multiSelect` and `boolean`:
+
+```ts
+const filters = defineFilters({
+  search: text({ key: 'q' }),
+  status: select(['pending', 'paid'] as const, { key: 'st' }),
+  tags: multiSelect(['urgent', 'review'] as const, { key: 'labels' }),
+  archived: boolean({ key: 'is_archived' }),
+})
+
+toSearchParams(filters, { search: 'invoice', archived: false }).toString()
+// q=invoice&is_archived=false
+```
+
+**`keys` for a range**, which occupies two — one side or both:
 
 ```ts
 const filters = defineFilters({
@@ -517,7 +545,13 @@ toSearchParams(filters, {
 // created_after=2026-01-01&created_before=2026-01-31&min_cents=100&max_cents=500
 ```
 
-Four things worth knowing:
+The singular and the plural are the whole convention: `key` means one param, `keys` means two.
+
+Five things worth knowing:
+
+**The state is still keyed by filter name.** `key` renames the URL param, not the field. `state.search` is `search` whatever the query string says, and so is the DTO property.
+
+**A key replaces the name — it is not an alias.** Once `search` writes `q`, a URL carrying `search=invoice` parses to nothing. Anything else would make a rename unobservable, and would quietly keep old bookmarks working against a param the schema no longer claims.
 
 **Either side may be given alone.** `dateRange({ keys: { from: 'after' } })` on a filter named `createdAt` writes `after` and `createdAtTo`. Half-configured is a real state — an API that renamed one param and not the other — and a mixed URL is a better outcome than a builder that throws for not having been told something it could derive.
 
@@ -530,7 +564,9 @@ toQueryDto(filters, { amount: { min: 100 } })
 // { amount: { min: 100 } }  — not { min_cents: 100 }
 ```
 
-A custom key is a URL concern. Renaming JSON properties for a backend is a different problem and is out of scope.
+A custom key is a URL concern. Renaming JSON properties for a backend is a different problem and is out of scope, and so is the column id `@filterbridge/tanstack` uses — that has its own `columnIds` option.
+
+**A key that collides throws at definition time.** `defineFilters({ search: text({ key: 'q' }), q: text() })` throws, as does a key landing on a range side. Renaming is the escape hatch, so `{ q: text({ key: 'query' }), search: text({ key: 'q' }) }` is fine.
 
 **Everything downstream follows automatically.** `parseFilters`, `toSearchParams`, `getFilterParamKeys` and `@filterbridge/next`'s normalization all read the same derivation, so `createFilterUrl` strips a custom key as reliably as a derived one and a server parse matches a client parse.
 
@@ -795,15 +831,23 @@ These are exported for use in custom adapters or extended integrations. `default
 
 ---
 
-### `FilterConfig<TValue>`
+### `ParamKeyConfig`, `FilterConfig<TValue>` and `TextConfig`
 
 ```ts
-interface FilterConfig<TValue> {
+interface ParamKeyConfig {
+  readonly key?: string
+}
+
+interface FilterConfig<TValue> extends ParamKeyConfig {
   readonly default?: TValue
+}
+
+interface TextConfig extends ParamKeyConfig {
+  readonly default?: never
 }
 ```
 
-The configuration object every filter factory accepts as its last argument. See [Default values](#default-values).
+The configuration objects the filter factories accept as their last argument. `ParamKeyConfig` carries the [URL param key override](#custom-url-keys) shared by the four single-param filters; `FilterConfig` adds a [default](#default-values) for the three that may have one; `TextConfig` is `text`'s, which is `ParamKeyConfig` with the default typed away.
 
 ---
 

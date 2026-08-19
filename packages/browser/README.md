@@ -83,6 +83,7 @@ usePopstateSync(invoiceFilters, bridge.syncState)
 | `@filterbridge/browser/react` | `usePopstateSync`               | Yes            |
 
 React is an **optional** peer dependency. The root entry never imports it, so this package still works in a non-React app.
+React 18+ is supported, and the test suite runs against both React 18 and React 19.
 
 ---
 

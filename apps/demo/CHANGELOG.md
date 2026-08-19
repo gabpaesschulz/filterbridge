@@ -1,5 +1,18 @@
 # @filterbridge/demo
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [f31d1ac]
+- Updated dependencies [f1d4667]
+- Updated dependencies [bdb8195]
+- Updated dependencies [0c7441b]
+  - @filterbridge/react@0.4.0
+  - @filterbridge/browser@0.4.0
+  - @filterbridge/core@0.4.0
+  - @filterbridge/tanstack@0.4.0
+
 ## 0.0.4
 
 ### Patch Changes

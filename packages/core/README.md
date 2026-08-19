@@ -357,24 +357,29 @@ defineFilters({ amount: numberRange() })
 
 ## Custom URL keys
 
-_Added in `0.3.1`._
+_Ranges added in `0.3.1`; the scalar filters in `0.4.0`._
 
-The `From` / `To` / `Min` / `Max` names above are defaults. When the query string is read by an API that already has an opinion about its parameter names, `keys` renames them:
+The param names above are defaults. When the query string is read by an API that already has an opinion about its parameter names, the builders take an override — `key` for a filter occupying one param, `keys` for a range occupying two:
 
 ```ts
 const filters = defineFilters({
+  search: text({ key: 'q' }),
+  archived: boolean({ key: 'is_archived' }),
   createdAt: dateRange({ keys: { from: 'created_after', to: 'created_before' } }),
   amount: numberRange({ keys: { min: 'min_cents' } }),
 })
 
 toSearchParams(filters, {
+  search: 'invoice',
   createdAt: { from: '2026-01-01' },
   amount: { min: 100, max: 500 },
 }).toString()
-// created_after=2026-01-01&min_cents=100&amountMax=500
+// q=invoice&created_after=2026-01-01&min_cents=100&amountMax=500
 ```
 
-- Either side may be given alone; the other stays derived.
+- The state is still keyed by filter name — `key` renames the URL param, not the field.
+- A key replaces the name rather than aliasing it: once `search` writes `q`, a URL carrying `search=invoice` parses to nothing.
+- For a range, either side may be given alone; the other stays derived.
 - The key replaces the whole param name, so `created_after` is reachable from a filter named `createdAt`.
 - `toQueryDto` is unaffected — the DTO is keyed by filter name, always. A custom key is a URL concern.
 - `getFilterParamKeys`, `@filterbridge/browser` and `@filterbridge/next` all read the same derivation, so nothing has to be told twice.
@@ -403,7 +408,9 @@ DateRangeFilter
 NumberRangeFilter
 
 // Builder configuration
-FilterConfig<TValue> // select / multiSelect / boolean
+ParamKeyConfig // { key?: string } — text / select / multiSelect / boolean
+FilterConfig<TValue> // ParamKeyConfig + default — select / multiSelect / boolean
+TextConfig // ParamKeyConfig, with `default` typed away
 DateRangeConfig // { keys?: DateRangeKeys }
 NumberRangeConfig // { keys?: NumberRangeKeys }
 DateRangeKeys

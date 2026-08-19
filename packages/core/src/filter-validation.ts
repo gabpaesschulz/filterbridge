@@ -55,19 +55,23 @@ export function assertValidDefaults(
 }
 
 /**
- * Rejects a `keys` override that cannot address anything. Throws for the same
+ * Rejects a `key` or `keys` override that cannot address anything. `option` is
+ * the caller-facing name of what was wrong — `key` for a scalar, `keys.from`
+ * for a range side — so the message points at what the reader wrote.
+ *
+ * Throws for the same
  * reason `assertValidDefaults` does: it is static configuration, so the failure
  * is a typo that fails identically on every run rather than untrusted input
  * arriving in a render path.
  */
 export function assertValidParamKeys(
-  builder: 'dateRange' | 'numberRange',
-  side: string,
+  builder: 'text' | 'select' | 'multiSelect' | 'boolean' | 'dateRange' | 'numberRange',
+  option: string,
   key: unknown
 ): void {
   if (typeof key !== 'string' || key.trim() === '') {
     throw new Error(
-      `[filterbridge] ${builder}(): keys.${side} must be a non-empty string, got ` +
+      `[filterbridge] ${builder}(): ${option} must be a non-empty string, got ` +
         `${formatValue(key)}.`
     )
   }
@@ -80,7 +84,7 @@ export function assertValidParamKeys(
   // throwing puts the typo in front of the person who can fix it.
   if (key !== key.trim()) {
     throw new Error(
-      `[filterbridge] ${builder}(): keys.${side} must not have leading or trailing ` +
+      `[filterbridge] ${builder}(): ${option} must not have leading or trailing ` +
         `whitespace, got ${formatValue(key)}.`
     )
   }

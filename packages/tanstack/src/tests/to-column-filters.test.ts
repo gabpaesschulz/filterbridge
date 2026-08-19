@@ -115,3 +115,27 @@ describe('toTanStackColumnFilters', () => {
     expect(result).toEqual([])
   })
 })
+
+describe('URL param keys', () => {
+  it('are ignored — column ids come from the filter name', () => {
+    // A `key` override renames a URL param. A column id is a table concern and
+    // has its own option, `columnIds`. The two must not leak into each other,
+    // or a schema written against a legacy API would silently rename columns.
+    const renamed = defineFilters({
+      search: text({ key: 'q' }),
+      archived: boolean({ key: 'is_archived' }),
+    })
+
+    expect(toTanStackColumnFilters(renamed, { search: 'invoice', archived: true })).toEqual([
+      { id: 'search', value: 'invoice' },
+      { id: 'archived', value: true },
+    ])
+  })
+
+  it('still defer to columnIds when one is given', () => {
+    const renamed = defineFilters({ search: text({ key: 'q' }) })
+    expect(
+      toTanStackColumnFilters(renamed, { search: 'invoice' }, { columnIds: { search: 'customer' } })
+    ).toEqual([{ id: 'customer', value: 'invoice' }])
+  })
+})

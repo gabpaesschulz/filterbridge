@@ -97,7 +97,7 @@ same schema was enforced in one of three directions.
 
 ## @filterbridge/react
 
-React adapter. Depends on `@filterbridge/core`. Peer dependency on React 18+.
+React adapter. Depends on `@filterbridge/core`. Peer dependency on React 18+, and the test suite runs against both React 18 and React 19 — see [Testing](#testing).
 
 Responsibilities:
 
@@ -268,6 +268,40 @@ create-next-filter-href.ts      — createNextFilterHref()
 ```
 
 **Build output:** ESM and CJS with declarations.
+
+---
+
+## Testing
+
+Tests resolve `@filterbridge/*` to **source**, never to a sibling's `dist/` — see
+[ADR-003](../decisions/003-test-resolution.md). `.smoke/` is the counterpart: it installs the packed
+tarballs and exercises the export map in ESM and CJS, which is the only place the published artifact
+is tested.
+
+### React versions
+
+`@filterbridge/react` and `@filterbridge/browser` declare `react: >=18`. Their suites run **twice**,
+once against React 18 and once against React 19, as separate vitest projects sharing the same test
+files:
+
+```txt
+@filterbridge/react              src/**/*.test.tsx   react 18
+@filterbridge/react · react 19   src/**/*.test.tsx   react 19
+@filterbridge/browser            src/**/*.test.tsx   react 18
+@filterbridge/browser · react 19 src/**/*.test.tsx   react 19
+```
+
+React 19 lives in `tools/react-19`, a private workspace package with no source whose only job is to
+own that dependency tree. The alternative — an aliased `react-19` devDependency inside the packages
+themselves — installs React DOM 19 against React 18, because pnpm resolves React DOM's peer from the
+surrounding package. Its README has the detail.
+
+Both projects run `react-version.test.tsx`, which asserts that the React the project claims is the
+React it loaded and that React and React DOM agree on a major. Without it, an incomplete alias would
+quietly load two Reacts and the failure would read like a library bug.
+
+No extra CI job is needed: `pnpm test` runs every project, so all four existing matrix legs cover
+both majors.
 
 ---
 

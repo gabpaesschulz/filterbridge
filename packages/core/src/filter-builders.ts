@@ -11,54 +11,96 @@ import type {
 import { assertValidDefaults, assertValidParamKeys } from './filter-validation'
 
 /**
- * Configuration accepted as the last argument of the filter builders that take
- * one: `select`, `multiSelect` and `boolean`.
+ * The URL param a filter reads and writes, when it should not be the filter's
+ * name — `text({ key: 'q' })` serializes to `?q=`.
+ *
+ * Accepted by every builder that occupies a single param. The range builders
+ * take `keys` instead, because they occupy two.
+ */
+export interface ParamKeyConfig {
+  readonly key?: string
+}
+
+/**
+ * Configuration accepted as the last argument of `select`, `multiSelect` and
+ * `boolean`.
  *
  * `default` is the value `parseFilters` uses when the key is absent from the
  * input or present but invalid. It is also the value `toSearchParams` omits, so
  * a filter sitting at its default produces no query param at all.
  *
- * `text`, `dateRange` and `numberRange` deliberately do not accept one — see
- * the note on each, and `docs/decisions/002-default-values.md`.
+ * `text`, `dateRange` and `numberRange` deliberately do not accept a `default` —
+ * see the note on each, and `docs/decisions/002-default-values.md`. `text` takes
+ * {@link TextConfig}, which is this type without it.
  */
-export interface FilterConfig<TValue> {
+export interface FilterConfig<TValue> extends ParamKeyConfig {
   readonly default?: TValue
 }
 
 /**
- * No `default`. Under the hook's defaults rule, clearing a filter means
- * returning it to its default — which is coherent for a discrete choice and
- * hostile for free text: deleting is continuous editing, so the input would
- * repopulate itself while the user is still backspacing through it.
+ * Configuration for `text`: a param key override and nothing else.
+ *
+ * Deliberately not `FilterConfig<string>`. Under the hook's defaults rule,
+ * clearing a filter returns it to its default — coherent for a discrete choice
+ * and hostile for free text, since deleting is continuous editing and the input
+ * would repopulate itself while the user is still backspacing through it. That
+ * restriction is a type error at the call site, and it stays one.
  */
-export function text(): TextFilter {
-  return { _kind: 'text' }
+export interface TextConfig extends ParamKeyConfig {
+  readonly default?: never
+}
+
+export function text(config?: TextConfig): TextFilter {
+  const key = normalizeKey('text', config)
+  return key === undefined ? { _kind: 'text' } : { _kind: 'text', key }
 }
 
 export function select<const T extends readonly string[]>(
   options: T,
   config?: FilterConfig<T[number]>
 ): SelectFilter<T> {
-  if (config?.default === undefined) return { _kind: 'select', options }
+  const key = normalizeKey('select', config)
+  if (config?.default === undefined) return { _kind: 'select', options, ...(key && { key }) }
   assertValidDefaults('select', options, [config.default])
-  return { _kind: 'select', options, default: config.default }
+  return { _kind: 'select', options, default: config.default, ...(key && { key }) }
 }
 
 export function multiSelect<const T extends readonly string[]>(
   options: T,
   config?: FilterConfig<ReadonlyArray<T[number]>>
 ): MultiSelectFilter<T> {
+  const key = normalizeKey('multiSelect', config)
   const values = config?.default
   // An empty default selects nothing, which is what no default already means.
-  if (values === undefined || values.length === 0) return { _kind: 'multiSelect', options }
+  if (values === undefined || values.length === 0) {
+    return { _kind: 'multiSelect', options, ...(key && { key }) }
+  }
   assertValidDefaults('multiSelect', options, values)
-  return { _kind: 'multiSelect', options, default: [...values] }
+  return { _kind: 'multiSelect', options, default: [...values], ...(key && { key }) }
 }
 
 export function boolean(config?: FilterConfig<boolean>): BooleanFilter {
+  const key = normalizeKey('boolean', config)
   return typeof config?.default === 'boolean'
-    ? { _kind: 'boolean', default: config.default }
-    : { _kind: 'boolean' }
+    ? { _kind: 'boolean', default: config.default, ...(key && { key }) }
+    : { _kind: 'boolean', ...(key && { key }) }
+}
+
+/**
+ * Validates a scalar `key` override and drops it when absent.
+ *
+ * Returning `undefined` for `{ key: undefined }` matters for the same reason
+ * `normalizeKeys` returns it for an all-empty `keys`: a filter built with an
+ * explicitly-undefined key must deep-equal one built without the option at all,
+ * or schemas stop comparing equal across versions for no visible reason.
+ */
+function normalizeKey(
+  builder: 'text' | 'select' | 'multiSelect' | 'boolean',
+  config: ParamKeyConfig | undefined
+): string | undefined {
+  if (config === undefined || config.key === undefined) return undefined
+  assertValidParamKeys(builder, 'key', config.key)
+  return config.key
 }
 
 /**
@@ -128,7 +170,7 @@ function normalizeKeys<K extends string>(
   for (const side of sides) {
     const value = keys[side]
     if (value === undefined) continue
-    assertValidParamKeys(builder, side, value)
+    assertValidParamKeys(builder, `keys.${side}`, value)
     result[side] = value
     any = true
   }
